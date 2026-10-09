@@ -1,0 +1,182 @@
+# QUAKE ALERT - entorno de desarrollo local completo
+# Levanta MongoDB + RabbitMQ + los 14 microservicios con un solo comando:
+#   docker compose up --build
+#
+# Puertos:
+#   detection          :3003   sensores QuakeBox -> seismic.detected
+#   alert-engine       :3001   calcula alertas -> alert.issued
+#   family             :3002   consume alert.issued, check-ins
+#   forms              :3004   catalogos / formularios dinamicos
+#   notification       :3005   fan-out multicanal (push/sms/whatsapp/voz/sirena)
+#   voice              :3006   anuncios Alexa/Google/Siri/IVR
+#   iot-gateway        :3007   sirenas, LED, valvulas, cerraduras
+#   smart-city         :3008   zonas, alerta municipal, panico
+#   corporate          :3009   multi-sede por sector, alerta regional
+#   drills             :3010   simulacros + scoring
+#   analytics          :3011   agrega eventos -> KPIs / series
+#   agent-orchestrator :3012   asistente IA (ruteo de intenciones)
+#   identity           :3013   auth, tenants, 2FA, tokens HMAC
+#   billing            :3014   planes, suscripciones, uso
+#   mongo              :27017
+#   rabbitmq           :5672   (panel: http://localhost:15672  guest/guest)
+
+x-svc-defaults: &svc-defaults
+  restart: unless-stopped
+  depends_on:
+    - mongo
+    - rabbitmq
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  detection:
+    <<: *svc-defaults
+    build: ./backend/detection
+    ports: ["3003:3003"]
+    environment:
+      PORT: 3003
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+
+  alert-engine:
+    <<: *svc-defaults
+    build: ./backend/alert-engine
+    ports: ["3001:3001"]
+    environment:
+      PORT: 3001
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+      CORS_ORIGIN: "*"
+
+  family:
+    <<: *svc-defaults
+    build: ./backend/family
+    ports: ["3002:3002"]
+    environment:
+      PORT: 3002
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+
+  forms:
+    restart: unless-stopped
+    depends_on: [mongo]
+    build: ./backend/forms
+    ports: ["3004:3004"]
+    environment:
+      PORT: 3004
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      CORS_ORIGIN: "*"
+
+  notification:
+    <<: *svc-defaults
+    build: ./backend/notification
+    ports: ["3005:3005"]
+    environment:
+      PORT: 3005
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+
+  voice:
+    <<: *svc-defaults
+    build: ./backend/voice
+    ports: ["3006:3006"]
+    environment:
+      PORT: 3006
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+
+  iot-gateway:
+    <<: *svc-defaults
+    build: ./backend/iot-gateway
+    ports: ["3007:3007"]
+    environment:
+      PORT: 3007
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+
+  smart-city:
+    <<: *svc-defaults
+    build: ./backend/smart-city
+    ports: ["3008:3008"]
+    environment:
+      PORT: 3008
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+      CORS_ORIGIN: "*"
+
+  corporate:
+    <<: *svc-defaults
+    build: ./backend/corporate
+    ports: ["3009:3009"]
+    environment:
+      PORT: 3009
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+      CORS_ORIGIN: "*"
+
+  drills:
+    <<: *svc-defaults
+    build: ./backend/drills
+    ports: ["3010:3010"]
+    environment:
+      PORT: 3010
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+      CORS_ORIGIN: "*"
+
+  analytics:
+    <<: *svc-defaults
+    build: ./backend/analytics
+    ports: ["3011:3011"]
+    environment:
+      PORT: 3011
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+      CORS_ORIGIN: "*"
+
+  agent-orchestrator:
+    restart: unless-stopped
+    depends_on: [mongo]
+    build: ./backend/agent-orchestrator
+    ports: ["3012:3012"]
+    environment:
+      PORT: 3012
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      CORS_ORIGIN: "*"
+
+  identity:
+    <<: *svc-defaults
+    build: ./backend/identity
+    ports: ["3013:3013"]
+    environment:
+      PORT: 3013
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+      AUTH_SECRET: dev-secret-cambialo
+      CORS_ORIGIN: "*"
+
+  billing:
+    <<: *svc-defaults
+    build: ./backend/billing
+    ports: ["3014:3014"]
+    environment:
+      PORT: 3014
+      MONGODB_URI: mongodb://mongo:27017/quakealert
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672
+      CORS_ORIGIN: "*"
+
+volumes:
+  mongo_data:

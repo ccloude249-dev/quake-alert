@@ -1,0 +1,20 @@
+{
+  "name": "quake-alert-identity",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Identity & Auth - tenants, usuarios, registro/login con hash scrypt, 2FA por codigo y tokens HMAC firmados (sin dependencias extra).",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.4",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.0"
+  }
+}

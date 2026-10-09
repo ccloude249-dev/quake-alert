@@ -1,0 +1,17 @@
+{
+  "name": "QUAKE ALERT · App Ciudadana",
+  "short_name": "QUAKE ALERT",
+  "description": "Alertas sísmicas en tu bolsillo: aviso con pantalla bloqueada, red familiar y refugios cercanos.",
+  "start_url": "./Quake%20Alert%20App.dc.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0c1119",
+  "theme_color": "#070c14",
+  "lang": "es-GT",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

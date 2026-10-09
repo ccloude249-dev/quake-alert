@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUAKE ALERT">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #060a12; }
+  a { text-decoration: none; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,160,200,0.2); border-radius: 4px; }
+  @media (max-width: 900px) {
+    .qa-hub-body { grid-template-columns: 1fr !important; overflow: visible !important; }
+  }
+</style>
+</helmet>
+<div style="min-height:100vh; width:100%; background:#070c14; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; display:grid; grid-template-rows:auto 1fr;">
+
+  <div style="border-bottom:1px solid rgba(120,160,200,0.1); padding:24px 34px; background:radial-gradient(70% 100% at 80% 0%, rgba(34,211,238,0.08), transparent 60%), #080d16;">
+    <div style="display:flex; align-items:center; gap:13px; margin-bottom:18px;">
+      <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#22d3ee,#0e7490); display:flex; align-items:center; justify-content:center; font-size:17px; color:#06141a;">◉</div>
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:18px; color:#fff;">Plataforma &amp; Integraciones</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7b8ca3; margin-top:1px;">GUÍA PARA IMPLEMENTADORES</div>
+      </div>
+    </div>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#5f7187; margin-bottom:12px;">OPCIONES PRINCIPALES DE LA PLATAFORMA</div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a href="Quake%20Alert%20Console.dc.html" style="display:flex; align-items:center; gap:9px; padding:10px 16px; border-radius:10px; background:rgba(34,211,238,0.12); border:1px solid rgba(34,211,238,0.3); color:#bfe9f4; font-size:14px;">◉ Launcher · todas las superficies</a>
+      <a href="Quake%20Alert%20Command%20Center.dc.html" style="display:flex; align-items:center; gap:9px; padding:10px 16px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.16); color:#cdd9e8; font-size:14px;">▣ Command Center</a>
+      <a href="Quake%20Alert%20Analytics.dc.html" style="display:flex; align-items:center; gap:9px; padding:10px 16px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.16); color:#cdd9e8; font-size:14px;">▤ Analytics &amp; BI</a>
+      <a href="Quake%20Alert%20Form%20Builder.dc.html" style="display:flex; align-items:center; gap:9px; padding:10px 16px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.16); color:#cdd9e8; font-size:14px;">＋ Constructor de Formularios</a>
+      <a href="Quake%20Alert%20Studio.dc.html" style="display:flex; align-items:center; gap:9px; padding:10px 16px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.16); color:#cdd9e8; font-size:14px;">⌥ Integration Studio</a>
+    </div>
+  </div>
+
+  <div class="qa-hub-body" style="display:grid; grid-template-columns:262px 1fr; overflow:hidden;">
+
+    <div style="border-right:1px solid rgba(120,160,200,0.1); padding:20px; overflow-y:auto;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:14px;">MANUALES DE INTEGRACIÓN</div>
+      <div style="display:flex; flex-direction:column; gap:7px;">
+        <sc-for list="{{ topics }}" as="t" hint-placeholder-count="8">
+          <div onClick="{{ t.onSelect }}" style="display:flex; align-items:center; gap:12px; padding:12px 13px; border-radius:11px; cursor:pointer; background:{{ t.bg }}; border:1px solid {{ t.border }};">
+            <span style="width:28px; height:28px; border-radius:8px; background:{{ t.iconBg }}; display:flex; align-items:center; justify-content:center; font-size:14px; color:{{ t.iconColor }}; flex-shrink:0;">{{ t.icon }}</span>
+            <span style="font-size:14px; color:{{ t.labelColor }};">{{ t.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:20px; padding:14px; border-radius:12px; background:rgba(34,211,238,0.06); border:1px solid rgba(34,211,238,0.2);">
+        <div style="font-size:13px; color:#bfe9f4; font-weight:500; margin-bottom:6px;">Base de la API</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9fb4ad; line-height:1.6;">https://api.quakealert.gt<br>Header: <span style="color:#22d3ee;">x-tenant-id</span><br>Auth: <span style="color:#22d3ee;">Bearer &lt;jwt&gt;</span></div>
+      </div>
+    </div>
+
+    <div style="overflow-y:auto; padding:30px 38px;">
+      <div style="max-width:760px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.16em; color:#22d3ee; margin-bottom:8px;">{{ m.tag }}</div>
+        <h1 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:34px; margin:0 0 12px; letter-spacing:-0.01em;">{{ m.title }}</h1>
+        <p style="font-size:16px; color:#aebfd4; line-height:1.6; margin:0 0 30px;">{{ m.intro }}</p>
+
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:14px;">PASOS</div>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:32px;">
+          <sc-for list="{{ m.steps }}" as="s" hint-placeholder-count="4">
+            <div style="display:flex; gap:14px; align-items:flex-start;">
+              <span style="width:26px; height:26px; border-radius:50%; background:rgba(34,211,238,0.14); border:1px solid rgba(34,211,238,0.3); color:#22d3ee; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">{{ s.n }}</span>
+              <span style="font-size:15px; color:#cdd9e8; line-height:1.5; padding-top:2px;">{{ s.text }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:12px;">ENDPOINTS</div>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:28px;">
+          <sc-for list="{{ m.endpoints }}" as="e" hint-placeholder-count="2">
+            <div style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:9px; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14);">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:500; color:{{ e.color }}; min-width:48px;">{{ e.method }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#cdd9e8;">{{ e.path }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:12px;">EJEMPLO</div>
+        <pre style="margin:0 0 30px; padding:18px; border-radius:12px; background:#05080e; border:1px solid rgba(120,160,200,0.12); font-family:'IBM Plex Mono',monospace; font-size:12.5px; line-height:1.6; color:#9fdbe8; white-space:pre-wrap; word-break:break-word;">{{ m.snippet }}</pre>
+
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:12px;">CHECKLIST DEL IMPLEMENTADOR</div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+          <sc-for list="{{ m.checklist }}" as="c" hint-placeholder-count="3">
+            <div style="display:flex; align-items:center; gap:12px; padding:12px 15px; border-radius:10px; background:rgba(32,201,151,0.06); border:1px solid rgba(32,201,151,0.2);">
+              <span style="width:20px; height:20px; border-radius:6px; background:rgba(32,201,151,0.18); display:flex; align-items:center; justify-content:center; font-size:12px; color:#20c997;">✓</span>
+              <span style="font-size:14px; color:#cdd9e8;">{{ c }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 920}}">
+class Component extends DCLogic {
+  TOPICS = [
+    { key: 'quakebox', label: 'Sensores QuakeBox', icon: '◉' },
+    { key: 'notif', label: 'Notificaciones multicanal', icon: '▸' },
+    { key: 'voice', label: 'Asistentes de voz', icon: '✦' },
+    { key: 'iot', label: 'IoT & Smart City', icon: '▣' },
+    { key: 'gis', label: 'Mapas / GIS', icon: '◇' },
+    { key: 'auth', label: 'Identidad & Auth', icon: '◆' },
+    { key: 'pay', label: 'Pagos & Suscripción', icon: '$' },
+    { key: 'api', label: 'API & Webhooks', icon: '⌥' },
+  ];
+
+  MANUALS = {
+    quakebox: {
+      tag: 'HARDWARE → DETECTION', title: 'Sensores QuakeBox',
+      intro: 'Cada QuakeBox mide aceleración y envía lecturas al servicio Detection, que aplica detección por quórum y publica seismic.detected.',
+      steps: ['Provisiona el sensor y conéctalo a WiFi/celular.', 'Da de alta el sensor desde el Onboarding (queda asociado al tenant).', 'El firmware envía lecturas periódicas al endpoint de Detection.', 'Al alcanzar el quórum, Detection emite el evento al bus.'],
+      endpoints: [{ method: 'POST', path: '/readings', color: '#20c997' }, { method: 'GET', path: '/health', color: '#22d3ee' }],
+      snippet: 'curl -X POST https://api.quakealert.gt/readings \\\n  -H "x-tenant-id: gt" -H "Authorization: Bearer <jwt>" \\\n  -d \'{ "sensorId":"A7F3", "peakAmplitude":0.15,\n        "location":{"lat":14.31,"lng":-90.78} }\'',
+      checklist: ['Sensor registrado al tenant correcto', 'Umbral y quórum calibrados por región', 'Latencia de envío < 1s verificada'],
+    },
+    notif: {
+      tag: 'DIFUSIÓN MULTICANAL', title: 'Notificaciones multicanal',
+      intro: 'El servicio Notification consume alert.issued y difunde por todos los canales según el nivel de riesgo. Conecta cada proveedor con sus credenciales.',
+      steps: ['Push: registra apps en FCM (Android) y APNs (iOS).', 'SMS: conecta Twilio o el gateway del operador local.', 'WhatsApp: alta en WhatsApp Business API (plantillas aprobadas).', 'Telegram: crea el bot y guarda el token. Email: SendGrid/SES.'],
+      endpoints: [{ method: 'POST', path: '/channels/:type/credentials', color: '#20c997' }, { method: 'POST', path: '/test-send', color: '#20c997' }],
+      snippet: '// El servicio escucha el evento y hace fan-out\non("alert.issued", (a) => {\n  if (a.risk !== "verde")\n    fanOut(a, ["push","sms","whatsapp","voz"]);\n});',
+      checklist: ['Credenciales por canal guardadas (cifradas)', 'Plantillas de WhatsApp aprobadas', 'Fallback SMS si falla push', 'Rate-limit y reintentos configurados'],
+    },
+    voice: {
+      tag: 'ALEXA · GOOGLE · SIRI', title: 'Asistentes de voz',
+      intro: 'Integración con altavoces inteligentes para anunciar la alerta automáticamente en el hogar.',
+      steps: ['Alexa: publica un Skill con Account Linking (OAuth2) y Proactive Events.', 'Google: crea una Action y vincula la cuenta.', 'Siri: define Shortcuts/App Intents en la app iOS.', 'Al recibir alert.issued, dispara el anuncio en los dispositivos del usuario.'],
+      endpoints: [{ method: 'POST', path: '/voice/alexa/announce', color: '#20c997' }, { method: 'POST', path: '/voice/google/announce', color: '#20c997' }],
+      snippet: '// Mensaje proactivo a Alexa\nannounce({\n  text: "Atención. Se ha detectado un sismo fuerte.\\n        Inicie protocolo de seguridad.",\n  devices: user.echoDevices\n});',
+      checklist: ['Account Linking probado (Alexa/Google)', 'Permisos de Proactive Events otorgados', 'Texto del anuncio localizado (ES/PT/EN)'],
+    },
+    iot: {
+      tag: 'GATEWAY IoT', title: 'IoT & Smart City',
+      intro: 'API Gateway para sensores, sirenas, cámaras, semáforos y paneles LED. Soporta MQTT y REST; integra Home Assistant y SmartThings.',
+      steps: ['Conecta los dispositivos al broker MQTT (o REST si no soportan MQTT).', 'Registra cada dispositivo con su tipo y ubicación.', 'Define automatizaciones (alerta → activar sirenas/paneles).', 'Smart Home: vincula Home Assistant / SmartThings por token.'],
+      endpoints: [{ method: 'POST', path: '/iot/devices', color: '#20c997' }, { method: 'POST', path: '/iot/devices/:id/command', color: '#20c997' }, { method: 'WS', path: 'mqtt://broker/devices/#', color: '#f5a623' }],
+      snippet: '// Activar sirenas municipales ante alerta roja\non("alert.issued", (a) => {\n  if (a.risk === "rojo")\n    iot.command("sirens.zone." + a.zone, "ON");\n});',
+      checklist: ['Broker MQTT con TLS', 'Dispositivos registrados al tenant', 'Automatizaciones probadas en simulacro', 'Estados reflejados en Smart City'],
+    },
+    gis: {
+      tag: 'MAPAS EN VIVO', title: 'Mapas / GIS',
+      intro: 'Capa de mapas para el Command Center y la app. Usa un proveedor de tiles y Socket.IO para capas en tiempo real (sensores, alertas, instituciones).',
+      steps: ['Elige proveedor de tiles (Mapbox / MapTiler / OSM con Leaflet).', 'Carga las capas base y los GeoJSON de municipios/zonas.', 'Suscríbete por Socket.IO a las actualizaciones en vivo.', 'Pinta marcadores y ondas de propagación sobre el evento.'],
+      endpoints: [{ method: 'GET', path: '/gis/layers', color: '#22d3ee' }, { method: 'WS', path: '/realtime (socket.io)', color: '#f5a623' }],
+      snippet: 'socket.on("alert.issued", (a) => {\n  map.addEpicenter(a.epicenter);\n  map.rippleWave(a.epicenter, a.intensity);\n});',
+      checklist: ['Token del proveedor de tiles configurado', 'GeoJSON de zonas cargado', 'Reconexión de Socket.IO manejada'],
+    },
+    auth: {
+      tag: 'OAUTH2 · OIDC · 2FA', title: 'Identidad & Auth',
+      intro: 'Autenticación multi-tenant con OAuth2/OIDC, doble factor (TOTP/SMS), login social y biometría en móvil. Tokens JWT con claim de tenant.',
+      steps: ['Configura el proveedor OIDC (Auth0/Cognito/Keycloak).', 'Activa 2FA: TOTP (app autenticadora) y/o código SMS.', 'Login social: Google y Apple (Sign in with Apple).', 'Móvil: biometría con Capacitor (Face ID / huella) tras el primer login.'],
+      endpoints: [{ method: 'POST', path: '/auth/login', color: '#20c997' }, { method: 'POST', path: '/auth/2fa/verify', color: '#20c997' }, { method: 'POST', path: '/auth/refresh', color: '#20c997' }],
+      snippet: '// JWT con tenant + roles (RBAC)\n{\n  "sub": "u_123", "tenantId": "gt",\n  "roles": ["ciudadano"], "amr": ["pwd","otp"]\n}',
+      checklist: ['Tokens con claim tenantId', 'RBAC por rol definido', '2FA obligatorio para roles admin', 'Rotación de refresh tokens'],
+    },
+    pay: {
+      tag: 'B2C · B2B · B2G', title: 'Pagos & Suscripción',
+      intro: 'Cobros de suscripción individual/familiar (B2C) y planes empresariales/gobierno. Integra pasarela y facturación localizada.',
+      steps: ['Conecta la pasarela (Stripe internacional o pasarela local/banco).', 'Define planes y precios por país/moneda.', 'Webhook de pagos para activar/suspender el servicio.', 'Factura electrónica según normativa del país.'],
+      endpoints: [{ method: 'POST', path: '/billing/subscriptions', color: '#20c997' }, { method: 'POST', path: '/billing/webhook', color: '#20c997' }],
+      snippet: 'on("invoice.paid", (e) => {\n  tenant.activate(e.subscriptionId);\n});\non("invoice.failed", (e) => tenant.grace(e));',
+      checklist: ['Pasarela en modo producción', 'Webhooks firmados y verificados', 'Facturación localizada por país', 'Manejo de mora / período de gracia'],
+    },
+    api: {
+      tag: 'REST · WEBHOOKS', title: 'API & Webhooks',
+      intro: 'Toda la plataforma se consume vía API REST tras el API Gateway. Multi-tenant por header, auth Bearer, y webhooks para reaccionar a eventos.',
+      steps: ['Solicita credenciales de cliente (client_id/secret) por tenant.', 'Incluye x-tenant-id y Authorization: Bearer en cada request.', 'Suscribe webhooks a los eventos que te interesen.', 'Verifica la firma HMAC de cada webhook entrante.'],
+      endpoints: [{ method: 'GET', path: '/v1/alerts', color: '#22d3ee' }, { method: 'POST', path: '/v1/webhooks', color: '#20c997' }],
+      snippet: 'POST /v1/webhooks\n{\n  "url": "https://tu-app.com/hooks",\n  "events": ["alert.issued","checkin.received"],\n  "secret": "whsec_..."\n}',
+      checklist: ['Credenciales por tenant emitidas', 'Firma HMAC verificada', 'Idempotencia en el receptor', 'Reintentos con backoff'],
+    },
+  };
+
+  state = { topic: 'quakebox' };
+
+  renderVals() {
+    const cur = this.state.topic;
+    const topics = this.TOPICS.map((t) => {
+      const on = t.key === cur;
+      return {
+        label: t.label, icon: t.icon,
+        onSelect: () => this.setState({ topic: t.key }),
+        bg: on ? 'rgba(34,211,238,0.12)' : 'transparent',
+        border: on ? 'rgba(34,211,238,0.3)' : 'rgba(120,160,200,0.1)',
+        iconBg: on ? 'rgba(34,211,238,0.18)' : 'rgba(255,255,255,0.04)',
+        iconColor: on ? '#22d3ee' : '#9fb4ad',
+        labelColor: on ? '#fff' : '#cdd9e8',
+      };
+    });
+    const man = this.MANUALS[cur];
+    const m = { ...man, steps: man.steps.map((text, i) => ({ n: i + 1, text })) };
+    return { topics, m };
+  }
+}
+</script>
+</body>
+</html>

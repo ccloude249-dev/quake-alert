@@ -1,0 +1,21 @@
+{
+  "name": "quake-alert-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "QUAKE ALERT — Alarma Sísmica para Android (Capacitor + servicio nativo que suena en silencio y no se duerme)",
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "apk": "node scripts/setup.mjs --build",
+    "studio": "node scripts/setup.mjs --open"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

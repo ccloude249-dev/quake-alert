@@ -1,0 +1,14 @@
+{
+  "name": "quake-alert-forms",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Forms — definiciones de catálogos dinámicos (formDefinitions) y registros (formSubmissions)",
+  "scripts": { "start": "node src/server.js", "dev": "node --watch src/server.js" },
+  "engines": { "node": "20.x" },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.0"
+  }
+}

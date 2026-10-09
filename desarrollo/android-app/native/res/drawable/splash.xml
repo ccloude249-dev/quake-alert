@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/qa_icon_bg" />
+    <item android:width="144dp" android:height="144dp" android:gravity="center">
+        <bitmap android:src="@mipmap/qa_icon_fg" />
+    </item>
+</layer-list>

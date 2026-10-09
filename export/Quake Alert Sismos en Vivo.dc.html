@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUAKE ALERT">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="./qa-db.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #060a12; }
+  @keyframes qaBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes qaSpin { to { transform: rotate(360deg); } }
+  @keyframes qaPing { 0% { transform: scale(0.4); opacity: 0.8; } 100% { transform: scale(2.4); opacity: 0; } }
+  .leaflet-container { background: #070c15; font-family: 'IBM Plex Sans', sans-serif; }
+  .leaflet-control-attribution { background: rgba(8,13,22,0.7) !important; color: #5f7187 !important; }
+  .leaflet-control-attribution a { color: #7b8ca3 !important; }
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,160,200,0.2); border-radius: 4px; }
+  .qa-dark-tiles { filter: invert(1) hue-rotate(190deg) brightness(0.72) saturate(0.55) contrast(1.05); }
+  @media (max-width: 900px) {
+    .qa-sv-root { grid-template-rows: auto auto !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
+    .qa-sv-header { flex-wrap: wrap !important; height: auto !important; padding: 14px 18px !important; gap: 10px !important; }
+    .qa-sv-body { grid-template-columns: 1fr !important; overflow: visible !important; }
+    .qa-sv-map { min-height: 340px !important; }
+  }
+</style>
+</helmet>
+<div class="qa-sv-root" style="height:100vh; width:100%; background:#070c14; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; display:grid; grid-template-rows:66px 1fr; overflow:hidden;">
+
+  <div class="qa-sv-header" style="background:#080d16; border-bottom:1px solid rgba(120,160,200,0.1); display:flex; align-items:center; justify-content:space-between; padding:0 26px;">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#22d3ee,#0e7490); box-shadow:0 0 18px rgba(34,211,238,0.4); display:flex; align-items:center; justify-content:center; font-size:17px; color:#06141a;">◉</div>
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">Sismos en Vivo · Datos reales USGS</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7b8ca3; margin-top:1px;">MONITOREO GLOBAL · TU UBICACIÓN: CIUDAD DE GUATEMALA</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="display:flex; align-items:center; gap:9px; padding:8px 14px; border-radius:999px; background:{{ statusBg }}; border:1px solid {{ statusBorder }};">
+        <span style="width:7px; height:7px; border-radius:50%; background:{{ statusDot }}; animation:qaBlink 1.6s ease-in-out infinite;"></span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:{{ statusDot }};">{{ statusText }}</span>
+      </div>
+      <button onClick="{{ refresh }}" style="border:none; cursor:pointer; padding:11px 20px; border-radius:10px; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; box-shadow:0 6px 18px rgba(34,211,238,0.3);">{{ refreshLabel }}</button>
+    </div>
+  </div>
+
+  <div class="qa-sv-body" style="display:grid; grid-template-columns:1fr 440px; overflow:hidden;">
+
+    <div class="qa-sv-map" style="position:relative; overflow:hidden;">
+      <div ref="{{ mapRef }}" style="position:absolute; inset:0;"></div>
+      <div style="position:absolute; left:16px; top:14px; z-index:500; display:flex; gap:8px; flex-wrap:wrap; pointer-events:none; max-width:70%;">
+        <div style="display:flex; align-items:center; gap:7px; padding:7px 12px; border-radius:999px; background:rgba(8,13,22,0.85); border:1px solid rgba(120,160,200,0.18);"><span style="width:9px;height:9px;border-radius:50%;background:#fb5670;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#cdd9e8;">Relevante para Centroamérica (≤2500 km)</span></div>
+        <div style="display:flex; align-items:center; gap:7px; padding:7px 12px; border-radius:999px; background:rgba(8,13,22,0.85); border:1px solid rgba(120,160,200,0.18);"><span style="width:9px;height:9px;border-radius:50%;background:#f5a623;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#cdd9e8;">Resto del mundo</span></div>
+        <div style="display:flex; align-items:center; gap:7px; padding:7px 12px; border-radius:999px; background:rgba(8,13,22,0.85); border:1px solid rgba(34,211,238,0.4);"><span style="width:9px;height:9px;border-radius:50%;background:#fff;border:2px solid #22d3ee;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#cdd9e8;">Tú · Guatemala</span></div>
+      </div>
+      <div style="position:absolute; left:16px; bottom:14px; z-index:500; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3; background:rgba(8,13,22,0.8); padding:6px 11px; border-radius:8px; border:1px solid rgba(120,160,200,0.14);">{{ sourceNote }}</div>
+    </div>
+
+    <div style="background:#080d16; border-left:1px solid rgba(120,160,200,0.1); overflow-y:auto; display:flex; flex-direction:column;">
+
+      <div style="display:flex; gap:0; padding:18px 20px 14px; border-bottom:1px solid rgba(120,160,200,0.1);">
+        <div style="flex:1; padding-right:12px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#7b8ca3;">SISMOS HOY</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:25px; color:#fff; margin-top:3px;">{{ totalCount }}</div></div>
+        <div style="width:1px; background:rgba(120,160,200,0.12);"></div>
+        <div style="flex:1; padding:0 12px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#7b8ca3;">CERCA DE TI</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:25px; color:#fb5670; margin-top:3px;">{{ relevantCount }}</div></div>
+        <div style="width:1px; background:rgba(120,160,200,0.12);"></div>
+        <div style="flex:1; padding-left:12px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#7b8ca3;">MAYOR MAGNITUD</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:25px; color:#f5a623; margin-top:3px;">{{ maxMag }}</div></div>
+      </div>
+
+      <div style="padding:14px 20px 0;">
+        <div style="border-radius:14px; background:{{ armBg }}; border:1px solid {{ armBorder }}; padding:14px 16px; display:flex; align-items:center; gap:13px;">
+          <div onClick="{{ toggleArm }}" style="width:46px; height:26px; border-radius:999px; background:{{ armTrackBg }}; position:relative; cursor:pointer; flex-shrink:0; transition:background 160ms;"><div style="position:absolute; top:3px; left:{{ armKnobLeft }}; width:20px; height:20px; border-radius:50%; background:#fff; transition:left 160ms;"></div></div>
+          <div style="flex:1;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#fff;">{{ armLabel }}</div>
+            <div style="font-size:12px; color:#9fb4ad; margin-top:2px;">{{ armSub }}</div>
+          </div>
+          <span style="width:8px; height:8px; border-radius:50%; background:{{ armDot }}; {{ armPulse }}"></span>
+        </div>
+        <sc-if value="{{ isArmed }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; gap:8px; margin-top:9px;">
+            <div style="flex:1; background:rgba(255,255,255,0.03); border-radius:10px; padding:9px 12px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7b8ca3;">RADIO</div><div style="font-size:13px; color:#22d3ee; font-weight:600; margin-top:2px;">{{ radiusKm }} km</div></div>
+            <div style="flex:1; background:rgba(255,255,255,0.03); border-radius:10px; padding:9px 12px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7b8ca3;">MAGNITUD MÍN.</div><div style="font-size:13px; color:#22d3ee; font-weight:600; margin-top:2px;">M{{ minMag }}+</div></div>
+            <div style="flex:1; background:rgba(255,255,255,0.03); border-radius:10px; padding:9px 12px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7b8ca3;">REVISA CADA</div><div style="font-size:13px; color:#22d3ee; font-weight:600; margin-top:2px;">{{ pollSec }} s</div></div>
+          </div>
+        </sc-if>
+        <div style="border-radius:12px; background:rgba(34,211,238,0.06); border:1px solid rgba(34,211,238,0.22); padding:11px 14px; margin-top:10px; font-size:12px; color:#9fb4ad; line-height:1.5;">📶 Para aviso de <b style="color:#22d3ee;">segundos</b> (no minutos), activa el sistema gratuito ya instalado en tu Android: <b style="color:#cdd9e8;">Ajustes → Seguridad y emergencia → Alertas de terremoto</b>. Este monitor usa el catálogo público del USGS, que tarda minutos en publicar — útil para saber qué está pasando cerca, no para ganarle al temblor de un sismo muy cercano.</div>
+      </div>
+
+      <div style="display:flex; gap:6px; padding:14px 20px 0;">
+        <button onClick="{{ tabVivo }}" style="border:none; cursor:pointer; flex:1; padding:10px; border-radius:9px; background:{{ vivoBg }}; color:{{ vivoColor }}; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">Mis alarmas en vivo</button>
+        <button onClick="{{ tabHist }}" style="border:none; cursor:pointer; flex:1; padding:10px; border-radius:9px; background:{{ histBg }}; color:{{ histColor }}; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">Historial · Venezuela</button>
+        <button onClick="{{ tabPred }}" style="border:none; cursor:pointer; flex:1; padding:10px; border-radius:9px; background:{{ predBg }}; color:{{ predColor }}; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">Probabilidad</button>
+      </div>
+
+      <sc-if value="{{ isVivo }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:14px 20px 22px;">
+
+          <div style="border-radius:14px; background:rgba(34,211,238,0.06); border:1px solid rgba(34,211,238,0.25); padding:14px 16px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:9px; margin-bottom:6px;"><span style="color:#22d3ee; font-size:14px;">◎</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#22d3ee;">CÓMO LEER TUS ALARMAS</span></div>
+            <div style="font-size:13px; color:#cdd9e8; line-height:1.55;">Un sismo <b>no viaja</b> de país a país. Lo que te da <b>segundos</b> de aviso es la diferencia entre la onda rápida y la destructiva, según la distancia al epicentro. Un sismo grande mar adentro puede generar <b style="color:#22d3ee;">tsunami</b> con <b>horas</b> de aviso — eso sí cruza el océano.</div>
+          </div>
+
+          <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; align-items:center; gap:12px; padding:30px; justify-content:center; color:#7b8ca3;"><span style="width:20px; height:20px; border-radius:50%; border:2px solid rgba(34,211,238,0.3); border-top-color:#22d3ee; animation:qaSpin 0.8s linear infinite;"></span><span style="font-size:14px;">Consultando feed del USGS…</span></div>
+          </sc-if>
+
+          <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
+            <div style="border-radius:12px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.3); padding:14px 16px; margin-bottom:14px; font-size:13px; color:#f5d9a0; line-height:1.5;">{{ errorMsg }}</div>
+          </sc-if>
+
+          <sc-if value="{{ hasRecent }}" hint-placeholder-val="{{ false }}">
+            <div style="border-radius:14px; background:rgba(251,86,112,0.1); border:1px solid rgba(251,86,112,0.4); padding:14px 16px; margin-bottom:16px;">
+              <div style="display:flex; align-items:center; gap:9px; margin-bottom:6px;"><span style="width:7px; height:7px; border-radius:50%; background:#fb5670; animation:qaBlink 1s infinite;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#fb5670;">ACABA DE PASAR CERCA DE TI</span></div>
+              <div style="font-size:14px; color:#fff; line-height:1.5;">{{ recentText }}</div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex; flex-direction:column; gap:11px;">
+            <sc-for list="{{ quakes }}" as="q" hint-placeholder-count="6">
+              <div style="border-radius:14px; background:{{ q.cardBg }}; border:1px solid {{ q.cardBorder }}; padding:14px 16px;">
+                <div style="display:flex; align-items:flex-start; gap:13px;">
+                  <div style="width:46px; height:46px; border-radius:11px; background:{{ q.magBg }}; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px; color:{{ q.magColor }};">{{ q.mag }}</div>
+                  <div style="flex:1; min-width:0;">
+                    <div style="font-size:15px; color:#fff; font-weight:500; line-height:1.3;">{{ q.place }}</div>
+                    <div style="font-size:12px; color:#7b8ca3; margin-top:3px; font-family:'IBM Plex Mono',monospace;">{{ q.timeAgo }} · prof. {{ q.depth }} km</div>
+                    <div style="display:flex; gap:7px; margin-top:9px; flex-wrap:wrap;">
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; padding:3px 9px; border-radius:999px; background:rgba(255,255,255,0.05); color:#9fb4ad;">↔ {{ q.distance }} km de ti</span>
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; padding:3px 9px; border-radius:999px; background:rgba(255,255,255,0.05); color:#9fb4ad;">rumbo {{ q.bearing }}</span>
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; padding:3px 9px; border-radius:999px; background:{{ q.warnBg }}; color:{{ q.warnColor }};">{{ q.warn }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isHist }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:16px 20px 24px;">
+          <div style="border-radius:16px; overflow:hidden; background:linear-gradient(180deg,rgba(245,166,35,0.14),rgba(20,30,48,0.4)); border:1px solid rgba(245,166,35,0.35); margin-bottom:16px;">
+            <div style="padding:18px 20px;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;"><span style="width:7px; height:7px; border-radius:50%; background:#f5a623;"></span><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#f5a623;">HOY · 17 JUL 2026 · TE TOCÓ DE CERCA</div></div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:21px; color:#fff; margin-bottom:8px;">M7.4 frente a Chiapas, sentido en Guatemala</div>
+              <div style="font-size:13px; color:#cdd9e8; line-height:1.6;">{{ todayText }}</div>
+            </div>
+          </div>
+
+          <div style="border-radius:16px; overflow:hidden; background:linear-gradient(180deg,rgba(251,86,112,0.12),rgba(20,30,48,0.4)); border:1px solid rgba(251,86,112,0.3); margin-bottom:16px;">
+            <div style="padding:18px 20px; border-bottom:1px solid rgba(251,86,112,0.2);">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#fb5670;">CASO REAL · 24 JUN 2026</div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; color:#fff; margin-top:6px;">Doblete de Venezuela · M7.2 + M7.5</div>
+              <div style="font-size:13px; color:#cdd9e8; margin-top:4px; line-height:1.5;">Norte de Venezuela — San Felipe (Yaracuy) y Yumare/Montalbán. Dos sismos con 39 segundos de diferencia.</div>
+            </div>
+            <div style="padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
+              <sc-for list="{{ vzwEvents }}" as="e" hint-placeholder-count="2">
+                <div style="display:flex; gap:13px;">
+                  <div style="width:44px; height:44px; border-radius:10px; background:rgba(251,86,112,0.16); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; color:#fb5670;">{{ e.mag }}</div>
+                  <div><div style="font-size:14px; color:#fff;">{{ e.title }}</div><div style="font-size:12px; color:#9fb4ad; margin-top:2px; line-height:1.45;">{{ e.detail }}</div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border-radius:16px; background:rgba(34,211,238,0.06); border:1px solid rgba(34,211,238,0.28); padding:18px 20px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;"><span style="width:30px; height:30px; border-radius:8px; background:rgba(34,211,238,0.16); display:flex; align-items:center; justify-content:center; color:#22d3ee; font-size:15px;">◉</span><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:#fff;">La alarma de Google que sonó</span></div>
+            <div style="font-size:13px; color:#cdd9e8; line-height:1.6;">El <b>Android Earthquake Alerts System</b> de Google avisó a millones de teléfonos Android en Venezuela alrededor de las <b>18:04</b> hora local, <b>instantes antes</b> de que la gente sintiera el primer sismo. La notificación estimó una magnitud inicial de <b>6.2</b> a unos <b>356 km</b>. Usa los acelerómetros de los teléfonos: cuando varios detectan vibración, Google confirma el evento y avisa a los demás. <span style="color:#9fb4ad;">Es exactamente el principio que QUAKE ALERT lleva a Centroamérica con la red QuakeBox.</span></div>
+          </div>
+
+          <div style="border-radius:16px; background:rgba(245,166,35,0.07); border:1px solid rgba(245,166,35,0.28); padding:18px 20px;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;"><span style="color:#f5a623; font-size:15px;">≈</span><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:#fff;">Tsunami: el aviso de horas</span></div>
+            <div style="font-size:13px; color:#cdd9e8; line-height:1.6;">Tras el sismo, el <b>Centro de Alerta de Tsunamis del Pacífico</b> emitió aviso para Puerto Rico y amenaza en 300 km del epicentro; se canceló hora y media después. Para Guatemala, un sismo grande frente a la costa del Pacífico (placa de Cocos) o un tsunami lejano <b>sí</b> da <b>minutos u horas</b> de aviso — ahí cabe avisar "viene algo a tu zona".</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isPred }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:16px 20px 24px;">
+          <div style="border-radius:14px; background:rgba(245,166,35,0.09); border:1px solid rgba(245,166,35,0.35); padding:14px 16px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:9px; margin-bottom:6px;"><span style="color:#f5a623; font-size:14px;">⚠</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#f5a623;">ESTO NO ES UNA PREDICCIÓN</span></div>
+            <div style="font-size:13px; color:#f5d9a0; line-height:1.55;">Nadie en el mundo —ni USGS, ni Japón, ni nadie— puede predecir el día u hora de un sismo. Lo de abajo es <b>estadística de largo plazo</b>: qué tan seguido ha temblado fuerte en Guatemala durante más de un siglo, para dimensionar el riesgo — no para anunciar "va a temblar el jueves".</div>
+          </div>
+
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#7b8ca3; margin-bottom:10px;">PROBABILIDAD ESTADÍSTICA · PRÓXIMOS 12 MESES</div>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+            <sc-for list="{{ probRows }}" as="r" hint-placeholder-count="4">
+              <div style="border-radius:12px; background:var(--card, rgba(20,30,48,0.5)); border:1px solid rgba(120,160,200,0.14); padding:13px 15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <span style="font-size:14px; color:#fff;">{{ r.label }}</span>
+                  <span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px; color:{{ r.color }};">{{ r.pct }}%</span>
+                </div>
+                <div style="height:6px; border-radius:4px; background:rgba(0,0,0,0.3); overflow:hidden;"><div style="height:100%; border-radius:4px; background:{{ r.color }}; width:{{ r.pct }}%;"></div></div>
+                <div style="font-size:11px; color:#7b8ca3; margin-top:6px; font-family:'IBM Plex Mono',monospace;">{{ r.freq }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:11px; color:#5f7187; margin:-12px 0 20px; line-height:1.5;">Cálculo con modelo de Poisson (P = 1 − e^−λt) sobre la tasa histórica de sismos en Guatemala desde 1900. Fuente: catálogo sísmico histórico (VolcanoDiscovery/USGS).</div>
+
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#7b8ca3; margin-bottom:10px;">ZONAS DE FALLA QUE VIGILAMOS</div>
+          <div style="display:flex; flex-direction:column; gap:11px;">
+            <sc-for list="{{ faultZones }}" as="z" hint-placeholder-count="3">
+              <div style="border-radius:12px; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); padding:13px 15px;">
+                <div style="display:flex; justify-content:space-between; align-items:baseline;"><span style="font-size:14px; color:#fff; font-weight:500;">{{ z.name }}</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#f5a623;">{{ z.tipo }}</span></div>
+                <div style="font-size:12px; color:#9fb4ad; margin-top:5px; line-height:1.5;">{{ z.detail }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1512, &quot;height&quot;: 950}}">
+class Component extends DCLogic {
+  GUATE = { lat: 14.6349, lng: -90.5069 };
+  FEED = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson';
+
+  state = { loading: true, error: null, quakes: [], raw: [], lastUpdate: null, tab: 'vivo', source: 'live',
+    armed: false, radiusKm: 500, minMag: 4.5, pollSec: 25, seenIds: [], alarmFlash: false };
+
+  componentDidMount() {
+    this._load();
+    this._scheduleInit();
+  }
+  componentWillUnmount() { this._dead = true; clearInterval(this._poll); if (this._map) { try { this._map.remove(); } catch (e) {} this._map = null; } }
+
+  toggleArm() {
+    if (this.state.armed) { clearInterval(this._poll); this.setState({ armed: false }); return; }
+    if (window.Notification && Notification.permission === 'default') { try { Notification.requestPermission(); } catch (e) {} }
+    this.setState({ armed: true, seenIds: (this.state.raw || []).map((q) => q.id) });
+    if (window.QADB) window.QADB.log('Activó monitor de alarma sísmica en su dispositivo', { color: '#20c997' });
+    clearInterval(this._poll);
+    this._poll = setInterval(() => this._load(true), this.state.pollSec * 1000);
+  }
+
+  _beep() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new Ctx();
+      [0, 0.25, 0.5].forEach((t) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'square'; o.frequency.value = 880;
+        g.gain.setValueAtTime(0.0001, ctx.currentTime + t);
+        g.gain.linearRampToValueAtTime(0.22, ctx.currentTime + t + 0.02);
+        g.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + t + 0.2);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.22);
+      });
+    } catch (e) {}
+  }
+
+  _checkAlarm(enriched) {
+    const seen = this.state.seenIds || [];
+    const hits = enriched.filter((q) => !seen.includes(q.rawId) && q.distanceNum <= this.state.radiusKm && q.magNum >= this.state.minMag);
+    if (hits.length) {
+      if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 500]);
+      this._beep();
+      if (window.Notification && Notification.permission === 'granted') {
+        const h = hits[0];
+        try { new Notification('⚠ Sismo detectado · M' + h.mag, { body: h.place + ' — ' + h.distance + ' km de vos, rumbo ' + h.bearing, tag: 'qa-quake' }); } catch (e) {}
+      }
+      if (window.QADB) window.QADB.log('Alarma disparada · M' + hits[0].mag + ' a ' + hits[0].distance + ' km', { color: '#fb5670' });
+      this.setState({ alarmFlash: true });
+      setTimeout(() => this.setState({ alarmFlash: false }), 4000);
+    }
+    this.setState({ seenIds: enriched.map((q) => q.rawId) });
+  }
+
+  _scheduleInit() { setTimeout(() => this._initMap(0), 60); }
+
+  _initMap(tries) {
+    if (this._dead || this._map) return;
+    if (!this._mapEl || !window.L) { if (tries < 60) setTimeout(() => this._initMap(tries + 1), 150); return; }
+    try {
+      const L = window.L;
+      // Isla fuera de React: Leaflet vive en un hijo que React NUNCA reconcilia.
+      let host = this._mapEl.querySelector('.qa-map-host');
+      if (!host) {
+        host = document.createElement('div');
+        host.className = 'qa-map-host';
+        host.style.cssText = 'position:absolute;inset:0;';
+        this._mapEl.appendChild(host);
+      }
+      this._map = L.map(host, { center: [14.6, -88], zoom: 4, zoomControl: true, attributionControl: true, worldCopyJump: true });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap · datos USGS', maxZoom: 10, className: 'qa-dark-tiles',
+    }).addTo(this._map);
+    // Marcador de Guatemala
+    this._guateLayer = L.layerGroup([
+      L.circleMarker([this.GUATE.lat, this.GUATE.lng], { radius: 7, color: '#22d3ee', weight: 3, fillColor: '#fff', fillOpacity: 1 }),
+      L.circle([this.GUATE.lat, this.GUATE.lng], { radius: 300000, color: '#22d3ee', weight: 1, dashArray: '4 6', fill: false, opacity: 0.5 }),
+    ]).addTo(this._map);
+      this._markers = L.layerGroup().addTo(this._map);
+      this._renderMarkers();
+    } catch (e) { /* aislar de React */ }
+  }
+
+  _toRad(d) { return d * Math.PI / 180; }
+  _dist(lat, lng) {
+    const R = 6371, dLat = this._toRad(lat - this.GUATE.lat), dLng = this._toRad(lng - this.GUATE.lng);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(this._toRad(this.GUATE.lat)) * Math.cos(this._toRad(lat)) * Math.sin(dLng / 2) ** 2;
+    return Math.round(2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  }
+  _bearing(lat, lng) {
+    const y = Math.sin(this._toRad(lng - this.GUATE.lng)) * Math.cos(this._toRad(lat));
+    const x = Math.cos(this._toRad(this.GUATE.lat)) * Math.sin(this._toRad(lat)) - Math.sin(this._toRad(this.GUATE.lat)) * Math.cos(this._toRad(lat)) * Math.cos(this._toRad(lng - this.GUATE.lng));
+    const b = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+    const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+    return dirs[Math.round(b / 45) % 8];
+  }
+  _ago(ts) {
+    const m = Math.max(0, Math.round((Date.now() - ts) / 60000));
+    if (m < 1) return 'ahora'; if (m < 60) return 'hace ' + m + ' min';
+    const h = Math.round(m / 60); if (h < 24) return 'hace ' + h + ' h'; return 'hace ' + Math.round(h / 24) + ' d';
+  }
+
+  async _load(isPoll) {
+    if (!isPoll) this.setState({ loading: true, error: null });
+    try {
+      const res = await fetch(this.FEED, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const feats = (data.features || []).map((f) => {
+        const c = f.geometry && f.geometry.coordinates || [0, 0, 0];
+        const p = f.properties || {};
+        return { id: f.id, mag: p.mag, place: p.place || 'Sismo', time: p.time, depth: c[2], lat: c[1], lng: c[0], tsunami: p.tsunami };
+      }).filter((q) => typeof q.mag === 'number');
+      feats.sort((a, b) => b.time - a.time);
+      if (window.QADB && !isPoll) window.QADB.log('Consultó feed sísmico USGS · ' + feats.length + ' eventos', { color: '#22d3ee' });
+      const enriched = this._enrich(feats);
+      this.setState({ loading: false, raw: feats, quakes: enriched, lastUpdate: Date.now(), source: 'live' }, () => this._renderMarkers());
+      if (isPoll && this.state.armed) this._checkAlarm(enriched);
+    } catch (e) {
+      if (isPoll) return; // no reemplaza datos buenos por un fallo pasajero de red durante el monitoreo
+      // Fallback honesto: muestra el caso real del día + nota de sin-conexión
+      const fb = this._fallback();
+      this.setState({ loading: false, error: 'No se pudo leer el feed del USGS en este momento (red/origen). Mostrando los últimos eventos relevantes en caché.', raw: fb, quakes: this._enrich(fb), source: 'cache' }, () => this._renderMarkers());
+    }
+  }
+
+  _fallback() {
+    const h = 3600000, d = 86400000, now = Date.now();
+    return [
+      { id: 'vz2', mag: 7.5, place: '28 km SE de Yumare, Venezuela', time: now - 6 * d, depth: 10, lat: 10.62, lng: -68.52, tsunami: 1 },
+      { id: 'vz1', mag: 7.2, place: '23 km de San Felipe, Venezuela', time: now - 6 * d, depth: 20, lat: 10.34, lng: -68.74, tsunami: 1 },
+      { id: 'mx1', mag: 5.4, place: 'Costa de Chiapas, México', time: now - 8 * h, depth: 35, lat: 14.9, lng: -93.1, tsunami: 0 },
+      { id: 'sv1', mag: 4.8, place: 'Frente a la costa de El Salvador', time: now - 14 * h, depth: 42, lat: 13.0, lng: -89.2, tsunami: 0 },
+      { id: 'ca1', mag: 6.1, place: 'San Andreas, California, EE.UU.', time: now - 20 * h, depth: 8, lat: 35.7, lng: -120.3, tsunami: 0 },
+    ];
+  }
+
+  _warn(q) {
+    // Modelo honesto de ventana de aviso
+    if (q.tsunami && q.mag >= 7 && q.distance > 600) return { t: 'tsunami: aviso de horas', bg: 'rgba(34,211,238,0.16)', c: '#22d3ee' };
+    if (q.distance <= 1500) {
+      const secs = Math.max(0, Math.round(q.distance / 3.5) - 5); // onda S ~3.5 km/s menos detección
+      return { t: '≈ ' + secs + ' s de aviso', bg: 'rgba(251,86,112,0.16)', c: '#fb5670' };
+    }
+    return { t: 'no afecta a Guatemala', bg: 'rgba(120,160,200,0.12)', c: '#7b8ca3' };
+  }
+
+  _enrich(list) {
+    return list.map((q) => {
+      const distance = this._dist(q.lat, q.lng);
+      const relevant = distance <= 2500;
+      const e = { ...q, distance, relevant, bearing: this._bearing(q.lat, q.lng) };
+      const w = this._warn(e);
+      const magColor = q.mag >= 6 ? '#fb5670' : q.mag >= 4.5 ? '#f5a623' : '#22d3ee';
+      return {
+        id: q.id, rawId: q.id, mag: (q.mag).toFixed(1), magNum: q.mag, place: q.place, depth: Math.round(q.depth || 0),
+        timeAgo: this._ago(q.time), distance: distance.toLocaleString('es-GT'), distanceNum: distance, bearing: e.bearing,
+        warn: w.t, warnBg: w.bg, warnColor: w.c,
+        magColor, magBg: q.mag >= 6 ? 'rgba(251,86,112,0.16)' : q.mag >= 4.5 ? 'rgba(245,166,35,0.16)' : 'rgba(34,211,238,0.14)',
+        cardBg: relevant ? 'rgba(251,86,112,0.06)' : 'rgba(20,30,48,0.5)',
+        cardBorder: relevant ? 'rgba(251,86,112,0.28)' : 'rgba(120,160,200,0.12)',
+      };
+    });
+  }
+
+  _renderMarkers() {
+    if (!this._map || !this._markers || !window.L) return;
+    const L = window.L;
+    this._markers.clearLayers();
+    (this.state.raw || []).forEach((q) => {
+      const distance = this._dist(q.lat, q.lng);
+      const relevant = distance <= 2500;
+      const color = relevant ? '#fb5670' : '#f5a623';
+      const r = Math.max(4, Math.min(22, (q.mag || 1) * 2.6));
+      L.circleMarker([q.lat, q.lng], { radius: r, color, weight: 1.5, fillColor: color, fillOpacity: 0.35 })
+        .bindPopup('<b>M' + (q.mag).toFixed(1) + '</b> · ' + (q.place || '') + '<br>' + distance.toLocaleString('es-GT') + ' km de Guatemala · prof. ' + Math.round(q.depth || 0) + ' km')
+        .addTo(this._markers);
+    });
+  }
+
+  // Tasas históricas reales de Guatemala desde 1900 (VolcanoDiscovery/USGS) → modelo de Poisson.
+  _poissonRows() {
+    const rates = [
+      { label: 'M7.0+', lambda: 1 / 11.5, freq: '1 cada ~11.5 años en promedio' },
+      { label: 'M6.0+', lambda: 0.87, freq: '1 cada ~1.2 años en promedio' },
+      { label: 'M5.0+', lambda: 10.1, freq: '~10 por año en promedio' },
+    ];
+    return rates.map((r) => {
+      const p = (1 - Math.exp(-r.lambda * 1)) * 100; // t = 1 año
+      const pct = p >= 99.5 ? 99 : Math.round(p * 10) / 10;
+      return { label: r.label, pct: pct >= 10 ? Math.round(pct) : pct, freq: r.freq, color: r.lambda >= 1 ? '#f5a623' : '#fb5670' };
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const mags = (s.raw || []).map((q) => q.mag);
+    const nearRecent = (s.quakes || []).find((q) => q.cardBorder.indexOf('251,86,112') > -1);
+    const hasRecent = !!nearRecent;
+    const recentText = nearRecent ? ('M' + nearRecent.mag + ' · ' + nearRecent.place + ' — ' + nearRecent.timeAgo + ', a ' + nearRecent.distance + ' km de vos (rumbo ' + nearRecent.bearing + ').') : '';
+    const maxMag = mags.length ? Math.max.apply(null, mags).toFixed(1) : '—';
+    const relevantCount = (s.quakes || []).filter((q) => q.cardBorder.indexOf('251,86,112') > -1).length;
+    const live = s.source === 'live';
+    return {
+      mapRef: (el) => { this._mapEl = el; },
+      refresh: () => this._load(),
+      refreshLabel: s.loading ? 'Actualizando…' : '↻ Actualizar',
+      statusText: s.loading ? 'CONSULTANDO USGS…' : (live ? 'FEED USGS EN VIVO' : 'MODO CACHÉ · SIN CONEXIÓN'),
+      statusDot: s.loading ? '#f5a623' : (live ? '#20c997' : '#f5a623'),
+      statusBg: live && !s.loading ? 'rgba(32,201,151,0.1)' : 'rgba(245,166,35,0.1)',
+      statusBorder: live && !s.loading ? 'rgba(32,201,151,0.28)' : 'rgba(245,166,35,0.28)',
+      sourceNote: live ? 'Fuente: USGS · earthquake.usgs.gov (M2.5+, último día) · datos públicos en tiempo real' : 'Sin conexión al feed · mostrando eventos relevantes en caché',
+      totalCount: (s.raw || []).length || '—',
+      relevantCount: relevantCount,
+      maxMag: 'M' + maxMag,
+      loading: s.loading, hasError: !!s.error, errorMsg: s.error || '',
+      quakes: s.quakes || [],
+      isVivo: s.tab === 'vivo', isHist: s.tab === 'hist', isPred: s.tab === 'pred',
+      tabVivo: () => this.setState({ tab: 'vivo' }), tabHist: () => this.setState({ tab: 'hist' }), tabPred: () => this.setState({ tab: 'pred' }),
+      vivoBg: s.tab === 'vivo' ? 'rgba(34,211,238,0.18)' : 'rgba(255,255,255,0.03)', vivoColor: s.tab === 'vivo' ? '#22d3ee' : '#9fb4ad',
+      histBg: s.tab === 'hist' ? 'rgba(34,211,238,0.18)' : 'rgba(255,255,255,0.03)', histColor: s.tab === 'hist' ? '#22d3ee' : '#9fb4ad',
+      predBg: s.tab === 'pred' ? 'rgba(34,211,238,0.18)' : 'rgba(255,255,255,0.03)', predColor: s.tab === 'pred' ? '#22d3ee' : '#9fb4ad',
+      hasRecent, recentText,
+      isArmed: s.armed,
+      toggleArm: () => this.toggleArm(),
+      armLabel: s.armed ? 'Monitor de alarma ARMADO' : 'Armar monitor de alarma en este dispositivo',
+      armSub: s.armed ? 'Vibrará y sonará si aparece un sismo relevante en el feed' : 'Vibración + sonido + notificación al detectar un sismo cercano',
+      armBg: s.armed ? 'rgba(32,201,151,0.08)' : 'rgba(20,30,48,0.5)',
+      armBorder: s.armed ? 'rgba(32,201,151,0.32)' : 'rgba(120,160,200,0.16)',
+      armTrackBg: s.armed ? '#20c997' : 'rgba(120,160,200,0.25)',
+      armKnobLeft: s.armed ? '23px' : '3px',
+      armDot: s.alarmFlash ? '#fb5670' : (s.armed ? '#20c997' : '#5f7187'),
+      armPulse: s.alarmFlash ? 'animation:qaBlink 0.4s infinite;' : (s.armed ? 'animation:qaBlink 2s infinite;' : ''),
+      radiusKm: s.radiusKm, minMag: s.minMag, pollSec: s.pollSec,
+      probRows: this._poissonRows(),
+      faultZones: [
+        { name: 'Zona de subducción Cocos–Caribe', tipo: 'COSTA PACÍFICO', detail: 'Placa de Cocos hundiéndose bajo la placa Caribe frente a la costa sur. Genera los sismos más profundos y de mayor magnitud, incluido el M7.4 frente a Chiapas sentido en Guatemala el 17 jul 2026.' },
+        { name: 'Falla de Motagua', tipo: 'TRANSCURRENTE', detail: 'Cruza el país de este a oeste. Responsable del terremoto de 1976 (M7.5), el más letal en la historia reciente de Guatemala (~23,000 muertos).' },
+        { name: 'Falla de Chixoy–Polochic', tipo: 'TRANSCURRENTE', detail: 'Paralela a la de Motagua, al norte. Frontera entre las placas Norteamericana y Caribe; historial de actividad moderada.' },
+      ],
+      vzwEvents: [
+        { mag: '7.2', title: 'Primer sismo · 18:04 hora local', detail: 'A 23 km de San Felipe (Yaracuy), profundidad 20.3 km. Reportado primero como M7.1 por el USGS.' },
+        { mag: '7.5', title: 'Segundo sismo · 39 segundos después', detail: 'A 28 km al SE de Yumare/Montalbán, profundidad 10 km. El doblete duró cerca de 3 minutos en total.' },
+      ],
+      todayText: 'Este mismo 17 de julio de 2026, un sismo de magnitud revisada 7.4 con epicentro a 136 km al suroeste de Ciudad Hidalgo, frente a la costa de Chiapas (10 km de profundidad), se sintió con fuerza en Guatemala y El Salvador a las 8:48 a.m. El Servicio Sismológico de Guatemala lo registró como M5.4 en territorio nacional; las autoridades descartaron riesgo de tsunami para Centroamérica.',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUAKE ALERT">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="./qa-db.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #060a12; }
+  @keyframes qaRing { 0% { transform: scale(0.1); opacity: 0.95; } 100% { transform: scale(1); opacity: 0; } }
+  @keyframes qaPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  @keyframes qaBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,160,200,0.2); border-radius: 4px; }
+  @media (max-width: 900px) {
+    .qa-scity-root { grid-template-rows: auto auto !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
+    .qa-scity-header { flex-wrap: wrap !important; height: auto !important; padding: 14px 18px !important; gap: 10px !important; }
+    .qa-scity-body { grid-template-columns: 1fr !important; overflow: visible !important; }
+    .qa-scity-map { min-height: 340px !important; }
+  }
+</style>
+</helmet>
+<div class="qa-scity-root" style="height:100vh; width:100%; background:#060a12; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; display:grid; grid-template-rows:66px 1fr; overflow:hidden;">
+
+  <div class="qa-scity-header" style="background:{{ headerBg }}; border-bottom:1px solid rgba(120,160,200,0.1); display:flex; align-items:center; justify-content:space-between; padding:0 26px; transition:background 0.4s ease;">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#22d3ee,#0e7490); box-shadow:0 0 18px rgba(34,211,238,0.4); display:flex; align-items:center; justify-content:center; font-size:17px; color:#06141a;">⛓</div>
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">Smart City · Municipalidad de Escuintla</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7b8ca3; margin-top:1px;">INFRAESTRUCTURA URBANA DE EMERGENCIA</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="display:flex; align-items:center; gap:9px; padding:8px 14px; border-radius:999px; background:{{ statusBg }}; border:1px solid {{ statusBorder }};">
+        <span style="width:7px; height:7px; border-radius:50%; background:{{ statusDot }}; animation:qaBlink 1.5s ease-in-out infinite;"></span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:{{ statusDot }};">{{ statusText }}</span>
+      </div>
+      <sc-if value="{{ calm }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ activate }}" style="border:none; cursor:pointer; padding:11px 22px; border-radius:10px; background:linear-gradient(135deg,#fb5670,#c4243d); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; box-shadow:0 6px 18px rgba(251,86,112,0.3); display:flex; align-items:center; gap:8px;"><span>♦</span> Activar alerta municipal</button>
+      </sc-if>
+      <sc-if value="{{ alert }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ deactivate }}" style="border:1px solid rgba(255,255,255,0.2); cursor:pointer; padding:11px 22px; border-radius:10px; background:rgba(255,255,255,0.06); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;">Desactivar</button>
+      </sc-if>
+    </div>
+  </div>
+
+  <div class="qa-scity-body" style="display:grid; grid-template-columns:1fr 400px; overflow:hidden;">
+
+    <div class="qa-scity-map" style="position:relative; overflow:hidden; background:radial-gradient(70% 60% at 50% 50%, rgba(34,211,238,0.05), transparent 60%), #070c15;">
+      <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.06) 1px,transparent 1px); background-size:48px 48px;"></div>
+      <div style="position:absolute; left:0; top:46%; right:0; height:54px; background:rgba(120,160,200,0.04);"></div>
+      <div style="position:absolute; top:0; bottom:0; left:38%; width:50px; background:rgba(120,160,200,0.04);"></div>
+      <div style="position:absolute; left:24px; top:18px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#7b8ca3;">CASCO URBANO · DISPOSITIVOS IoT</div>
+
+      <sc-for list="{{ markers }}" as="m" hint-placeholder-count="6">
+        <div style="position:absolute; left:{{ m.x }}; top:{{ m.y }};">
+          <sc-if value="{{ m.ringing }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute; left:50%; top:50%; width:70px; height:70px; margin:-35px;"><div style="position:absolute; inset:0; border:1.5px solid rgba(251,86,112,0.6); border-radius:50%; animation:qaRing 2.4s ease-out infinite;"></div><div style="position:absolute; inset:0; border:1.5px solid rgba(251,86,112,0.6); border-radius:50%; animation:qaRing 2.4s ease-out infinite 1.2s;"></div></div>
+          </sc-if>
+          <div style="position:relative; width:{{ m.size }}; height:{{ m.size }}; border-radius:{{ m.radius }}; background:{{ m.color }}; box-shadow:0 0 10px 2px {{ m.glow }};"></div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="background:#080d16; border-left:1px solid rgba(120,160,200,0.1); overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px;">
+
+      <div style="border-radius:16px; background:{{ ledBg }}; border:1px solid {{ ledBorder }}; padding:18px; transition:all 0.4s ease;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;"><span style="width:8px; height:8px; border-radius:2px; background:{{ ledDot }};"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; color:#7b8ca3;">PANELES LED · 18 EN RED</span></div>
+        <div style="border-radius:10px; background:#05080e; border:1px solid rgba(120,160,200,0.12); padding:18px; text-align:center;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:20px; letter-spacing:0.04em; color:{{ ledText }}; line-height:1.3;">{{ ledMessage }}</div>
+        </div>
+      </div>
+
+      <div style="border-radius:16px; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); padding:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; color:#7b8ca3;">SIRENAS PÚBLICAS</span><span style="font-size:13px; color:{{ sirenCountColor }};">{{ sirenActive }} / 6 activas</span></div>
+        <div style="display:flex; flex-direction:column; gap:9px;">
+          <sc-for list="{{ sirens }}" as="s" hint-placeholder-count="6">
+            <div onClick="{{ s.toggle }}" style="display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:11px; cursor:pointer; background:{{ s.rowBg }}; border:1px solid {{ s.rowBorder }};">
+              <span style="width:9px; height:9px; border-radius:50%; background:{{ s.dot }};"></span>
+              <span style="flex:1; font-size:14px; color:#eaf1f8;">{{ s.zone }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:{{ s.labelColor }};">{{ s.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border-radius:16px; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); padding:18px; flex:1;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; color:#7b8ca3; margin-bottom:14px;">BOTONES DE PÁNICO</div>
+        <div style="display:flex; flex-direction:column; gap:13px;">
+          <sc-for list="{{ bitacora }}" as="b" hint-placeholder-count="3">
+            <div style="display:flex; gap:12px;"><span style="width:8px; height:8px; border-radius:50%; background:{{ b.color }}; margin-top:5px; flex-shrink:0;"></span><div><div style="font-size:14px; color:#cdd9e8;">{{ b.action }}</div><div style="font-size:12px; color:#7b8ca3; margin-top:2px;">{{ b.meta }}</div></div></div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1512, &quot;height&quot;: 950}}">
+class Component extends DCLogic {
+  ZONES = ['Zona 1 · Centro', 'Zona 2 · Mercado', 'Zona 3 · Costera', 'Zona 4 · Norte', 'Zona 5 · Industrial', 'Zona 6 · Puerto'];
+  POS = [['30%','30%'],['55%','24%'],['68%','52%'],['24%','60%'],['46%','70%'],['74%','38%']];
+
+  state = { alert: false, sirens: [false, false, false, false, false, false] };
+
+  componentDidMount() {
+    const boot = () => { this._off = window.QADB.on(() => this.forceUpdate()); this.forceUpdate(); };
+    if (window.QADB) boot(); else window.addEventListener('qadb-ready', boot, { once: true });
+  }
+  componentWillUnmount() { if (this._off) this._off(); }
+
+  fmtAgo(ts) { const m = Math.max(0, Math.round((Date.now() - ts) / 60000)); if (m < 1) return 'ahora'; if (m < 60) return 'hace ' + m + ' min'; const h = Math.round(m / 60); if (h < 24) return 'hace ' + h + ' h'; return 'hace ' + Math.round(h / 24) + ' d'; }
+
+  activate() {
+    if (window.QADB) {
+      const sess = window.QADB.session.get();
+      window.QADB.insert('eventos', { magnitud: 5.9, epicentro: 'Escuintla', municipio: 'Escuintla', profundidadKm: 14, status: 'Activo', issuedBy: sess && sess.id, personasAlertadas: 156000, leadSeg: 7, lat: 14.305, lng: -90.785, ts: Date.now() });
+      window.QADB.log('Activó alerta municipal · 6 sirenas + 18 paneles LED', { user: sess && sess.name, color: '#fb5670' });
+    }
+    this.setState({ alert: true, sirens: [true, true, true, true, true, true] });
+  }
+  deactivate() {
+    if (window.QADB) {
+      const ev = window.QADB.where('eventos', e => e.status === 'Activo')[0];
+      if (ev) window.QADB.update('eventos', ev.id, { status: 'Cerrado' });
+      window.QADB.log('Desactivó alerta municipal', { color: '#20c997' });
+    }
+    this.setState({ alert: false, sirens: [false, false, false, false, false, false] });
+  }
+  toggleSiren(i) {
+    this.setState(s => {
+      const sirens = s.sirens.slice();
+      sirens[i] = !sirens[i];
+      return { sirens };
+    });
+  }
+
+  renderVals() {
+    const { alert, sirens } = this.state;
+    const sirenActive = sirens.filter(Boolean).length;
+    const DB = window.QADB;
+    const bitacora = DB ? DB.get('logs').slice(0, 5).map(l => ({ action: l.action, color: l.color || '#9fb4ad', meta: this.fmtAgo(l.ts) + (l.user ? ' · ' + l.user : '') })) : [];
+
+    const sirenList = this.ZONES.map((z, i) => {
+      const on = sirens[i];
+      return {
+        zone: z,
+        toggle: () => this.toggleSiren(i),
+        dot: on ? '#fb5670' : '#5f7187',
+        rowBg: on ? 'rgba(251,86,112,0.1)' : 'rgba(255,255,255,0.02)',
+        rowBorder: on ? 'rgba(251,86,112,0.3)' : 'rgba(120,160,200,0.1)',
+        label: on ? 'SONANDO' : 'en espera',
+        labelColor: on ? '#fb5670' : '#7b8ca3',
+      };
+    });
+
+    const markers = [];
+    this.POS.forEach((p, i) => {
+      const on = sirens[i];
+      markers.push({ x: p[0], y: p[1], size: '14px', radius: '50%', color: on ? '#fb5670' : '#22d3ee', glow: on ? 'rgba(251,86,112,0.8)' : 'rgba(34,211,238,0.7)', ringing: on });
+    });
+    [['42%','40%'],['60%','64%'],['33%','52%']].forEach(p => markers.push({ x: p[0], y: p[1], size: '12px', radius: '3px', color: alert ? '#f5a623' : 'rgba(245,166,35,0.5)', glow: 'rgba(245,166,35,0.5)', ringing: false }));
+    [['50%','34%'],['66%','44%']].forEach(p => markers.push({ x: p[0], y: p[1], size: '9px', radius: '50%', color: '#20c997', glow: 'rgba(32,201,151,0.5)', ringing: false }));
+
+    return {
+      alert, calm: !alert,
+      bitacora,
+      activate: () => this.activate(),
+      deactivate: () => this.deactivate(),
+      sirens: sirenList,
+      markers,
+      sirenActive,
+      sirenCountColor: sirenActive > 0 ? '#fb5670' : '#20c997',
+      headerBg: alert ? 'linear-gradient(90deg, rgba(80,12,24,0.6), #080d16)' : '#080d16',
+      statusText: alert ? 'ALERTA MUNICIPAL ACTIVA' : 'CIUDAD EN ESTADO NORMAL',
+      statusDot: alert ? '#fb5670' : '#20c997',
+      statusBg: alert ? 'rgba(251,86,112,0.1)' : 'rgba(32,201,151,0.1)',
+      statusBorder: alert ? 'rgba(251,86,112,0.3)' : 'rgba(32,201,151,0.28)',
+      ledBg: alert ? 'rgba(251,86,112,0.1)' : 'rgba(20,30,48,0.5)',
+      ledBorder: alert ? 'rgba(251,86,112,0.3)' : 'rgba(120,160,200,0.14)',
+      ledDot: alert ? '#fb5670' : '#20c997',
+      ledText: alert ? '#fb5670' : '#20c997',
+      ledMessage: alert ? '⚠ SISMO · DIRÍJASE A ZONA SEGURA' : 'CIUDAD PROTEGIDA · QUAKE ALERT',
+    };
+  }
+}
+</script>
+</body>
+</html>

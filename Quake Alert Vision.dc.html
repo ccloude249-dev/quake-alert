@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #05080f; }
+  @keyframes qaRing { 0% { transform: scale(0.2); opacity: 0.9; } 100% { transform: scale(1); opacity: 0; } }
+  @keyframes qaPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+  @keyframes qaGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(251,86,112,0.55); } 50% { box-shadow: 0 0 0 22px rgba(251,86,112,0); } }
+  @keyframes qaScan { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
+</style>
+</helmet>
+<x-import component-from-global-scope="deck-stage" from="./deck-stage.js" width="1920" height="1080" hint-size="100%,100%">
+
+<section data-label="Portada" data-speaker-notes="QUAKE ALERT Next Generation no es una app de sismos: es una plataforma de inteligencia para protección civil de Latinoamérica." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:radial-gradient(120% 80% at 78% 18%, rgba(34,211,238,0.14), transparent 52%), radial-gradient(90% 70% at 10% 100%, rgba(251,86,112,0.10), transparent 55%), linear-gradient(160deg,#070d18 0%,#05080f 100%); display:flex; flex-direction:column; justify-content:space-between; padding:96px 104px;">
+  <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.05) 1px,transparent 1px); background-size:64px 64px; mask-image:radial-gradient(120% 100% at 50% 0%,#000,transparent 80%);"></div>
+  <div style="position:absolute; right:120px; top:50%; transform:translateY(-50%); width:520px; height:520px;">
+    <div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.5); border-radius:50%; animation:qaRing 3.6s ease-out infinite;"></div>
+    <div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.5); border-radius:50%; animation:qaRing 3.6s ease-out infinite 1.2s;"></div>
+    <div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.5); border-radius:50%; animation:qaRing 3.6s ease-out infinite 2.4s;"></div>
+    <div style="position:absolute; left:50%; top:50%; width:20px; height:20px; margin:-10px; background:#22d3ee; border-radius:50%; box-shadow:0 0 30px 6px rgba(34,211,238,0.7);"></div>
+  </div>
+  <div style="position:relative; display:flex; align-items:center; gap:14px;">
+    <div style="width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,#22d3ee,#0e7490); box-shadow:0 0 24px rgba(34,211,238,0.5);"></div>
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:22px; letter-spacing:0.3em; text-transform:uppercase; color:#bfe9f4;">Quake Alert</span>
+  </div>
+  <div style="position:relative;">
+    <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.3em; text-transform:uppercase; color:#22d3ee; margin:0 0 22px;">Public Safety Intelligence Platform</p>
+    <h1 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:128px; line-height:0.94; letter-spacing:-0.03em; margin:0; text-shadow:0 8px 60px rgba(0,0,0,0.5);">QUAKE&nbsp;ALERT<br><span style="color:#22d3ee;">Next Generation</span></h1>
+    <p style="font-size:27px; line-height:1.5; color:#aebfd4; max-width:880px; margin:34px 0 0;">La plataforma de inteligencia para alertas tempranas, protección civil, ciudades inteligentes y gestión de emergencias de Latinoamérica.</p>
+  </div>
+  <div style="position:relative; display:flex; align-items:center; gap:14px;">
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:18px; letter-spacing:0.18em; color:#7b8ca3;">COBERTURA</span>
+    <span style="padding:10px 20px; border:1px solid rgba(120,160,200,0.22); border-radius:999px; font-size:19px; color:#cdd9e8;">Guatemala</span>
+    <span style="padding:10px 20px; border:1px solid rgba(120,160,200,0.22); border-radius:999px; font-size:19px; color:#cdd9e8;">Centroamérica</span>
+    <span style="padding:10px 20px; border:1px solid rgba(120,160,200,0.22); border-radius:999px; font-size:19px; color:#cdd9e8;">Latinoamérica</span>
+  </div>
+</section>
+
+<section data-label="El problema" data-speaker-notes="LatAm vive sobre el Cinturón de Fuego. La diferencia entre la vida y la tragedia se mide en segundos. Hoy esos segundos se desperdician." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:linear-gradient(160deg,#070d18 0%,#05080f 100%); display:flex; flex-direction:column; padding:88px 104px;">
+  <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.04) 1px,transparent 1px); background-size:64px 64px;"></div>
+  <p style="position:relative; font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#fb5670; margin:0;">El problema</p>
+  <h2 style="position:relative; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:72px; line-height:1.02; letter-spacing:-0.02em; margin:14px 0 0; max-width:1180px;">La diferencia entre la vida y la tragedia se mide en <span style="color:#fb5670;">segundos</span>.</h2>
+  <div style="position:relative; display:grid; grid-template-columns:repeat(3,1fr); gap:26px; margin-top:64px;">
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.55)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:34px;">
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:66px; color:#22d3ee; line-height:1;">10–60s</div>
+      <p style="font-size:21px; color:#aebfd4; margin:16px 0 0; line-height:1.45;">de aviso anticipado es todo lo que se necesita para resguardarse, detener procesos y salvar vidas.</p>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.55)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:34px;">
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:66px; color:#f5a623; line-height:1;">Cinturón<span style="font-size:30px; color:#aebfd4; display:block; font-weight:500; margin-top:8px;">de Fuego del Pacífico</span></div>
+      <p style="font-size:21px; color:#aebfd4; margin:16px 0 0; line-height:1.45;">Centroamérica vive sobre una de las zonas sísmicas más activas del planeta.</p>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.55)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:34px;">
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:66px; color:#fb5670; line-height:1;">Fragmentado</div>
+      <p style="font-size:21px; color:#aebfd4; margin:16px 0 0; line-height:1.45;">Apps aisladas, sirenas sueltas y avisos lentos. Nadie conecta detección, personas, hogares y ciudades.</p>
+    </div>
+  </div>
+  <div style="position:relative; margin-top:auto; padding-top:40px; border-top:1px solid rgba(120,160,200,0.14); display:flex; align-items:center; gap:18px;">
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:17px; color:#7b8ca3;">→</span>
+    <p style="font-size:24px; color:#cdd9e8; margin:0;">El reto no es <em style="color:#fff; font-style:normal;">detectar</em> un sismo. Es convertir esos segundos en <span style="color:#22d3ee;">acción coordinada</span> para millones de personas a la vez.</p>
+  </div>
+</section>
+
+<section data-label="La visión" data-speaker-notes="No una app de alertas: una Public Safety Intelligence Platform que detecta, alerta, coordina e integra ciudades inteligentes." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:radial-gradient(100% 80% at 85% 10%, rgba(34,211,238,0.10), transparent 55%), linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; padding:88px 104px;">
+  <p style="position:relative; font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#22d3ee; margin:0;">La visión</p>
+  <h2 style="position:relative; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:60px; line-height:1.05; letter-spacing:-0.02em; margin:14px 0 48px; max-width:1240px;">De una app de sismos a una plataforma de <span style="color:#22d3ee;">inteligencia para la protección civil</span>.</h2>
+  <div style="position:relative; display:flex; align-items:stretch; gap:30px;">
+    <div style="flex:0 0 360px; background:rgba(12,18,32,0.5); border:1px dashed rgba(120,160,200,0.28); border-radius:18px; padding:34px; display:flex; flex-direction:column; justify-content:center;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:18px; letter-spacing:0.18em; color:#7b8ca3;">HOY</span>
+      <p style="font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:32px; color:#aebfd4; margin:14px 0 0; line-height:1.2;">Una app que avisa que tiembla.</p>
+    </div>
+    <div style="flex:0 0 auto; display:flex; align-items:center; font-family:'Space Grotesk',sans-serif; font-size:48px; color:#22d3ee;">→</div>
+    <div style="flex:1; background:linear-gradient(135deg,rgba(34,211,238,0.14),rgba(14,116,144,0.06)); border:1px solid rgba(34,211,238,0.35); border-radius:18px; padding:38px; display:flex; flex-direction:column; justify-content:center;">
+      <span style="font-family:'IBM Plex Mono',monospace; font-size:18px; letter-spacing:0.18em; color:#22d3ee;">QUAKE ALERT NEXT GENERATION</span>
+      <p style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:40px; color:#fff; margin:12px 0 0; line-height:1.12;">Un sistema nervioso para la seguridad de un país.</p>
+    </div>
+  </div>
+  <div style="position:relative; display:grid; grid-template-columns:repeat(5,1fr); gap:18px; margin-top:48px;">
+    <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:24px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:23px; color:#fff;">Detectar</div><p style="font-size:16px; color:#93a4ba; margin:8px 0 0; line-height:1.4;">Sensores QuakeBox + IA</p></div>
+    <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:24px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:23px; color:#fff;">Alertar</div><p style="font-size:16px; color:#93a4ba; margin:8px 0 0; line-height:1.4;">Multicanal y multicapa</p></div>
+    <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:24px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:23px; color:#fff;">Coordinar</div><p style="font-size:16px; color:#93a4ba; margin:8px 0 0; line-height:1.4;">Familias, brigadas, gobiernos</p></div>
+    <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:24px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:23px; color:#fff;">Automatizar</div><p style="font-size:16px; color:#93a4ba; margin:8px 0 0; line-height:1.4;">Hogares y ciudades IoT</p></div>
+    <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:24px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:23px; color:#fff;">Aprender</div><p style="font-size:16px; color:#93a4ba; margin:8px 0 0; line-height:1.4;">Simulacros + analítica</p></div>
+  </div>
+</section>
+
+<section data-label="La alerta" data-speaker-notes="El momento clave. Cuando un sismo es detectado, el usuario ve una cuenta regresiva enorme, el nivel por color, el epicentro con ondas y las instrucciones de la IA. Esta es la experiencia que salva vidas." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:radial-gradient(100% 90% at 30% 30%, rgba(251,86,112,0.22), transparent 60%), linear-gradient(160deg,#1a0710,#0a0510); display:flex; flex-direction:column; padding:74px 104px;">
+  <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(251,86,112,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(251,86,112,0.05) 1px,transparent 1px); background-size:64px 64px;"></div>
+  <div style="position:relative; display:flex; align-items:center; gap:16px;">
+    <span style="width:14px; height:14px; border-radius:50%; background:#fb5670; animation:qaPulse 1s ease-in-out infinite;"></span>
+    <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.28em; text-transform:uppercase; color:#fb5670; margin:0;">Alerta sísmica · Nivel rojo · En curso</p>
+  </div>
+  <div style="position:relative; display:grid; grid-template-columns:1.05fr 0.95fr; gap:54px; margin-top:30px; flex:1; align-items:center;">
+    <div>
+      <p style="font-size:23px; color:#f4c5cd; margin:0 0 4px; font-family:'IBM Plex Mono',monospace; letter-spacing:0.12em;">SISMO FUERTE — IMPACTO EN</p>
+      <div style="display:flex; align-items:flex-end; gap:18px;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:280px; line-height:0.82; color:#fff; text-shadow:0 0 80px rgba(251,86,112,0.6);">08</div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:64px; color:#fb5670; margin-bottom:42px;">seg</div>
+      </div>
+      <div style="display:flex; gap:14px; margin-top:24px;">
+        <div style="flex:1; text-align:center; padding:16px 0; border-radius:12px; background:rgba(32,201,151,0.12); border:1px solid rgba(32,201,151,0.3);"><div style="font-family:'IBM Plex Mono',monospace; font-size:15px; color:#7b8ca3;">MAGNITUD</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:34px; color:#fff;">6.8</div></div>
+        <div style="flex:1; text-align:center; padding:16px 0; border-radius:12px; background:rgba(245,166,35,0.12); border:1px solid rgba(245,166,35,0.3);"><div style="font-family:'IBM Plex Mono',monospace; font-size:15px; color:#7b8ca3;">INTENSIDAD</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:34px; color:#f5a623;">VII</div></div>
+        <div style="flex:1; text-align:center; padding:16px 0; border-radius:12px; background:rgba(251,86,112,0.12); border:1px solid rgba(251,86,112,0.3);"><div style="font-family:'IBM Plex Mono',monospace; font-size:15px; color:#7b8ca3;">PROFUNDIDAD</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:34px; color:#fff;">24 km</div></div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:22px;">
+      <div style="position:relative; height:280px; border-radius:18px; overflow:hidden; background:radial-gradient(circle at 62% 44%, rgba(251,86,112,0.18), rgba(8,12,22,0.9) 70%), #080c16; border:1px solid rgba(120,160,200,0.18);">
+        <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.08) 1px,transparent 1px); background-size:34px 34px;"></div>
+        <div style="position:absolute; left:62%; top:44%; width:240px; height:240px; margin:-120px 0 0 -120px;">
+          <div style="position:absolute; inset:0; border:1.5px solid rgba(251,86,112,0.6); border-radius:50%; animation:qaRing 3s ease-out infinite;"></div>
+          <div style="position:absolute; inset:0; border:1.5px solid rgba(251,86,112,0.6); border-radius:50%; animation:qaRing 3s ease-out infinite 1s;"></div>
+          <div style="position:absolute; inset:0; border:1.5px solid rgba(251,86,112,0.6); border-radius:50%; animation:qaRing 3s ease-out infinite 2s;"></div>
+          <div style="position:absolute; left:50%; top:50%; width:16px; height:16px; margin:-8px; background:#fb5670; border-radius:50%; box-shadow:0 0 24px 5px rgba(251,86,112,0.9);"></div>
+        </div>
+        <div style="position:absolute; left:24%; top:64%; width:12px; height:12px; margin:-6px; background:#22d3ee; border-radius:50%; box-shadow:0 0 16px 3px rgba(34,211,238,0.8);"></div>
+        <div style="position:absolute; left:24%; top:64%; transform:translate(14px,-26px); font-family:'IBM Plex Mono',monospace; font-size:14px; color:#22d3ee;">TÚ</div>
+        <div style="position:absolute; left:62%; top:44%; transform:translate(16px,12px); font-family:'IBM Plex Mono',monospace; font-size:13px; color:#fb5670;">EPICENTRO · Escuintla</div>
+      </div>
+      <div style="background:linear-gradient(180deg,rgba(20,30,48,0.85),rgba(12,18,32,0.7)); border:1px solid rgba(34,211,238,0.25); border-radius:18px; padding:24px 26px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><span style="width:8px;height:8px;border-radius:50%;background:#22d3ee;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:18px; letter-spacing:0.16em; color:#22d3ee;">ASISTENTE IA · PROTÉGETE AHORA</span></div>
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:12px;"><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; color:#0a0510; background:#22d3ee; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px;">1</span><span style="font-size:21px; color:#eaf1f8;">Agáchate, cúbrete y sujétate.</span></div>
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:12px;"><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; color:#0a0510; background:#22d3ee; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px;">2</span><span style="font-size:21px; color:#eaf1f8;">Aléjate de ventanas y objetos altos.</span></div>
+        <div style="display:flex; align-items:center; gap:14px;"><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; color:#0a0510; background:#22d3ee; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px;">3</span><span style="font-size:21px; color:#eaf1f8;">No uses elevadores. Espera la réplica.</span></div>
+      </div>
+    </div>
+  </div>
+  <div style="position:relative; display:flex; gap:14px; margin-top:8px;">
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:15px; color:#7b8ca3; align-self:center;">DIFUSIÓN SIMULTÁNEA →</span>
+    <span style="padding:8px 16px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:15px; color:#cdd9e8;">Push</span>
+    <span style="padding:8px 16px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:15px; color:#cdd9e8;">Sirenas públicas</span>
+    <span style="padding:8px 16px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:15px; color:#cdd9e8;">Alexa · Google · Siri</span>
+    <span style="padding:8px 16px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:15px; color:#cdd9e8;">Paneles LED</span>
+    <span style="padding:8px 16px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:15px; color:#cdd9e8;">SMS · WhatsApp</span>
+  </div>
+</section>
+
+<section data-label="Plataforma" data-speaker-notes="15 módulos organizados en 6 pilares. No es una app, es un ecosistema." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; padding:88px 104px;">
+  <div style="position:relative; display:flex; justify-content:space-between; align-items:flex-end;">
+    <div>
+      <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#22d3ee; margin:0;">La plataforma</p>
+      <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:60px; line-height:1.02; letter-spacing:-0.02em; margin:14px 0 0;">15 módulos. <span style="color:#22d3ee;">6 pilares.</span> Un ecosistema.</h2>
+    </div>
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#7b8ca3;">ARQUITECTURA MODULAR · MULTI-TENANT</span>
+  </div>
+  <div style="position:relative; display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:54px; flex:1;">
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(34,211,238,0.22); border-radius:18px; padding:30px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">01 · DETECCIÓN Y ALERTA</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:25px; color:#fff; margin:10px 0 14px;">El núcleo</div>
+      <p style="font-size:17px; color:#aebfd4; margin:0; line-height:1.5;">Earthquake Early Warning · Motor de alertas · Difusión multicanal</p>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:30px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">02 · PERSONAS</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:25px; color:#fff; margin:10px 0 14px;">Red de seguridad</div>
+      <p style="font-size:17px; color:#aebfd4; margin:0; line-height:1.5;">Family Safety Network · Asistente de Emergencias IA</p>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:30px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">03 · HOGAR Y CIUDAD</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:25px; color:#fff; margin:10px 0 14px;">Automatización</div>
+      <p style="font-size:17px; color:#aebfd4; margin:0; line-height:1.5;">Asistentes de voz · Smart Home · IoT · Smart City</p>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:30px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">04 · INSTITUCIONES</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:25px; color:#fff; margin:10px 0 14px;">Protección sectorial</div>
+      <p style="font-size:17px; color:#aebfd4; margin:0; line-height:1.5;">Corporativo · Escuelas · Hospitales</p>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:30px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">05 · SIMULACROS</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:25px; color:#fff; margin:10px 0 14px;">Preparación con IA</div>
+      <p style="font-size:17px; color:#aebfd4; margin:0; line-height:1.5;">Emergency Drill Platform · Scoring · Certificación</p>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:30px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">06 · INTELIGENCIA</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:25px; color:#fff; margin:10px 0 14px;">El cerebro</div>
+      <p style="font-size:17px; color:#aebfd4; margin:0; line-height:1.5;">GIS Command Center · Analytics &amp; BI · Agent Orchestrator · Low-Code Studio</p>
+    </div>
+  </div>
+</section>
+
+<section data-label="Early Warning" data-speaker-notes="Módulos 1: detección con QuakeBox, motor de alertas que calcula tiempo de llegada e intensidad, y difusión multicanal." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; padding:88px 104px;">
+  <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#22d3ee; margin:0;">Módulo 01 · Earthquake Early Warning</p>
+  <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:58px; line-height:1.02; letter-spacing:-0.02em; margin:14px 0 0; max-width:1100px;">Del sensor a la sirena en <span style="color:#22d3ee;">milisegundos</span>.</h2>
+  <div style="display:flex; align-items:stretch; gap:18px; margin-top:50px;">
+    <div style="flex:1; background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:28px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#7b8ca3; letter-spacing:0.15em;">CAPTAR</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:25px; color:#fff; margin:8px 0 12px;">Sensores QuakeBox</div><p style="font-size:16px; color:#aebfd4; margin:0; line-height:1.45;">Red distribuida que captura ondas P antes de la sacudida destructiva.</p></div>
+    <div style="flex:0 0 auto; display:flex; align-items:center; color:#22d3ee; font-size:32px;">→</div>
+    <div style="flex:1; background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:28px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#7b8ca3; letter-spacing:0.15em;">ANALIZAR</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:25px; color:#fff; margin:8px 0 12px;">Motor de alertas IA</div><p style="font-size:16px; color:#aebfd4; margin:0; line-height:1.45;">Magnitud, profundidad, velocidad de propagación → tiempo de llegada e intensidad esperada.</p></div>
+    <div style="flex:0 0 auto; display:flex; align-items:center; color:#22d3ee; font-size:32px;">→</div>
+    <div style="flex:1; background:linear-gradient(135deg,rgba(34,211,238,0.14),rgba(14,116,144,0.05)); border:1px solid rgba(34,211,238,0.3); border-radius:16px; padding:28px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">DIFUNDIR</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:25px; color:#fff; margin:8px 0 12px;">Alertas multicanal</div><p style="font-size:16px; color:#aebfd4; margin:0; line-height:1.45;">A cada persona, hogar, institución y ciudad simultáneamente.</p></div>
+  </div>
+  <div style="margin-top:46px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:18px; letter-spacing:0.18em; color:#7b8ca3; margin-bottom:18px;">SEIS CANALES, UN SOLO EVENTO</div>
+  <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:16px;">
+    <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:22px; text-align:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff;">Push</div></div>
+    <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:22px; text-align:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff;">SMS</div></div>
+    <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:22px; text-align:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff;">WhatsApp</div></div>
+    <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:22px; text-align:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff;">Telegram</div></div>
+    <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:22px; text-align:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff;">Email</div></div>
+    <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:22px; text-align:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff;">Llamadas</div></div>
+  </div></div>
+  <div style="margin-top:auto; padding-top:34px; display:flex; gap:48px; border-top:1px solid rgba(120,160,200,0.14);">
+    <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:40px; color:#22d3ee;">App cerrada</div><p style="font-size:16px; color:#93a4ba; margin:6px 0 0;">Funciona en segundo plano y pantalla bloqueada</p></div>
+    <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:40px; color:#22d3ee;">Modo ahorro</div><p style="font-size:16px; color:#93a4ba; margin:6px 0 0;">Confiable con mínima conectividad y batería</p></div>
+    <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:40px; color:#22d3ee;">Toda marca</div><p style="font-size:16px; color:#93a4ba; margin:6px 0 0;">Android, iPhone, Samsung, Xiaomi, Huawei, Pixel</p></div>
+  </div>
+</section>
+
+<section data-label="Family Safety" data-speaker-notes="Módulo 2: tras el evento, los seres queridos saben en segundos si estás bien. Botones de estado y geolocalización autorizada." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:radial-gradient(90% 80% at 88% 50%, rgba(32,201,151,0.10), transparent 55%), linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; padding:88px 104px;">
+  <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#22d3ee; margin:0;">Módulo 02 · Family Safety Network</p>
+  <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:58px; line-height:1.04; letter-spacing:-0.02em; margin:14px 0 0; max-width:1080px;">Lo primero después de un sismo: <span style="color:#20c997;">saber que están bien</span>.</h2>
+  <div style="display:grid; grid-template-columns:1.1fr 0.9fr; gap:46px; margin-top:54px; flex:1; align-items:center;">
+    <div>
+      <p style="font-size:22px; color:#aebfd4; line-height:1.55; margin:0 0 32px;">Grupos de familia, amigos y equipos corporativos. Un toque comunica tu estado a todos los que importan — y muestra su ubicación cuando lo autorizan.</p>
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; align-items:center; gap:18px; padding:22px 26px; border-radius:14px; background:rgba(32,201,151,0.12); border:1px solid rgba(32,201,151,0.35);"><span style="width:14px; height:14px; border-radius:50%; background:#20c997;"></span><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:27px; color:#fff;">Estoy bien</span></div>
+        <div style="display:flex; align-items:center; gap:18px; padding:22px 26px; border-radius:14px; background:rgba(245,166,35,0.12); border:1px solid rgba(245,166,35,0.35);"><span style="width:14px; height:14px; border-radius:50%; background:#f5a623;"></span><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:27px; color:#fff;">Necesito ayuda</span></div>
+        <div style="display:flex; align-items:center; gap:18px; padding:22px 26px; border-radius:14px; background:rgba(251,86,112,0.12); border:1px solid rgba(251,86,112,0.4);"><span style="width:14px; height:14px; border-radius:50%; background:#fb5670;"></span><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:27px; color:#fff;">Emergencia médica</span></div>
+      </div>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.8),rgba(12,18,32,0.6)); border:1px solid rgba(120,160,200,0.18); border-radius:20px; padding:30px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:22px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:18px; letter-spacing:0.16em; color:#22d3ee;">FAMILIA GARCÍA</span><span style="font-size:14px; color:#7b8ca3;">4 / 4 a salvo</span></div>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div style="display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:12px; background:rgba(255,255,255,0.03);"><span style="width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,#22d3ee,#0e7490);"></span><div style="flex:1;"><div style="font-size:18px; color:#fff;">Mamá</div><div style="font-size:14px; color:#7b8ca3;">Casa · hace 12s</div></div><span style="padding:5px 12px; border-radius:999px; font-size:13px; background:rgba(32,201,151,0.18); color:#20c997;">A salvo</span></div>
+        <div style="display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:12px; background:rgba(255,255,255,0.03);"><span style="width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,#f5a623,#b46c00);"></span><div style="flex:1;"><div style="font-size:18px; color:#fff;">Sofía</div><div style="font-size:14px; color:#7b8ca3;">Colegio · hace 8s</div></div><span style="padding:5px 12px; border-radius:999px; font-size:13px; background:rgba(32,201,151,0.18); color:#20c997;">A salvo</span></div>
+        <div style="display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:12px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.25);"><span style="width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,#fb5670,#7a1726);"></span><div style="flex:1;"><div style="font-size:18px; color:#fff;">Diego</div><div style="font-size:14px; color:#7b8ca3;">En tránsito · localizando…</div></div><span style="padding:5px 12px; border-radius:999px; font-size:13px; background:rgba(245,166,35,0.18); color:#f5a623;">Pendiente</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-label="IA y Voz" data-speaker-notes="Módulos 3 y 4: el asistente IA guía evacuaciones y los asistentes de voz Alexa, Google y Siri anuncian la alerta automáticamente en cada hogar." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:radial-gradient(90% 80% at 20% 20%, rgba(34,211,238,0.10), transparent 55%), linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; padding:88px 104px;">
+  <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#22d3ee; margin:0;">Módulos 03 &amp; 04 · IA y Asistentes de Voz</p>
+  <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:58px; line-height:1.04; letter-spacing:-0.02em; margin:14px 0 0; max-width:1120px;">Una voz que te guía cuando <span style="color:#22d3ee;">cada segundo importa</span>.</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:50px; flex:1;">
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:36px; display:flex; flex-direction:column;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">AI EMERGENCY ASSISTANT</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:30px; color:#fff; margin:12px 0 22px;">Inteligencia que actúa contigo</div>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div style="font-size:20px; color:#cdd9e8; display:flex; gap:12px;"><span style="color:#22d3ee;">▹</span>Da instrucciones claras en tiempo real</div>
+        <div style="font-size:20px; color:#cdd9e8; display:flex; gap:12px;"><span style="color:#22d3ee;">▹</span>Guía rutas de evacuación seguras</div>
+        <div style="font-size:20px; color:#cdd9e8; display:flex; gap:12px;"><span style="color:#22d3ee;">▹</span>Responde preguntas bajo presión</div>
+        <div style="font-size:20px; color:#cdd9e8; display:flex; gap:12px;"><span style="color:#22d3ee;">▹</span>Detecta riesgos en tu entorno</div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:24px;">
+      <div style="background:linear-gradient(135deg,rgba(34,211,238,0.12),rgba(14,116,144,0.04)); border:1px solid rgba(34,211,238,0.3); border-radius:18px; padding:30px;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;"><span style="width:10px; height:10px; border-radius:50%; background:#fb5670; animation:qaPulse 1s infinite;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:14px; letter-spacing:0.16em; color:#22d3ee;">ALEXA ANUNCIA AUTOMÁTICAMENTE</span></div>
+        <p style="font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:27px; color:#fff; line-height:1.3; margin:0;">"Atención. Se ha detectado un sismo fuerte. Inicie protocolo de seguridad."</p>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+        <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:22px 16px; text-align:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:20px; color:#fff;">Alexa</div><div style="font-size:14px; color:#7b8ca3; margin-top:6px;">Skills</div></div>
+        <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:22px 16px; text-align:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:20px; color:#fff;">Google</div><div style="font-size:14px; color:#7b8ca3; margin-top:6px;">Actions</div></div>
+        <div style="background:rgba(20,30,48,0.55); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:22px 16px; text-align:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:20px; color:#fff;">Siri</div><div style="font-size:14px; color:#7b8ca3; margin-top:6px;">Shortcuts</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-label="Hogar y Ciudad" data-speaker-notes="Módulos 5, 6 y 7: la alerta dispara automatizaciones físicas en hogares y ciudades — apagar gas, abrir puertas, activar sirenas — vía IoT." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; padding:88px 104px;">
+  <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#22d3ee; margin:0;">Módulos 05–07 · Smart Home · IoT · Smart City</p>
+  <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:58px; line-height:1.02; letter-spacing:-0.02em; margin:14px 0 0; max-width:1160px;">La alerta no solo avisa: <span style="color:#22d3ee;">actúa sobre el mundo físico</span>.</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; margin-top:50px; flex:1;">
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:32px; display:flex; flex-direction:column;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">SMART HOME</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:#fff; margin:10px 0 20px;">Tu hogar reacciona solo</div>
+      <div style="display:flex; flex-direction:column; gap:13px;">
+        <div style="font-size:19px; color:#cdd9e8; display:flex; gap:10px;"><span style="color:#fb5670;">⏻</span>Corta el gas</div>
+        <div style="font-size:19px; color:#cdd9e8; display:flex; gap:10px;"><span style="color:#20c997;">⏏</span>Abre puertas y portones</div>
+        <div style="font-size:19px; color:#cdd9e8; display:flex; gap:10px;"><span style="color:#f5a623;">☀</span>Enciende luces de emergencia</div>
+        <div style="font-size:19px; color:#cdd9e8; display:flex; gap:10px;"><span style="color:#fb5670;">♪</span>Activa sirenas</div>
+      </div>
+      <div style="margin-top:auto; padding-top:20px; font-size:14px; color:#7b8ca3;">Home Assistant · SmartThings · Alexa · Google Home</div>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:32px; display:flex; flex-direction:column;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">IoT PLATFORM</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:#fff; margin:10px 0 20px;">Un gateway, todo conectado</div>
+      <div style="display:flex; flex-wrap:wrap; gap:10px;">
+        <span style="padding:8px 14px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:16px; color:#cdd9e8;">Sensores</span>
+        <span style="padding:8px 14px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:16px; color:#cdd9e8;">Cámaras</span>
+        <span style="padding:8px 14px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:16px; color:#cdd9e8;">Sirenas</span>
+        <span style="padding:8px 14px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:16px; color:#cdd9e8;">Botones de pánico</span>
+        <span style="padding:8px 14px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:16px; color:#cdd9e8;">Semáforos</span>
+        <span style="padding:8px 14px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:16px; color:#cdd9e8;">Paneles LED</span>
+      </div>
+      <div style="margin-top:auto; padding-top:20px; font-size:14px; color:#7b8ca3;">API Gateway estandarizado y seguro</div>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(34,211,238,0.12),rgba(14,116,144,0.04)); border:1px solid rgba(34,211,238,0.28); border-radius:18px; padding:32px; display:flex; flex-direction:column;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">SMART CITY</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:#fff; margin:10px 0 20px;">Para municipalidades</div>
+      <div style="display:flex; flex-direction:column; gap:13px;">
+        <div style="font-size:19px; color:#cdd9e8;">Alertas ciudadanas masivas</div>
+        <div style="font-size:19px; color:#cdd9e8;">Sirenas públicas y altavoces</div>
+        <div style="font-size:19px; color:#cdd9e8;">Botones de emergencia urbanos</div>
+        <div style="font-size:19px; color:#cdd9e8;">Cámaras y paneles electrónicos</div>
+      </div>
+      <div style="margin-top:auto; padding-top:20px; font-size:14px; color:#7b8ca3;">Guatemala · Antigua · Cobán · Xela · Escuintla</div>
+    </div>
+  </div>
+</section>
+
+<section data-label="Instituciones" data-speaker-notes="Módulos 8, 9 y 10: protección especializada para corporativo, escuelas y hospitales, cada uno con su mapa, sedes y conteo de personas protegidas." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; padding:88px 104px;">
+  <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#22d3ee; margin:0;">Módulos 08–10 · Protección de Instituciones</p>
+  <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:58px; line-height:1.02; letter-spacing:-0.02em; margin:14px 0 0;">Cada sector protegido a su <span style="color:#22d3ee;">manera</span>.</h2>
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:50px; flex:1;">
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:34px; display:flex; flex-direction:column;">
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#fff;">Corporativo</div>
+      <p style="font-size:18px; color:#aebfd4; margin:14px 0 24px; line-height:1.5;">Bancos, industria y centros comerciales. Mapa corporativo con estado por sede.</p>
+      <div style="margin-top:auto; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; justify-content:space-between; padding:14px 16px; border-radius:10px; background:rgba(32,201,151,0.1); border:1px solid rgba(32,201,151,0.25);"><span style="font-size:17px; color:#fff;">Sede Centro</span><span style="font-size:14px; color:#20c997;">Operativa · 1,240</span></div>
+        <div style="display:flex; justify-content:space-between; padding:14px 16px; border-radius:10px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.25);"><span style="font-size:17px; color:#fff;">Planta Sur</span><span style="font-size:14px; color:#f5a623;">Evacuando · 86%</span></div>
+      </div>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:34px; display:flex; flex-direction:column;">
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#fff;">Escuelas</div>
+      <p style="font-size:18px; color:#aebfd4; margin:14px 0 24px; line-height:1.5;">Colegios y universidades. Protocolos por aula y conteo de estudiantes a salvo.</p>
+      <div style="margin-top:auto; display:flex; gap:16px;">
+        <div style="flex:1; text-align:center; padding:18px 0; border-radius:12px; background:rgba(255,255,255,0.03);"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:34px; color:#20c997;">100%</div><div style="font-size:14px; color:#7b8ca3;">aulas notificadas</div></div>
+        <div style="flex:1; text-align:center; padding:18px 0; border-radius:12px; background:rgba(255,255,255,0.03);"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:34px; color:#fff;">3:40</div><div style="font-size:14px; color:#7b8ca3;">evacuación</div></div>
+      </div>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:34px; display:flex; flex-direction:column;">
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#fff;">Hospitales</div>
+      <p style="font-size:18px; color:#aebfd4; margin:14px 0 24px; line-height:1.5;">Públicos y privados. Continuidad de áreas críticas y pacientes no trasladables.</p>
+      <div style="margin-top:auto; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; justify-content:space-between; padding:14px 16px; border-radius:10px; background:rgba(251,86,112,0.08); border:1px solid rgba(251,86,112,0.25);"><span style="font-size:17px; color:#fff;">UCI</span><span style="font-size:14px; color:#fb5670;">Protocolo crítico</span></div>
+        <div style="display:flex; justify-content:space-between; padding:14px 16px; border-radius:10px; background:rgba(32,201,151,0.1); border:1px solid rgba(32,201,151,0.25);"><span style="font-size:17px; color:#fff;">Quirófanos</span><span style="font-size:14px; color:#20c997;">Asegurados</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-label="Command Center" data-speaker-notes="Módulo 11: el GIS Command Center es la sala de control que ve todo el país — sensores, alertas, municipios e instituciones protegidas en tiempo real." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:#060a12; display:flex; flex-direction:column; padding:74px 88px;">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#22d3ee; margin:0;">Módulo 11 · GIS Command Center</p>
+      <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:46px; line-height:1; letter-spacing:-0.02em; margin:10px 0 0;">La sala de control que ve todo el país</h2>
+    </div>
+    <div style="display:flex; gap:24px;">
+      <div style="text-align:right;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#22d3ee;">312</div><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#7b8ca3;">SENSORES ACTIVOS</div></div>
+      <div style="text-align:right;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#fff;">48</div><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#7b8ca3;">MUNICIPIOS</div></div>
+      <div style="text-align:right;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#20c997;">1.2M</div><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#7b8ca3;">PROTEGIDOS</div></div>
+    </div>
+  </div>
+  <div style="display:grid; grid-template-columns:0.78fr 0.22fr; gap:22px; margin-top:26px; flex:1;">
+    <div style="position:relative; border-radius:18px; overflow:hidden; background:radial-gradient(circle at 40% 55%, rgba(34,211,238,0.08), transparent 60%), #080d18; border:1px solid rgba(120,160,200,0.18);">
+      <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.07) 1px,transparent 1px); background-size:48px 48px;"></div>
+      <div style="position:absolute; left:0; right:0; height:30%; background:linear-gradient(180deg,rgba(34,211,238,0.06),transparent); animation:qaScan 6s linear infinite;"></div>
+      <div style="position:absolute; left:38%; top:50%; width:200px; height:200px; margin:-100px;">
+        <div style="position:absolute; inset:0; border:1px solid rgba(251,86,112,0.55); border-radius:50%; animation:qaRing 3.4s ease-out infinite;"></div>
+        <div style="position:absolute; inset:0; border:1px solid rgba(251,86,112,0.55); border-radius:50%; animation:qaRing 3.4s ease-out infinite 1.7s;"></div>
+        <div style="position:absolute; left:50%; top:50%; width:14px; height:14px; margin:-7px; background:#fb5670; border-radius:50%; box-shadow:0 0 20px 5px rgba(251,86,112,0.8);"></div>
+      </div>
+      <div style="position:absolute; left:22%; top:32%; width:9px; height:9px; margin:-4px; background:#22d3ee; border-radius:50%; box-shadow:0 0 12px 3px rgba(34,211,238,0.7);"></div>
+      <div style="position:absolute; left:58%; top:30%; width:9px; height:9px; background:#22d3ee; border-radius:50%; box-shadow:0 0 12px 3px rgba(34,211,238,0.7);"></div>
+      <div style="position:absolute; left:70%; top:62%; width:9px; height:9px; background:#22d3ee; border-radius:50%; box-shadow:0 0 12px 3px rgba(34,211,238,0.7);"></div>
+      <div style="position:absolute; left:30%; top:70%; width:9px; height:9px; background:#20c997; border-radius:50%; box-shadow:0 0 12px 3px rgba(32,201,151,0.7);"></div>
+      <div style="position:absolute; left:50%; top:78%; width:9px; height:9px; background:#20c997; border-radius:50%; box-shadow:0 0 12px 3px rgba(32,201,151,0.7);"></div>
+      <div style="position:absolute; left:30px; bottom:24px; font-family:'IBM Plex Mono',monospace; font-size:14px; color:#7b8ca3;">GUATEMALA · VISTA NACIONAL · LIVE</div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div style="background:rgba(20,30,48,0.6); border:1px solid rgba(251,86,112,0.3); border-radius:14px; padding:20px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#fb5670; letter-spacing:0.13em;">EVENTO ACTIVO</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#fff; margin:8px 0 4px;">M6.8 · Escuintla</div><div style="font-size:14px; color:#93a4ba;">Hace 8 segundos · Nivel rojo</div></div>
+      <div style="background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.16); border-radius:14px; padding:20px; flex:1;"><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#7b8ca3; letter-spacing:0.13em; margin-bottom:14px;">CAPAS</div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;"><span style="width:9px;height:9px;border-radius:50%;background:#22d3ee;"></span><span style="font-size:16px; color:#cdd9e8;">Sensores</span></div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;"><span style="width:9px;height:9px;border-radius:50%;background:#fb5670;"></span><span style="font-size:16px; color:#cdd9e8;">Alertas activas</span></div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;"><span style="width:9px;height:9px;border-radius:50%;background:#20c997;"></span><span style="font-size:16px; color:#cdd9e8;">Instituciones</span></div>
+        <div style="display:flex; align-items:center; gap:10px;"><span style="width:9px;height:9px;border-radius:50%;background:#f5a623;"></span><span style="font-size:16px; color:#cdd9e8;">Municipios</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-label="Simulacros" data-speaker-notes="Módulo 15: la plataforma estrella de simulacros con IA. Genera escenarios, coordina brigadas en tiempo real, mide y certifica la preparación." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:radial-gradient(90% 80% at 80% 20%, rgba(245,166,35,0.10), transparent 55%), linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; padding:88px 104px;">
+  <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#f5a623; margin:0;">Módulo 15 · Emergency Drill Platform</p>
+  <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:58px; line-height:1.02; letter-spacing:-0.02em; margin:14px 0 0; max-width:1180px;">Simulacros inteligentes que <span style="color:#f5a623;">entrenan a un país entero</span>.</h2>
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-top:48px;">
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:26px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#f5a623; letter-spacing:0.13em;">01 · PLANIFICAR</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#fff; margin:10px 0 8px;">Escenarios con IA</div><p style="font-size:15px; color:#93a4ba; margin:0; line-height:1.45;">"Terremoto M7.5, epicentro Escuintla, réplicas, corte eléctrico." Generado al instante.</p></div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:26px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#f5a623; letter-spacing:0.13em;">02 · ACTIVAR</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#fff; margin:10px 0 8px;">Multicanal</div><p style="font-size:15px; color:#93a4ba; margin:0; line-height:1.45;">"Simulacro oficial de terremoto en curso." Manual, programado, masivo o escalonado.</p></div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:26px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#f5a623; letter-spacing:0.13em;">03 · COORDINAR</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#fff; margin:10px 0 8px;">Mapa en vivo</div><p style="font-size:15px; color:#93a4ba; margin:0; line-height:1.45;">Evacuados, pendientes, brigadistas y rutas. Check-in "He llegado" en puntos seguros.</p></div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:26px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#f5a623; letter-spacing:0.13em;">04 · EVALUAR</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#fff; margin:10px 0 8px;">Scoring y mejora</div><p style="font-size:15px; color:#93a4ba; margin:0; line-height:1.45;">Tiempos por piso y área, reporte PDF ejecutivo y plan de mejora automático.</p></div>
+  </div>
+  <div style="display:flex; gap:20px; margin-top:34px; flex:1; align-items:stretch;">
+    <div style="flex:1; background:linear-gradient(135deg,rgba(245,166,35,0.12),rgba(180,108,0,0.04)); border:1px solid rgba(245,166,35,0.3); border-radius:18px; padding:30px; display:flex; align-items:center; gap:26px;">
+      <div><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#f5a623; letter-spacing:0.13em;">DRILL AI COORDINATOR</div><p style="font-size:20px; color:#eaf1f8; margin:10px 0 0; line-height:1.45; max-width:420px;">Detecta cuellos de botella, reasigna brigadistas y recomienda mejoras en tiempo real.</p></div>
+    </div>
+    <div style="flex:1; display:flex; gap:18px;">
+      <div style="flex:1; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:24px; display:flex; flex-direction:column; justify-content:center;"><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#7b8ca3; letter-spacing:0.13em;">CERTIFICACIÓN</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:8px 0 6px;">Insignias verificables</div><p style="font-size:15px; color:#93a4ba; margin:0;">Avaladas por instituciones nacionales. Compartibles en LinkedIn.</p></div>
+      <div style="flex:1; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:24px; display:flex; flex-direction:column; justify-content:center;"><div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#7b8ca3; letter-spacing:0.13em;">GAMIFICACIÓN</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:8px 0 6px;">Rankings</div><p style="font-size:15px; color:#93a4ba; margin:0;">Brigadistas, escuelas, municipalidades e instituciones.</p></div>
+    </div>
+  </div>
+</section>
+
+<section data-label="Inteligencia" data-speaker-notes="Módulos 12, 13 y 14: agentes autónomos que orquestan todo, analítica tipo Power BI y un estudio low-code para integraciones sin programar." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; padding:88px 104px;">
+  <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#22d3ee; margin:0;">Módulos 12–14 · La capa de inteligencia</p>
+  <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:58px; line-height:1.02; letter-spacing:-0.02em; margin:14px 0 0;">Agentes autónomos que <span style="color:#22d3ee;">orquestan todo</span>.</h2>
+  <div style="display:grid; grid-template-columns:1.25fr 0.75fr; gap:26px; margin-top:50px; flex:1;">
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(34,211,238,0.22); border-radius:18px; padding:34px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em; margin-bottom:22px;">AI AGENT ORCHESTRATOR</div>
+      <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:14px;">
+        <div style="padding:18px 20px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.12);"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px; color:#fff;">Detection</div><div style="font-size:14px; color:#7b8ca3; margin-top:4px;">Analiza eventos</div></div>
+        <div style="padding:18px 20px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.12);"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px; color:#fff;">Alert</div><div style="font-size:14px; color:#7b8ca3; margin-top:4px;">Gestiona alertas</div></div>
+        <div style="padding:18px 20px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.12);"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px; color:#fff;">Family</div><div style="font-size:14px; color:#7b8ca3; margin-top:4px;">Grupos familiares</div></div>
+        <div style="padding:18px 20px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.12);"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px; color:#fff;">Smart City</div><div style="font-size:14px; color:#7b8ca3; margin-top:4px;">Coordina ciudades</div></div>
+        <div style="padding:18px 20px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.12);"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px; color:#fff;">Corporate</div><div style="font-size:14px; color:#7b8ca3; margin-top:4px;">Coordina empresas</div></div>
+        <div style="padding:18px 20px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.12);"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px; color:#fff;">Analytics</div><div style="font-size:14px; color:#7b8ca3; margin-top:4px;">Predice y aprende</div></div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:22px;">
+      <div style="flex:1; background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:18px; padding:30px; display:flex; flex-direction:column; justify-content:center;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">ANALYTICS &amp; BI</div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:24px; color:#fff; margin:10px 0 16px;">Inteligencia accionable</div>
+        <div style="display:flex; gap:20px;">
+          <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#22d3ee;">7.2s</div><div style="font-size:13px; color:#7b8ca3;">alerta prom.</div></div>
+          <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#20c997;">98%</div><div style="font-size:13px; color:#7b8ca3;">cobertura</div></div>
+          <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#fff;">1.2M</div><div style="font-size:13px; color:#7b8ca3;">protegidos</div></div>
+        </div>
+      </div>
+      <div style="flex:1; background:linear-gradient(135deg,rgba(34,211,238,0.1),rgba(14,116,144,0.03)); border:1px solid rgba(34,211,238,0.25); border-radius:18px; padding:30px; display:flex; flex-direction:column; justify-content:center;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">LOW-CODE STUDIO</div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:24px; color:#fff; margin:10px 0 8px;">Integraciones sin código</div>
+        <p style="font-size:16px; color:#aebfd4; margin:0; line-height:1.45;">APIs, workflows y automatizaciones que cualquier institución arma sola.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-label="Arquitectura" data-speaker-notes="La base técnica: confiabilidad móvil incluso con la app cerrada, backend moderno, multi-cloud, microservicios y seguridad de grado empresarial." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; padding:88px 104px;">
+  <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#22d3ee; margin:0;">Arquitectura empresarial</p>
+  <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:58px; line-height:1.02; letter-spacing:-0.02em; margin:14px 0 0;">Construida para no fallar <span style="color:#22d3ee;">jamás</span>.</h2>
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:22px; margin-top:50px; flex:1;">
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:30px; display:flex; flex-direction:column;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#22d3ee; letter-spacing:0.14em;">MÓVIL</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:23px; color:#fff; margin:10px 0 16px;">React Native + TS</div>
+      <div style="display:flex; flex-direction:column; gap:10px; font-size:16px; color:#aebfd4;"><span>App cerrada y bloqueada</span><span>Segundo plano confiable</span><span>Modo ahorro de energía</span><span>Toda marca y gama</span></div>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:30px; display:flex; flex-direction:column;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#22d3ee; letter-spacing:0.14em;">BACKEND</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:23px; color:#fff; margin:10px 0 16px;">Node · NestJS · TS</div>
+      <div style="display:flex; flex-direction:column; gap:10px; font-size:16px; color:#aebfd4;"><span>Microservicios</span><span>Event-Driven</span><span>CQRS · DDD</span><span>Multi-tenant SaaS</span></div>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:30px; display:flex; flex-direction:column;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#22d3ee; letter-spacing:0.14em;">CLOUD</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:23px; color:#fff; margin:10px 0 16px;">Multi-cloud</div>
+      <div style="display:flex; flex-direction:column; gap:10px; font-size:16px; color:#aebfd4;"><span>AWS</span><span>Azure</span><span>Oracle Cloud</span><span>Alta disponibilidad</span></div>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(251,86,112,0.1),rgba(122,23,38,0.03)); border:1px solid rgba(251,86,112,0.28); border-radius:16px; padding:30px; display:flex; flex-direction:column;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#fb5670; letter-spacing:0.13em;">SEGURIDAD</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:23px; color:#fff; margin:10px 0 16px;">Grado público</div>
+      <div style="display:flex; flex-direction:column; gap:10px; font-size:16px; color:#aebfd4;"><span>MFA · OAuth2 · OIDC</span><span>RBAC granular</span><span>Auditoría completa</span><span>Encriptación E2E</span></div>
+    </div>
+  </div>
+</section>
+
+<section data-label="Negocio" data-speaker-notes="Modelo de negocio multicapa: B2C, B2B, B2G y white-label para telcos, distribuido por canales estratégicos que ya tienen la relación con el cliente." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:radial-gradient(90% 80% at 15% 80%, rgba(34,211,238,0.08), transparent 55%), linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; padding:88px 104px;">
+  <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#22d3ee; margin:0;">Modelo de negocio &amp; escalabilidad</p>
+  <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:58px; line-height:1.02; letter-spacing:-0.02em; margin:14px 0 0;">Una plataforma, <span style="color:#22d3ee;">cuatro motores de ingreso</span>.</h2>
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-top:50px;">
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:28px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#22d3ee;">B2C</div><p style="font-size:17px; color:#aebfd4; margin:10px 0 0; line-height:1.45;">Suscripción individual y familiar.</p></div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:28px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#22d3ee;">B2B</div><p style="font-size:17px; color:#aebfd4; margin:10px 0 0; line-height:1.45;">Empresas, escuelas y hospitales.</p></div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.16); border-radius:16px; padding:28px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#22d3ee;">B2G</div><p style="font-size:17px; color:#aebfd4; margin:10px 0 0; line-height:1.45;">Gobiernos y municipalidades.</p></div>
+    <div style="background:linear-gradient(135deg,rgba(34,211,238,0.14),rgba(14,116,144,0.04)); border:1px solid rgba(34,211,238,0.3); border-radius:16px; padding:28px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#fff;">Telco</div><p style="font-size:17px; color:#aebfd4; margin:10px 0 0; line-height:1.45;">White-label para operadores.</p></div>
+  </div>
+  <div style="margin-top:44px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:18px; letter-spacing:0.18em; color:#7b8ca3; margin-bottom:18px;">CANALES ESTRATÉGICOS DE DISTRIBUCIÓN</div>
+    <div style="display:flex; flex-wrap:wrap; gap:12px;">
+      <span style="padding:12px 22px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:18px; color:#cdd9e8;">Operadores móviles</span>
+      <span style="padding:12px 22px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:18px; color:#cdd9e8;">ISPs</span>
+      <span style="padding:12px 22px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:18px; color:#cdd9e8;">Aseguradoras</span>
+      <span style="padding:12px 22px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:18px; color:#cdd9e8;">Bancos</span>
+      <span style="padding:12px 22px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:18px; color:#cdd9e8;">Municipalidades</span>
+      <span style="padding:12px 22px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:18px; color:#cdd9e8;">Constructoras</span>
+      <span style="padding:12px 22px; border:1px solid rgba(120,160,200,0.2); border-radius:999px; font-size:18px; color:#cdd9e8;">Administradoras de condominios</span>
+    </div>
+  </div>
+  <div style="margin-top:auto; padding-top:34px; border-top:1px solid rgba(120,160,200,0.14); display:flex; align-items:center; gap:20px;">
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:15px; color:#7b8ca3;">ESCALABILIDAD</span>
+    <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:#fff;">Guatemala</span><span style="color:#22d3ee; font-size:24px;">→</span>
+    <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:#fff;">Centroamérica</span><span style="color:#22d3ee; font-size:24px;">→</span>
+    <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:#22d3ee;">Latinoamérica</span>
+  </div>
+</section>
+
+<section data-label="Roadmap" data-speaker-notes="Tres fases: MVP que prueba que salvamos vidas, expansión regional con instituciones, y plataforma enterprise para toda LatAm." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; padding:88px 104px;">
+  <p style="font-family:'IBM Plex Mono',monospace; font-size:23px; letter-spacing:0.26em; text-transform:uppercase; color:#22d3ee; margin:0;">Roadmap</p>
+  <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:58px; line-height:1.02; letter-spacing:-0.02em; margin:14px 0 0;">De MVP a plataforma <span style="color:#22d3ee;">regional</span>.</h2>
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:54px; flex:1;">
+    <div style="background:linear-gradient(180deg,rgba(34,211,238,0.12),rgba(12,18,32,0.5)); border:1px solid rgba(34,211,238,0.3); border-radius:18px; padding:34px; display:flex; flex-direction:column;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#22d3ee; letter-spacing:0.15em;">FASE 1 · MVP</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:28px; color:#fff; margin:12px 0 18px;">Probar que salvamos vidas</div>
+      <div style="display:flex; flex-direction:column; gap:12px; font-size:17px; color:#cdd9e8;"><span>▹ Early Warning + alertas multicanal</span><span>▹ App ciudadana y Family Network</span><span>▹ Asistente IA de emergencia</span><span>▹ Piloto en Guatemala</span></div>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.18); border-radius:18px; padding:34px; display:flex; flex-direction:column;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:#f5a623; letter-spacing:0.16em;">FASE 2 · REGIONAL</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:28px; color:#fff; margin:12px 0 18px;">Instituciones y ciudades</div>
+      <div style="display:flex; flex-direction:column; gap:12px; font-size:17px; color:#cdd9e8;"><span>▹ Smart City + IoT + voz</span><span>▹ Corporativo, escuelas, hospitales</span><span>▹ Plataforma de simulacros</span><span>▹ Centroamérica</span></div>
+    </div>
+    <div style="background:linear-gradient(180deg,rgba(20,30,48,0.7),rgba(12,18,32,0.5)); border:1px solid rgba(120,160,200,0.18); border-radius:18px; padding:34px; display:flex; flex-direction:column;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:#20c997; letter-spacing:0.16em;">FASE 3 · ENTERPRISE</div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:28px; color:#fff; margin:12px 0 18px;">Inteligencia a escala</div>
+      <div style="display:flex; flex-direction:column; gap:12px; font-size:17px; color:#cdd9e8;"><span>▹ Agent Orchestrator + BI</span><span>▹ Low-Code Studio + Digital Twin</span><span>▹ White-label para telcos</span><span>▹ Latinoamérica</span></div>
+    </div>
+  </div>
+</section>
+
+<section data-label="Cierre" data-speaker-notes="Cierre: QUAKE ALERT no vende una app, ofrece segundos que salvan vidas. La tecnología al servicio de la protección de las personas." style="position:relative; width:100%; height:100%; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:radial-gradient(110% 80% at 50% 0%, rgba(34,211,238,0.16), transparent 55%), linear-gradient(160deg,#070d18,#05080f); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:96px;">
+  <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.04) 1px,transparent 1px); background-size:64px 64px; mask-image:radial-gradient(80% 80% at 50% 50%,#000,transparent 75%);"></div>
+  <div style="position:relative; display:flex; align-items:center; gap:14px; margin-bottom:36px;">
+    <div style="width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#22d3ee,#0e7490); box-shadow:0 0 24px rgba(34,211,238,0.5);"></div>
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:22px; letter-spacing:0.3em; text-transform:uppercase; color:#bfe9f4;">Quake Alert</span>
+  </div>
+  <h2 style="position:relative; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:92px; line-height:1.0; letter-spacing:-0.03em; margin:0; max-width:1300px;">No vendemos una app.<br>Damos <span style="color:#22d3ee;">segundos que salvan vidas</span>.</h2>
+  <p style="position:relative; font-size:26px; color:#aebfd4; margin:36px 0 0; max-width:820px; line-height:1.5;">Tecnología al servicio de la protección civil, las personas y las ciudades de Latinoamérica.</p>
+  <div style="position:relative; margin-top:46px; display:flex; gap:16px;">
+    <span style="padding:14px 30px; border-radius:999px; background:#22d3ee; color:#05080f; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:20px;">Construyamos la próxima generación</span>
+  </div>
+</section>
+
+</x-import>
+</x-dc>
+</body>
+</html>

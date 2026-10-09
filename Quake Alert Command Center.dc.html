@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUAKE ALERT">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="./qa-db.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #060a12; }
+  @keyframes qaRing { 0% { transform: scale(0.1); opacity: 0.95; } 100% { transform: scale(1); opacity: 0; } }
+  @keyframes qaPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+  @keyframes qaScan { 0% { transform: translateY(-120%); } 100% { transform: translateY(120%); } }
+  @keyframes qaBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,160,200,0.2); border-radius: 4px; }
+  .qa-dark-tiles { filter: invert(1) hue-rotate(190deg) brightness(0.72) saturate(0.55) contrast(1.05); }
+  @media (max-width: 960px) {
+    .qa-cc-root { grid-template-columns: 1fr !important; grid-template-rows: auto auto auto auto !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
+    .qa-cc-rail { display: none !important; }
+    .qa-cc-header, .qa-cc-map, .qa-cc-side, .qa-cc-bottom { grid-column: 1 !important; grid-row: auto !important; }
+    .qa-cc-header { flex-wrap: wrap !important; height: auto !important; padding: 14px 18px !important; gap: 10px !important; }
+    .qa-cc-map { height: 360px !important; }
+    .qa-cc-side { border-left: none !important; border-top: 1px solid rgba(120,160,200,0.1) !important; }
+    .qa-cc-bottom { flex-wrap: wrap !important; height: auto !important; padding: 16px 18px !important; }
+    .qa-cc-bottom > div[style*="width:1px"] { display: none !important; }
+    .qa-cc-bottom > div[style*="flex:1"] { min-width: 42% !important; }
+  }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</helmet>
+<div class="qa-cc-root" style="height:100vh; width:100%; background:#060a12; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; display:grid; grid-template-columns:78px 1fr 388px; grid-template-rows:66px 1fr 108px; overflow:hidden;">
+
+  <div class="qa-cc-rail" style="grid-row:1 / 4; grid-column:1; background:#080d16; border-right:1px solid rgba(120,160,200,0.1); display:flex; flex-direction:column; align-items:center; padding:16px 0; gap:8px;">
+    <div style="width:42px; height:42px; border-radius:11px; background:linear-gradient(135deg,#22d3ee,#0e7490); box-shadow:0 0 20px rgba(34,211,238,0.5); display:flex; align-items:center; justify-content:center; margin-bottom:14px;"><span style="font-size:18px; color:#06141a;">◉</span></div>
+    <div style="width:46px; height:46px; border-radius:12px; background:rgba(34,211,238,0.14); border:1px solid rgba(34,211,238,0.35); display:flex; align-items:center; justify-content:center; font-size:19px; color:#22d3ee;">▣</div>
+    <div style="width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; color:#5f7187;">♥</div>
+    <div style="width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; color:#5f7187;">✦</div>
+    <div style="width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; color:#5f7187;">◆</div>
+    <div style="width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; color:#5f7187;">▤</div>
+    <div style="margin-top:auto; width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; color:#5f7187;">⚙</div>
+  </div>
+
+  <div class="qa-cc-header" style="grid-column:2 / 4; grid-row:1; background:#080d16; border-bottom:1px solid rgba(120,160,200,0.1); display:flex; align-items:center; justify-content:space-between; padding:0 26px;">
+    <div style="display:flex; align-items:center; gap:18px;">
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff; letter-spacing:0.01em;">Centro de Comando Nacional</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#7b8ca3; margin-top:1px;">GUATEMALA · PROTECCIÓN CIVIL</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px; background:rgba(32,201,151,0.1); border:1px solid rgba(32,201,151,0.28);">
+        <span style="width:7px; height:7px; border-radius:50%; background:#20c997; animation:qaBlink 2s ease-in-out infinite;"></span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#20c997;">SISTEMA OPERATIVO</span>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#9fb4ad; padding:8px 14px; border-radius:8px; background:rgba(255,255,255,0.03);">14:32:08</div>
+      <sc-if value="{{ alertOff }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ simulate }}" style="border:none; cursor:pointer; padding:11px 20px; border-radius:10px; background:linear-gradient(135deg,#fb5670,#c4243d); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; box-shadow:0 6px 18px rgba(251,86,112,0.3); display:flex; align-items:center; gap:8px;"><span>▲</span> Simular evento</button>
+      </sc-if>
+      <sc-if value="{{ alertOn }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ clear }}" style="border:1px solid rgba(255,255,255,0.2); cursor:pointer; padding:11px 20px; border-radius:10px; background:rgba(255,255,255,0.06); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;">Finalizar evento</button>
+      </sc-if>
+    </div>
+  </div>
+
+  <div class="qa-cc-map" style="grid-column:2; grid-row:2; position:relative; overflow:hidden; background:radial-gradient(80% 70% at 45% 50%, rgba(34,211,238,0.07), transparent 60%), #070c15;">
+    <div ref="{{ mapRef }}" style="position:absolute; inset:0; z-index:0;"></div>
+
+    <div style="position:absolute; left:22px; top:18px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#7b8ca3;">GUATEMALA · VISTA NACIONAL</div>
+
+    <div style="position:absolute; left:22px; bottom:22px; width:228px; background:rgba(8,13,22,0.82); border:1px solid rgba(120,160,200,0.16); border-radius:14px; padding:16px; backdrop-filter:blur(8px);">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#7b8ca3; margin-bottom:13px;">CAPAS DEL MAPA</div>
+      <div onClick="{{ toggleSens }}" style="display:flex; align-items:center; gap:11px; padding:7px 0; cursor:pointer; opacity:{{ sensOp }};"><span style="width:11px; height:11px; border-radius:50%; background:#22d3ee; box-shadow:0 0 8px rgba(34,211,238,0.6);"></span><span style="font-size:14px; color:#cdd9e8; flex:1;">Sensores</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">312</span></div>
+      <div onClick="{{ toggleAlert }}" style="display:flex; align-items:center; gap:11px; padding:7px 0; cursor:pointer; opacity:{{ alertLayerOp }};"><span style="width:11px; height:11px; border-radius:50%; background:#fb5670; box-shadow:0 0 8px rgba(251,86,112,0.6);"></span><span style="font-size:14px; color:#cdd9e8; flex:1;">Alertas activas</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">{{ activeCount }}</span></div>
+      <div onClick="{{ toggleInst }}" style="display:flex; align-items:center; gap:11px; padding:7px 0; cursor:pointer; opacity:{{ instOp }};"><span style="width:10px; height:10px; border-radius:2px; background:#20c997; box-shadow:0 0 8px rgba(32,201,151,0.6);"></span><span style="font-size:14px; color:#cdd9e8; flex:1;">Instituciones</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">1,840</span></div>
+      <div onClick="{{ toggleMuni }}" style="display:flex; align-items:center; gap:11px; padding:7px 0; cursor:pointer; opacity:{{ muniOp }};"><span style="width:11px; height:11px; border-radius:50%; border:1.5px dashed #f5a623;"></span><span style="font-size:14px; color:#cdd9e8; flex:1;">Municipios</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">48</span></div>
+    </div>
+  </div>
+
+  <div class="qa-cc-side" style="grid-column:3; grid-row:2; background:#080d16; border-left:1px solid rgba(120,160,200,0.1); overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px;">
+
+    <sc-if value="{{ alertOn }}" hint-placeholder-val="{{ false }}">
+      <div style="border-radius:16px; overflow:hidden; background:linear-gradient(180deg,rgba(251,86,112,0.14),rgba(120,23,38,0.04)); border:1px solid rgba(251,86,112,0.4);">
+        <div style="padding:16px 18px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(251,86,112,0.2);"><span style="width:9px; height:9px; border-radius:50%; background:#fb5670; animation:qaPulse 0.8s infinite;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#fb5670;">EVENTO EN CURSO</span></div>
+        <div style="padding:18px;">
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:24px; color:#fff;">{{ evTitle }}</div>
+          <div style="font-size:14px; color:#f4a9b3; margin-top:3px;">{{ evSub }}</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px;">
+            <div style="background:rgba(0,0,0,0.25); border-radius:10px; padding:12px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7b8ca3;">INTENSIDAD</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:20px; color:#f5a623;">{{ evIntensidad }}</div></div>
+            <div style="background:rgba(0,0,0,0.25); border-radius:10px; padding:12px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7b8ca3;">ALERTAS ENVIADAS</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:20px; color:#fff;">{{ evAlertas }}</div></div>
+            <div style="background:rgba(0,0,0,0.25); border-radius:10px; padding:12px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7b8ca3;">SIRENAS ACTIVAS</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:20px; color:#22d3ee;">{{ evSirenas }}</div></div>
+            <div style="background:rgba(0,0,0,0.25); border-radius:10px; padding:12px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7b8ca3;">MUNICIPIOS</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:20px; color:#fff;">{{ evMunis }}</div></div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ alertOff }}" hint-placeholder-val="{{ true }}">
+      <div style="border-radius:16px; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); padding:26px 18px; text-align:center;">
+        <div style="width:54px; height:54px; border-radius:50%; background:rgba(32,201,151,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:24px; color:#20c997;">✓</div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:18px; color:#fff;">Sin eventos activos</div>
+        <p style="font-size:13px; color:#7b8ca3; margin:8px 0 0; line-height:1.5;">Monitoreo en tiempo real de 312 sensores en 48 municipios.</p>
+      </div>
+    </sc-if>
+
+    <div style="border-radius:16px; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); padding:18px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; color:#7b8ca3;">RED DE SENSORES</span><span style="font-size:12px; color:#20c997;">98.4% en línea</span></div>
+      <div style="display:flex; flex-direction:column; gap:13px;">
+        <div><div style="display:flex; justify-content:space-between; font-size:13px; color:#cdd9e8; margin-bottom:6px; white-space:nowrap;"><span>Región Central</span><span style="color:#9fb4ad;">112 / 112</span></div><div style="height:6px; border-radius:3px; background:rgba(255,255,255,0.06);"><div style="width:100%; height:100%; border-radius:3px; background:#20c997;"></div></div></div>
+        <div><div style="display:flex; justify-content:space-between; font-size:13px; color:#cdd9e8; margin-bottom:6px; white-space:nowrap;"><span>Costa Sur</span><span style="color:#9fb4ad;">84 / 86</span></div><div style="height:6px; border-radius:3px; background:rgba(255,255,255,0.06);"><div style="width:97%; height:100%; border-radius:3px; background:#22d3ee;"></div></div></div>
+        <div><div style="display:flex; justify-content:space-between; font-size:13px; color:#cdd9e8; margin-bottom:6px; white-space:nowrap;"><span>Altiplano</span><span style="color:#9fb4ad;">68 / 74</span></div><div style="height:6px; border-radius:3px; background:rgba(255,255,255,0.06);"><div style="width:92%; height:100%; border-radius:3px; background:#f5a623;"></div></div></div>
+      </div>
+    </div>
+
+    <div style="border-radius:16px; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); padding:18px; flex:1;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; color:#7b8ca3; margin-bottom:16px;">BITÁCORA</div>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <sc-for list="{{ bitacora }}" as="b" hint-placeholder-count="4">
+          <div style="display:flex; gap:12px;"><span style="width:8px; height:8px; border-radius:50%; background:{{ b.color }}; margin-top:5px; flex-shrink:0;"></span><div><div style="font-size:14px; color:#cdd9e8;">{{ b.action }}</div><div style="font-size:12px; color:#7b8ca3; margin-top:2px;">{{ b.meta }}</div></div></div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div class="qa-cc-bottom" style="grid-column:2 / 4; grid-row:3; background:#080d16; border-top:1px solid rgba(120,160,200,0.1); display:flex; align-items:center; padding:0 26px; gap:26px;">
+    <div style="flex:1; display:flex; flex-direction:column; gap:4px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">SENSORES ACTIVOS</span><span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#22d3ee;">312</span></div>
+    <div style="width:1px; height:52px; background:rgba(120,160,200,0.12);"></div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:4px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">MUNICIPIOS</span><span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#fff;">48</span></div>
+    <div style="width:1px; height:52px; background:rgba(120,160,200,0.12);"></div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:4px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">INSTITUCIONES PROTEGIDAS</span><span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#fff;">1,840</span></div>
+    <div style="width:1px; height:52px; background:rgba(120,160,200,0.12);"></div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:4px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">PERSONAS CUBIERTAS</span><span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#20c997;">1.24M</span></div>
+    <div style="width:1px; height:52px; background:rgba(120,160,200,0.12);"></div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:4px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">ALERTA PROM.</span><span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#fff;">7.2<span style="font-size:16px; color:#9fb4ad;">s</span></span></div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1512, &quot;height&quot;: 982}}">
+class Component extends DCLogic {
+  state = { sensores: true, alertas: true, instituciones: true, municipios: false, alert: false, ev: null };
+  _map = null; _layers = {}; _el = null;
+
+  EPICENTROS = [
+    { epi: 'Escuintla', muni: 'Escuintla', lat: 14.305, lng: -90.785 },
+    { epi: 'Mixco', muni: 'Mixco', lat: 14.633, lng: -90.606 },
+    { epi: 'Sololá', muni: 'Sololá', lat: 14.772, lng: -91.183 },
+    { epi: 'Quetzaltenango', muni: 'Quetzaltenango', lat: 14.833, lng: -91.517 },
+    { epi: 'Cobán', muni: 'Cobán', lat: 15.471, lng: -90.371 },
+    { epi: 'Puerto Barrios', muni: 'Puerto Barrios', lat: 15.727, lng: -88.595 },
+  ];
+
+  toggle(k) { this.setState(s => ({ [k]: !s[k] })); }
+
+  componentDidMount() {
+    this._tryInit(0);
+    if (window.QADB) this._off = window.QADB.on(() => this.forceUpdate());
+    else window.addEventListener('qadb-ready', () => { this._off = window.QADB.on(() => this.forceUpdate()); }, { once: true });
+  }
+
+  fmtCompact(n) { if (n >= 1e6) return (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M'; if (n >= 1e3) return Math.round(n / 1e3) + 'K'; return String(n); }
+  fmtAgo(ts) { const m = Math.max(0, Math.round((Date.now() - ts) / 60000)); if (m < 1) return 'ahora'; if (m < 60) return 'hace ' + m + ' min'; const h = Math.round(m / 60); if (h < 24) return 'hace ' + h + ' h'; return 'hace ' + Math.round(h / 24) + ' d'; }
+  intensidad(mag) { return mag >= 7 ? 'IX' : mag >= 6.5 ? 'VIII' : mag >= 6 ? 'VII' : mag >= 5.5 ? 'VI' : 'V'; }
+
+  simulate() {
+    const p = this.EPICENTROS[Math.floor(Math.random() * this.EPICENTROS.length)];
+    const mag = Math.round((5 + Math.random() * 2.3) * 10) / 10;
+    const personas = Math.round(mag * 175000);
+    const sess = window.QADB && window.QADB.session.get();
+    let ev = { magnitud: mag, epicentro: p.epi, municipio: p.muni, profundidadKm: 8 + Math.floor(Math.random() * 30), status: 'Activo', issuedBy: sess && sess.id, personasAlertadas: personas, leadSeg: 6 + Math.floor(Math.random() * 10), lat: p.lat, lng: p.lng, ts: Date.now() };
+    if (window.QADB) { ev = window.QADB.insert('eventos', ev); window.QADB.log('Emitió alerta M' + mag + ' · ' + p.epi, { user: sess && sess.name, color: '#fb5670' }); }
+    this._placeAlert(p.lat, p.lng);
+    this.setState({ alert: true, alertas: true, ev });
+  }
+
+  clear() {
+    const ev = this.state.ev;
+    if (ev && window.QADB) { window.QADB.update('eventos', ev.id, { status: 'Cerrado' }); window.QADB.log('Finalizó evento M' + ev.magnitud + ' · ' + ev.epicentro, { color: '#20c997' }); }
+    this.setState({ alert: false, ev: null });
+  }
+
+  _placeAlert(lat, lng) {
+    const L = window.L, m = this._map; if (!L || !m) return;
+    this._alertLatLng = [lat, lng];
+    if (this._layers.alert && m.hasLayer(this._layers.alert)) m.removeLayer(this._layers.alert);
+    this._layers.alert = L.layerGroup([
+      L.circle([lat, lng], { radius: 60000, color: '#fb5670', weight: 1, fillColor: '#fb5670', fillOpacity: 0.08 }),
+      L.circle([lat, lng], { radius: 35000, color: '#fb5670', weight: 1.2, fillColor: '#fb5670', fillOpacity: 0.12 }),
+      L.circleMarker([lat, lng], { radius: 8, color: '#fff', weight: 2, fillColor: '#fb5670', fillOpacity: 1 })
+    ]);
+  }
+
+  _tryInit(n) {
+    if (typeof window.L === 'undefined') { if (n < 50) setTimeout(() => this._tryInit(n + 1), 150); return; }
+    if (this._map || !this._el) return;
+    const L = window.L;
+    const map = L.map(this._el, { zoomControl: false, attributionControl: false, scrollWheelZoom: true }).setView([15.5, -90.3], 7);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, className: 'qa-dark-tiles' }).addTo(map);
+    const SENS = [[14.6349,-90.5069],[14.8333,-91.5167],[14.305,-90.785],[15.4711,-90.3711],[14.5586,-90.7295],[14.7722,-91.183],[15.7271,-88.5947],[15.3197,-91.471],[14.5347,-91.5036],[14.9722,-89.5306],[14.95,-91.13],[15.04,-90.41]];
+    const INST = [[14.62,-90.52],[14.64,-90.505],[14.31,-90.79],[14.84,-91.52],[15.47,-90.37]];
+    const MUNI = [[14.6349,-90.5069],[14.305,-90.785],[14.8333,-91.5167]];
+    const gSens = L.layerGroup(SENS.map(c => L.circleMarker(c, { radius: 5, color: '#22d3ee', weight: 2, fillColor: '#22d3ee', fillOpacity: 0.9 })));
+    const gInst = L.layerGroup(INST.map(c => L.circleMarker(c, { radius: 5, color: '#20c997', weight: 2, fillColor: '#20c997', fillOpacity: 0.9 })));
+    const gMuni = L.layerGroup(MUNI.map(c => L.circle(c, { radius: 18000, color: '#f5a623', weight: 1, dashArray: '4 5', fill: false })));
+    const gAlert = L.layerGroup([
+      L.circle([14.305,-90.785], { radius: 60000, color: '#fb5670', weight: 1, fillColor: '#fb5670', fillOpacity: 0.08 }),
+      L.circle([14.305,-90.785], { radius: 35000, color: '#fb5670', weight: 1.2, fillColor: '#fb5670', fillOpacity: 0.12 }),
+      L.circleMarker([14.305,-90.785], { radius: 8, color: '#fff', weight: 2, fillColor: '#fb5670', fillOpacity: 1 }).bindTooltip('Epicentro M6.8 · Escuintla')
+    ]);
+    this._map = map;
+    this._layers = { sensores: gSens, instituciones: gInst, municipios: gMuni, alert: gAlert };
+    this._sync();
+    setTimeout(() => map.invalidateSize(), 250);
+  }
+
+  _sync() {
+    const m = this._map, ly = this._layers, s = this.state;
+    if (!m) return;
+    const set = (g, on) => { if (!g) return; if (on && !m.hasLayer(g)) g.addTo(m); if (!on && m.hasLayer(g)) m.removeLayer(g); };
+    set(ly.sensores, s.sensores);
+    set(ly.instituciones, s.instituciones);
+    set(ly.municipios, s.municipios);
+    set(ly.alert, s.alert && s.alertas);
+    if (s.alert && s.alertas) m.flyTo(this._alertLatLng || [14.305,-90.785], 8, { duration: 1.2 });
+  }
+
+  componentDidUpdate() { if (!this._map) this._tryInit(0); else this._sync(); }
+  componentWillUnmount() { if (this._map) { this._map.remove(); this._map = null; } if (this._off) this._off(); }
+
+  renderVals() {
+    const s = this.state;
+    const op = (on) => (on ? 1 : 0.32);
+    const DB = window.QADB;
+    const ev = s.ev || (DB ? (DB.where('eventos', e => e.status === 'Activo')[0] || null) : null);
+    const mag = ev ? ev.magnitud : 6.8;
+    const bitacora = DB ? DB.get('logs').slice(0, 5).map(l => ({ action: l.action, color: l.color || '#9fb4ad', meta: this.fmtAgo(l.ts) + (l.user ? ' · ' + l.user : '') })) : [];
+    return {
+      mapRef: (el) => { this._el = el; },
+      alertOn: s.alert && s.alertas,
+      alertOff: !(s.alert && s.alertas),
+      activeCount: DB ? DB.count('eventos', e => e.status === 'Activo') : (s.alert ? 1 : 0),
+      sensOp: op(s.sensores), alertLayerOp: op(s.alertas), instOp: op(s.instituciones), muniOp: op(s.municipios),
+      toggleSens: () => this.toggle('sensores'),
+      toggleAlert: () => this.toggle('alertas'),
+      toggleInst: () => this.toggle('instituciones'),
+      toggleMuni: () => this.toggle('municipios'),
+      simulate: () => this.simulate(),
+      clear: () => this.clear(),
+      evTitle: 'Sismo M' + mag,
+      evSub: ev ? ('Epicentro: ' + ev.epicentro + ' · prof. ' + ev.profundidadKm + ' km') : 'Epicentro: Escuintla · prof. 24 km',
+      evIntensidad: this.intensidad(mag),
+      evAlertas: ev ? this.fmtCompact(ev.personasAlertadas) : '1.2M',
+      evSirenas: ev ? String(Math.round(mag * 19)) : '126',
+      evMunis: ev ? String(Math.round(mag * 2.1)) : '14',
+      bitacora,
+    };
+  }
+}
+</script>
+</body>
+</html>

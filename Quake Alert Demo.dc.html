@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #05080f; overflow: hidden; }
+  @keyframes qaIn { 0% { opacity: 0; transform: translateY(26px); } 100% { opacity: 1; transform: translateY(0); } }
+  @keyframes qaRing { 0% { transform: scale(0.12); opacity: 0.9; } 100% { transform: scale(1.05); opacity: 0; } }
+  @keyframes qaPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  @keyframes qaFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  @keyframes qaDrift { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(36px,-24px) scale(1.14); } }
+  .qa-anim > * { animation: qaIn 0.85s cubic-bezier(.2,.7,.2,1) both; }
+  .qa-anim > *:nth-child(2) { animation-delay: 0.1s; }
+  .qa-anim > *:nth-child(3) { animation-delay: 0.2s; }
+  .qa-anim > *:nth-child(4) { animation-delay: 0.3s; }
+</style>
+</helmet>
+<template id="__bundler_thumbnail" data-bg-color="#05080f">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#05080f"/>
+    <rect x="470" y="250" width="120" height="240" rx="22" fill="none" stroke="#22d3ee" stroke-width="5"/>
+    <rect x="630" y="280" width="200" height="180" rx="12" fill="none" stroke="#22d3ee" stroke-width="5"/>
+    <text x="600" y="600" text-anchor="middle" fill="#eaf1f8" font-family="sans-serif" font-weight="700" font-size="54" letter-spacing="4">QUAKE ALERT</text>
+  </svg>
+</template>
+<div style="position:relative; width:100vw; height:100vh; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:{{ sceneBg }}; transition:background 1s ease;">
+
+  <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.045) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.045) 1px,transparent 1px); background-size:5vw 5vw; mask-image:radial-gradient(110% 100% at 50% 40%,#000,transparent 82%); pointer-events:none;"></div>
+  <div style="position:absolute; top:-12vh; right:-8vw; width:44vw; height:44vw; border-radius:50%; background:radial-gradient(circle, {{ auroraA }}, transparent 62%); filter:blur(60px); animation:qaDrift 16s ease-in-out infinite; pointer-events:none;"></div>
+  <div style="position:absolute; bottom:-16vh; left:-10vw; width:40vw; height:40vw; border-radius:50%; background:radial-gradient(circle, {{ auroraB }}, transparent 62%); filter:blur(70px); animation:qaDrift 20s ease-in-out infinite reverse; pointer-events:none;"></div>
+
+  <div style="position:absolute; top:34px; left:44px; z-index:20;"><img src="assets/quake-alert-logo.png" alt="QUAKE ALERT" style="height:34px; width:auto; display:block; opacity:0.92;" /></div>
+  <div style="position:absolute; top:40px; right:46px; z-index:20; font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.2em; color:{{ accent }};">{{ act }} · {{ sceneNum }}/{{ total }}</div>
+
+  <div ref="{{ innerRef }}" class="qa-anim" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:9vh 8vw 12vh; z-index:10;">
+
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:clamp(12px,1.2vw,20px); letter-spacing:0.3em; text-transform:uppercase; color:{{ accent }};">{{ kicker }}</div>
+    <h1 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(30px,4vw,62px); line-height:1.04; letter-spacing:-0.02em; margin:1.6vh 0 0; max-width:1200px;">{{ title1 }}<sc-if value="{{ hasTitle2 }}" hint-placeholder-val="{{ true }}"> <span style="color:{{ accent }};">{{ title2 }}</span></sc-if></h1>
+
+    <sc-if value="{{ isIntro }}" hint-placeholder-val="{{ true }}">
+      <div style="position:relative; display:flex; align-items:center; justify-content:center; gap:4vw; margin-top:6vh;">
+        <div style="position:absolute; width:32vw; height:32vw; pointer-events:none;"><div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.35); border-radius:50%; animation:qaRing 4s ease-out infinite;"></div><div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.35); border-radius:50%; animation:qaRing 4s ease-out infinite 2s;"></div></div>
+        <div style="position:relative; width:clamp(150px,11vw,190px); height:clamp(300px,22vw,380px); border-radius:30px; background:#0b121c; border:6px solid #1b2638; box-shadow:0 24px 60px rgba(0,0,0,0.6); animation:qaFloat 5s ease-in-out infinite; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fb5670;">ALERTA</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(48px,5vw,72px); color:#fff;">08</div></div>
+        <div style="position:relative; width:clamp(300px,32vw,480px); height:clamp(200px,21vw,310px); border-radius:14px; background:#070c15; border:1px solid rgba(120,160,200,0.18); box-shadow:0 24px 60px rgba(0,0,0,0.55); overflow:hidden; animation:qaFloat 6s ease-in-out infinite;"><div style="height:30px; background:#0a0f1a; display:flex; align-items:center; gap:6px; padding:0 12px;"><span style="width:9px;height:9px;border-radius:50%;background:#fb5670;"></span><span style="width:9px;height:9px;border-radius:50%;background:#f5a623;"></span><span style="width:9px;height:9px;border-radius:50%;background:#20c997;"></span></div><div style="position:absolute; inset:30px 0 0; background-image:linear-gradient(rgba(120,160,200,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.08) 1px,transparent 1px); background-size:28px 28px;"></div><div style="position:absolute; left:42%; top:58%; width:12px; height:12px; margin:-6px; background:#fb5670; border-radius:50%; box-shadow:0 0 14px 4px rgba(251,86,112,0.8);"></div></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative; width:clamp(230px,16vw,280px); height:clamp(460px,32vw,540px); border-radius:38px; background:#0b121c; border:7px solid #1b2638; box-shadow:0 30px 80px rgba(0,0,0,0.6); overflow:hidden; animation:qaFloat 5s ease-in-out infinite; margin-top:4vh;">
+        <sc-if value="{{ vHome }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; background:linear-gradient(180deg,#0c1320,#0a0f18); display:flex; flex-direction:column; padding:13% 7% 7%; overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div><div style="font-size:11px; color:#7b8ca3;">Buenas tardes,</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px; color:#fff;">Ana</div></div>
+              <span style="display:flex; align-items:center; gap:5px; padding:5px 9px; border-radius:999px; background:rgba(32,201,151,0.12); border:1px solid rgba(32,201,151,0.3);"><span style="width:5px; height:5px; border-radius:50%; background:#20c997;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:8px; color:#20c997;">EN LÍNEA</span></span>
+            </div>
+            <div style="margin-top:12px; border-radius:16px; background:radial-gradient(120% 90% at 50% 0%, rgba(32,201,151,0.18), transparent 62%), rgba(20,30,42,0.8); border:1px solid rgba(32,201,151,0.28); padding:16px 12px; text-align:center;">
+              <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#20c997,#0e7c5b); display:flex; align-items:center; justify-content:center; font-size:18px; color:#06140e; margin:0 auto 8px;">✓</div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:#fff;">Estás protegido</div>
+              <div style="font-size:10px; color:#9fb4ad; margin-top:4px; line-height:1.4;">Red de alerta temprana activa</div>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+              <div style="flex:1; border-radius:12px; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); padding:10px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:8px; color:#7b8ca3;">FAMILIA</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:#20c997;">4/4</div></div>
+              <div style="flex:1; border-radius:12px; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); padding:10px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:8px; color:#7b8ca3;">PREPARACIÓN</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:#22d3ee;">92</div></div>
+            </div>
+            <div style="margin-top:10px; display:flex; gap:14px; padding:0 4px;">
+              <div style="text-align:center;"><div style="width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#22d3ee,#0e7490); margin:0 auto;"></div><div style="font-size:9px; color:#9fb4ad; margin-top:4px;">Mamá</div></div>
+              <div style="text-align:center;"><div style="width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#f5a623,#b46c00); margin:0 auto;"></div><div style="font-size:9px; color:#9fb4ad; margin-top:4px;">Sofía</div></div>
+              <div style="text-align:center;"><div style="width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#fb5670,#7a1726); margin:0 auto;"></div><div style="font-size:9px; color:#9fb4ad; margin-top:4px;">Diego</div></div>
+            </div>
+            <div style="margin-top:auto; width:100%; padding:11px; border-radius:13px; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; text-align:center;">▶ Simular alerta sísmica</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ vAlerta }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute; inset:0; background:radial-gradient(90% 60% at 50% 30%, rgba(251,86,112,0.3), transparent 62%), linear-gradient(180deg,#23070f,#160409); display:flex; flex-direction:column; align-items:center; padding:14% 9% 8%; text-align:center;">
+            <div style="display:flex; align-items:center; gap:7px;"><span style="width:9px; height:9px; border-radius:50%; background:#fb5670; animation:qaPulse 0.8s infinite;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#fb5670;">ALERTA SÍSMICA</span></div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(86px,9vw,120px); line-height:0.85; color:#fff; margin-top:9%; text-shadow:0 0 40px rgba(251,86,112,0.6);">08</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:15px; color:#fb5670;">segundos</div>
+            <div style="margin-top:auto; width:100%; background:rgba(10,5,8,0.6); border:1px solid rgba(34,211,238,0.3); border-radius:14px; padding:10px; font-size:12px; color:#eaf1f8;">Agáchate, cúbrete y sujétate</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ vFamilia }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; background:linear-gradient(180deg,#0c1320,#0a0f18); display:flex; flex-direction:column; padding:14% 8% 8%;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:18px; color:#fff;">Tu familia</div>
+            <div style="font-size:12px; color:#20c997; margin:2px 0 14px;">4 / 4 a salvo</div>
+            <div style="display:flex; flex-direction:column; gap:9px;">
+              <div style="display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:10px; background:rgba(255,255,255,0.03);"><span style="width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#22d3ee,#0e7490);"></span><span style="flex:1; font-size:13px; color:#fff;">Mamá</span><span style="width:8px; height:8px; border-radius:50%; background:#20c997;"></span></div>
+              <div style="display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:10px; background:rgba(255,255,255,0.03);"><span style="width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#f5a623,#b46c00);"></span><span style="flex:1; font-size:13px; color:#fff;">Sofía</span><span style="width:8px; height:8px; border-radius:50%; background:#20c997;"></span></div>
+              <div style="display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:10px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.25);"><span style="width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#fb5670,#7a1726);"></span><span style="flex:1; font-size:13px; color:#fff;">Diego</span><span style="width:8px; height:8px; border-radius:50%; background:#f5a623;"></span></div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ vAsistente }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; background:linear-gradient(180deg,#0c1320,#0a0f18); display:flex; flex-direction:column; padding:14% 7% 7%;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:13px;"><span style="width:30px; height:30px; border-radius:9px; background:rgba(34,211,238,0.16); display:flex; align-items:center; justify-content:center; font-size:14px; color:#22d3ee;">✦</span><span style="font-size:13px; color:#fff; font-weight:500;">Asistente IA</span></div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="align-self:flex-start; max-width:84%; background:rgba(20,30,48,0.85); border:1px solid rgba(120,160,200,0.14); border-radius:13px; padding:9px 11px; font-size:12px; color:#eaf1f8; line-height:1.4;">¿Qué hago durante un sismo?</div>
+              <div style="align-self:flex-end; max-width:84%; background:rgba(34,211,238,0.16); border:1px solid rgba(34,211,238,0.3); border-radius:13px; padding:9px 11px; font-size:12px; color:#eaf1f8; line-height:1.4;">Agáchate, cúbrete y sujétate. Aléjate de ventanas.</div>
+              <div style="align-self:flex-start; max-width:84%; background:rgba(20,30,48,0.85); border:1px solid rgba(120,160,200,0.14); border-radius:13px; padding:9px 11px; font-size:12px; color:#eaf1f8; line-height:1.4;">¿Mi familia está bien?</div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ vOnboard }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; background:linear-gradient(180deg,#0c1320,#0a0f18); display:flex; flex-direction:column; align-items:center; padding:16% 9% 9%; text-align:center;">
+            <div style="display:flex; gap:6px; width:100%; margin-bottom:18px;"><div style="flex:1; height:4px; border-radius:2px; background:#22d3ee;"></div><div style="flex:1; height:4px; border-radius:2px; background:#22d3ee;"></div><div style="flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,0.12);"></div><div style="flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,0.12);"></div></div>
+            <div style="position:relative; width:90px; height:90px; margin:8% 0;"><div style="position:absolute; inset:0; border:1.5px solid rgba(34,211,238,0.4); border-radius:50%; animation:qaRing 2.6s ease-out infinite;"></div><div style="position:absolute; inset:24px; border-radius:50%; background:rgba(34,211,238,0.16); display:flex; align-items:center; justify-content:center;"><span style="width:14px; height:14px; border-radius:50%; background:#22d3ee; animation:qaPulse 1s infinite;"></span></div></div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">Conecta tu QuakeBox</div>
+            <div style="font-size:12px; color:#9fb4ad; margin-top:6px; line-height:1.4;">Buscando tu sensor cercano…</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ vBien }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; background:linear-gradient(180deg,#0c1320,#0a0f18); display:flex; flex-direction:column; align-items:center; padding:16% 8% 8%; text-align:center;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#20c997;">EL SISMO TERMINÓ</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; color:#fff; margin:8px 0 18px;">¿Estás bien?</div>
+            <div style="width:100%; display:flex; flex-direction:column; gap:9px;">
+              <div style="display:flex; align-items:center; gap:11px; padding:13px; border-radius:14px; background:rgba(32,201,151,0.14); border:1.5px solid rgba(32,201,151,0.45);"><span style="width:12px; height:12px; border-radius:50%; background:#20c997;"></span><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#fff;">Estoy bien</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:13px; border-radius:14px; background:rgba(245,166,35,0.14); border:1.5px solid rgba(245,166,35,0.45);"><span style="width:12px; height:12px; border-radius:50%; background:#f5a623;"></span><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#fff;">Necesito ayuda</span></div>
+              <div style="display:flex; align-items:center; gap:11px; padding:13px; border-radius:14px; background:rgba(251,86,112,0.14); border:1.5px solid rgba(251,86,112,0.5);"><span style="width:12px; height:12px; border-radius:50%; background:#fb5670;"></span><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#fff;">Emergencia médica</span></div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isWeb }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative; width:clamp(520px,62vw,900px); height:clamp(300px,37vw,540px); border-radius:14px; background:#070c15; border:1px solid rgba(120,160,200,0.18); box-shadow:0 30px 80px rgba(0,0,0,0.55); overflow:hidden; margin-top:4vh;">
+        <div style="height:38px; background:#0a0f1a; border-bottom:1px solid rgba(120,160,200,0.12); display:flex; align-items:center; gap:7px; padding:0 14px;"><span style="width:11px; height:11px; border-radius:50%; background:#fb5670;"></span><span style="width:11px; height:11px; border-radius:50%; background:#f5a623;"></span><span style="width:11px; height:11px; border-radius:50%; background:#20c997;"></span><span style="margin-left:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">console.quakealert.gt</span></div>
+        <sc-if value="{{ wCommand }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute; top:38px; left:0; right:0; bottom:0; display:grid; grid-template-columns:1fr 200px;">
+            <div style="position:relative; background:radial-gradient(60% 60% at 45% 50%, rgba(34,211,238,0.07), transparent 60%), #060a12; overflow:hidden;">
+              <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.07) 1px,transparent 1px); background-size:34px 34px;"></div>
+              <div style="position:absolute; left:42%; top:54%; width:90px; height:90px; margin:-45px;"><div style="position:absolute; inset:0; border:1.5px solid rgba(251,86,112,0.6); border-radius:50%; animation:qaRing 2.8s ease-out infinite;"></div><div style="position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px; background:#fb5670; border-radius:50%; box-shadow:0 0 16px 4px rgba(251,86,112,0.8);"></div></div>
+              <div style="position:absolute; left:24%; top:34%; width:8px; height:8px; background:#22d3ee; border-radius:50%; box-shadow:0 0 10px 2px rgba(34,211,238,0.8);"></div>
+              <div style="position:absolute; left:64%; top:40%; width:8px; height:8px; background:#22d3ee; border-radius:50%; box-shadow:0 0 10px 2px rgba(34,211,238,0.8);"></div>
+              <div style="position:absolute; left:16px; bottom:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">VISTA NACIONAL · LIVE</div>
+            </div>
+            <div style="border-left:1px solid rgba(120,160,200,0.12); padding:14px; display:flex; flex-direction:column; gap:10px;">
+              <div style="border-radius:10px; background:rgba(251,86,112,0.1); border:1px solid rgba(251,86,112,0.3); padding:11px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#fb5670;">EVENTO ACTIVO</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#fff;">M6.8 · Escuintla</div></div>
+              <div style="border-radius:10px; background:rgba(255,255,255,0.03); padding:11px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#22d3ee;">312</div><div style="font-size:10px; color:#7b8ca3;">SENSORES</div></div>
+              <div style="border-radius:10px; background:rgba(255,255,255,0.03); padding:11px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#20c997;">1.2M</div><div style="font-size:10px; color:#7b8ca3;">PROTEGIDOS</div></div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ wAnalytics }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; top:38px; left:0; right:0; bottom:0; padding:18px 20px; display:flex; flex-direction:column;">
+            <div style="display:flex; gap:14px; margin-bottom:16px;">
+              <div style="flex:1; border-radius:10px; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); padding:11px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#22d3ee;">7.2s</div><div style="font-size:10px; color:#7b8ca3;">ALERTA PROM.</div></div>
+              <div style="flex:1; border-radius:10px; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); padding:11px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#20c997;">98%</div><div style="font-size:10px; color:#7b8ca3;">COBERTURA</div></div>
+              <div style="flex:1; border-radius:10px; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); padding:11px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#fff;">1.2M</div><div style="font-size:10px; color:#7b8ca3;">USUARIOS</div></div>
+            </div>
+            <div style="flex:1; display:flex; align-items:flex-end; gap:10px; padding:0 4px;">
+              <div style="flex:1; height:36%; border-radius:5px 5px 0 0; background:rgba(34,211,238,0.45);"></div>
+              <div style="flex:1; height:58%; border-radius:5px 5px 0 0; background:rgba(34,211,238,0.55);"></div>
+              <div style="flex:1; height:46%; border-radius:5px 5px 0 0; background:rgba(34,211,238,0.5);"></div>
+              <div style="flex:1; height:74%; border-radius:5px 5px 0 0; background:rgba(34,211,238,0.7);"></div>
+              <div style="flex:1; height:90%; border-radius:5px 5px 0 0; background:#22d3ee;"></div>
+              <div style="flex:1; height:64%; border-radius:5px 5px 0 0; background:rgba(34,211,238,0.6);"></div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ wSmartcity }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; top:38px; left:0; right:0; bottom:0; display:grid; grid-template-columns:1fr 190px;">
+            <div style="position:relative; background:#060a12; overflow:hidden;">
+              <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.07) 1px,transparent 1px); background-size:30px 30px;"></div>
+              <div style="position:absolute; left:30%; top:36%; width:11px; height:11px; margin:-5px; background:#fb5670; border-radius:50%; box-shadow:0 0 12px 3px rgba(251,86,112,0.8);"></div>
+              <div style="position:absolute; left:56%; top:30%; width:11px; height:11px; background:#fb5670; border-radius:50%; box-shadow:0 0 12px 3px rgba(251,86,112,0.8);"></div>
+              <div style="position:absolute; left:46%; top:62%; width:11px; height:11px; background:#fb5670; border-radius:50%; box-shadow:0 0 12px 3px rgba(251,86,112,0.8);"></div>
+              <div style="position:absolute; left:16px; bottom:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fb5670;">SIRENAS ACTIVAS · ESCUINTLA</div>
+            </div>
+            <div style="border-left:1px solid rgba(120,160,200,0.12); padding:14px; display:flex; flex-direction:column; gap:9px;">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#7b8ca3;">SIRENAS</div>
+              <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px; background:rgba(251,86,112,0.1); border:1px solid rgba(251,86,112,0.3);"><span style="width:7px;height:7px;border-radius:50%;background:#fb5670;"></span><span style="flex:1; font-size:12px; color:#fff;">Zona 1</span><span style="font-size:9px; color:#fb5670;">ON</span></div>
+              <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px; background:rgba(251,86,112,0.1); border:1px solid rgba(251,86,112,0.3);"><span style="width:7px;height:7px;border-radius:50%;background:#fb5670;"></span><span style="flex:1; font-size:12px; color:#fff;">Zona 2</span><span style="font-size:9px; color:#fb5670;">ON</span></div>
+              <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px; background:rgba(255,255,255,0.03);"><span style="width:7px;height:7px;border-radius:50%;background:#20c997;"></span><span style="flex:1; font-size:12px; color:#cdd9e8;">Paneles LED</span></div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ wForms }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; top:38px; left:0; right:0; bottom:0; display:grid; grid-template-columns:160px 1fr 1fr;">
+            <div style="border-right:1px solid rgba(120,160,200,0.12); padding:14px; display:flex; flex-direction:column; gap:7px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#7b8ca3; margin-bottom:4px;">CAMPOS</div><div style="padding:7px 9px; border-radius:8px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.25); font-size:11px; color:#bfe9f4;">Texto</div><div style="padding:7px 9px; border-radius:8px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.25); font-size:11px; color:#bfe9f4;">Lista</div><div style="padding:7px 9px; border-radius:8px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.25); font-size:11px; color:#bfe9f4;">Ubicación</div></div>
+            <div style="border-right:1px solid rgba(120,160,200,0.12); padding:14px; display:flex; flex-direction:column; gap:8px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#7b8ca3; margin-bottom:4px;">LIENZO</div><div style="padding:9px 11px; border-radius:9px; background:rgba(20,30,48,0.6); border:1px solid rgba(34,211,238,0.4); font-size:11px; color:#fff;">Nombre del sensor</div><div style="padding:9px 11px; border-radius:9px; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); font-size:11px; color:#cdd9e8;">Zona</div><div style="padding:9px 11px; border-radius:9px; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); font-size:11px; color:#cdd9e8;">Ubicación</div></div>
+            <div style="padding:14px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9fdbe8; line-height:1.6; background:#05080e;">{<br>&nbsp;"catalog":<br>&nbsp;"Sensores",<br>&nbsp;"fields":[…]<br>}</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ wCorporate }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; top:38px; left:0; right:0; bottom:0; padding:16px 18px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#7b8ca3; margin-bottom:10px;">PROTECCIÓN MULTI-SEDE · 42 SEDES</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+              <div style="border-radius:11px; background:rgba(32,201,151,0.08); border:1px solid rgba(32,201,151,0.25); padding:12px;"><div style="font-size:12px; color:#fff; font-weight:500;">Banco Industrial</div><div style="font-size:9px; color:#7b8ca3; margin:3px 0 8px;">Guatemala</div><span style="font-size:9px; color:#20c997;">● Operativa · 94</span></div>
+              <div style="border-radius:11px; background:rgba(251,86,112,0.08); border:1px solid rgba(251,86,112,0.3); padding:12px;"><div style="font-size:12px; color:#fff; font-weight:500;">Hospital La Paz</div><div style="font-size:9px; color:#7b8ca3; margin:3px 0 8px;">Escuintla</div><span style="font-size:9px; color:#fb5670;">● Protocolo crítico</span></div>
+              <div style="border-radius:11px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.3); padding:12px;"><div style="font-size:12px; color:#fff; font-weight:500;">Colegio Americano</div><div style="font-size:9px; color:#7b8ca3; margin:3px 0 8px;">Escuintla</div><span style="font-size:9px; color:#f5a623;">● Evacuando · 82%</span></div>
+              <div style="border-radius:11px; background:rgba(32,201,151,0.08); border:1px solid rgba(32,201,151,0.25); padding:12px;"><div style="font-size:12px; color:#fff; font-weight:500;">Universidad del Valle</div><div style="font-size:9px; color:#7b8ca3; margin:3px 0 8px;">Guatemala</div><span style="font-size:9px; color:#20c997;">● Operativa · 91</span></div>
+              <div style="border-radius:11px; background:rgba(32,201,151,0.08); border:1px solid rgba(32,201,151,0.25); padding:12px;"><div style="font-size:12px; color:#fff; font-weight:500;">Cementos Progreso</div><div style="font-size:9px; color:#7b8ca3; margin:3px 0 8px;">Sanarate</div><span style="font-size:9px; color:#20c997;">● Operativa · 86</span></div>
+              <div style="border-radius:11px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.3); padding:12px;"><div style="font-size:12px; color:#fff; font-weight:500;">Pradera Mall</div><div style="font-size:9px; color:#7b8ca3; margin:3px 0 8px;">Escuintla</div><span style="font-size:9px; color:#22d3ee;">● 86,400 protegidos</span></div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasSub }}" hint-placeholder-val="{{ true }}">
+      <p style="font-size:clamp(15px,1.5vw,24px); color:#aebfd4; line-height:1.5; margin:4vh 0 0; max-width:900px;">{{ sub }}</p>
+    </sc-if>
+
+  </div>
+
+  <div style="position:absolute; left:0; right:0; bottom:0; z-index:30; padding:22px 44px; display:flex; align-items:center; gap:20px; background:linear-gradient(180deg,transparent,rgba(5,8,15,0.85));">
+    <button onClick="{{ togglePlay }}" style="border:none; cursor:pointer; width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">{{ playIcon }}</button>
+    <button onClick="{{ prev }}" style="border:1px solid rgba(120,160,200,0.25); cursor:pointer; height:42px; padding:0 16px; border-radius:11px; background:rgba(255,255,255,0.04); color:#eaf1f8; font-size:14px;">←</button>
+    <div style="flex:1; display:flex; gap:6px; align-items:center;">
+      <sc-for list="{{ segs }}" as="g" hint-placeholder-count="11">
+        <div onClick="{{ g.onJump }}" style="flex:1; height:5px; border-radius:3px; background:rgba(255,255,255,0.1); cursor:pointer; overflow:hidden;"><div style="height:100%; border-radius:3px; background:{{ g.fillColor }}; width:{{ g.fill }};"></div></div>
+      </sc-for>
+    </div>
+    <button onClick="{{ next }}" style="border:none; cursor:pointer; height:42px; padding:0 16px; border-radius:11px; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-size:14px;">→</button>
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#7b8ca3; flex-shrink:0; width:54px; text-align:right;">{{ sceneNum }}/{{ total }}</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1600, &quot;height&quot;: 900}}">
+class Component extends DCLogic {
+  NAVY = 'radial-gradient(90% 70% at 70% 20%, rgba(34,211,238,0.10), transparent 55%), linear-gradient(160deg,#070d18 0%,#05080f 100%)';
+  CYAN = 'radial-gradient(100% 80% at 50% 30%, rgba(34,211,238,0.18), transparent 58%), linear-gradient(160deg,#08111f,#05080f)';
+
+  SCENES = [
+    { motif: 'intro', act: 'QUAKE ALERT', bg: 'cyan', accent: '#22d3ee', kicker: 'Demo del producto',
+      title1: 'La app y la', title2: 'plataforma web', sub: 'Un recorrido por el producto funcionando — en el teléfono y en el escritorio.' },
+
+    { motif: 'app', variant: 'home', act: 'ACTO 1 · APP CIUDADANA', bg: 'navy', accent: '#20c997', kicker: 'App · Inicio',
+      title1: 'Tu protección,', title2: 'siempre activa', sub: 'Estado en calma: familia a salvo, índice de preparación y tu red — listo en todo momento.' },
+    { motif: 'app', variant: 'alerta', act: 'ACTO 1 · APP CIUDADANA', bg: 'navy', accent: '#22d3ee', kicker: 'App · Alerta en vivo',
+      title1: 'La alerta', title2: 'en tu bolsillo', sub: 'Cuenta regresiva, nivel de riesgo e instrucciones — incluso con la app cerrada.' },
+    { motif: 'app', variant: 'familia', act: 'ACTO 1 · APP CIUDADANA', bg: 'navy', accent: '#20c997', kicker: 'App · Red familiar',
+      title1: 'Tu familia,', title2: 'a salvo en segundos', sub: 'Cada quien confirma su estado con un toque. Ubicación en vivo autorizada.' },
+    { motif: 'app', variant: 'bien', act: 'ACTO 1 · APP CIUDADANA', bg: 'navy', accent: '#20c997', kicker: 'App · Después del sismo',
+      title1: '"¿Estás bien?"', title2: 'en un toque', sub: 'Tras el evento, avisas a tu familia con un solo botón.' },
+    { motif: 'app', variant: 'asistente', act: 'ACTO 1 · APP CIUDADANA', bg: 'navy', accent: '#22d3ee', kicker: 'App · Asistente IA',
+      title1: 'Una voz que', title2: 'te guía', sub: 'Inteligencia conversacional que responde y dirige bajo presión.' },
+    { motif: 'app', variant: 'onboard', act: 'ACTO 1 · APP CIUDADANA', bg: 'navy', accent: '#22d3ee', kicker: 'App · Onboarding',
+      title1: 'Activa tu', title2: 'protección en 1 minuto', sub: 'Alta de tu sensor QuakeBox con un asistente de cuatro pasos.' },
+
+    { motif: 'web', variant: 'command', act: 'ACTO 2 · PLATAFORMA WEB', bg: 'navy', accent: '#22d3ee', kicker: 'Web · Command Center',
+      title1: 'El país entero,', title2: 'en una pantalla', sub: 'Capas en vivo de sensores, alertas e instituciones sobre el mapa nacional.' },
+    { motif: 'web', variant: 'analytics', act: 'ACTO 2 · PLATAFORMA WEB', bg: 'navy', accent: '#22d3ee', kicker: 'Web · Analytics & BI',
+      title1: 'Decisiones', title2: 'basadas en datos', sub: 'Cobertura, tiempos de alerta y tendencias en tiempo real.' },
+    { motif: 'web', variant: 'smartcity', act: 'ACTO 2 · PLATAFORMA WEB', bg: 'navy', accent: '#fb5670', kicker: 'Web · Smart City',
+      title1: 'La ciudad', title2: 'responde a la vez', sub: 'Sirenas públicas, paneles LED y botones de pánico, coordinados desde un panel.' },
+    { motif: 'web', variant: 'corporate', act: 'ACTO 2 · PLATAFORMA WEB', bg: 'navy', accent: '#20c997', kicker: 'Web · Protección Corporativa',
+      title1: 'Empresas e', title2: 'instituciones protegidas', sub: 'Estado por sede para bancos, hospitales y escuelas — en un solo panel.' },
+    { motif: 'web', variant: 'forms', act: 'ACTO 2 · PLATAFORMA WEB', bg: 'navy', accent: '#22d3ee', kicker: 'Web · Catálogos dinámicos',
+      title1: 'Todo', title2: 'configurable sin código', sub: 'Arrastra campos y cualquier catálogo se arma solo — se guarda como definición JSON.' },
+
+    { motif: 'intro', act: 'QUAKE ALERT', bg: 'cyan', accent: '#22d3ee', kicker: 'Una sola plataforma',
+      title1: 'Del teléfono', title2: 'al centro de comando', sub: 'Multiplataforma · multilingüe · lista para toda Latinoamérica.' },
+  ];
+
+  DUR = 7500;
+  state = { scene: 0, playing: true, progress: 0 };
+
+  componentDidMount() {
+    try { const s = parseInt(localStorage.getItem('qa_demo_scene') || '0', 10); if (s > 0 && s < this.SCENES.length) this.setState({ scene: s }); } catch (e) {}
+    this._t = setInterval(() => {
+      if (!this.state.playing) return;
+      this.setState((s) => {
+        const np = s.progress + (100 / (this.DUR / 100));
+        if (np >= 100) { const n = (s.scene + 1) % this.SCENES.length; try { localStorage.setItem('qa_demo_scene', String(n)); } catch (e) {} return { scene: n, progress: 0 }; }
+        return { progress: np };
+      });
+    }, 100);
+  }
+  componentDidUpdate() {
+    if (this._last !== this.state.scene) {
+      this._last = this.state.scene;
+      const el = this._inner;
+      if (el) { el.classList.remove('qa-anim'); void el.offsetWidth; el.classList.add('qa-anim'); }
+      try { localStorage.setItem('qa_demo_scene', String(this.state.scene)); } catch (e) {}
+    }
+  }
+  componentWillUnmount() { clearInterval(this._t); }
+  go(i) { this.setState({ scene: (i + this.SCENES.length) % this.SCENES.length, progress: 0 }); }
+
+  renderVals() {
+    const s = this.state;
+    const sc = this.SCENES[s.scene];
+    const bg = sc.bg === 'cyan' ? this.CYAN : this.NAVY;
+    const segs = this.SCENES.map((_, i) => ({ onJump: () => this.go(i), fill: i < s.scene ? '100%' : i === s.scene ? s.progress + '%' : '0%', fillColor: sc.accent }));
+    return {
+      sceneBg: bg,
+      auroraA: sc.bg === 'cyan' ? 'rgba(34,211,238,0.18)' : 'rgba(34,211,238,0.14)',
+      auroraB: 'rgba(251,86,112,0.10)',
+      total: this.SCENES.length, sceneNum: s.scene + 1, act: sc.act,
+      accent: sc.accent, kicker: sc.kicker, title1: sc.title1, title2: sc.title2 || '', hasTitle2: !!sc.title2,
+      sub: sc.sub || '', hasSub: !!sc.sub,
+      isIntro: sc.motif === 'intro', isApp: sc.motif === 'app', isWeb: sc.motif === 'web',
+      vHome: sc.variant === 'home', vAlerta: sc.variant === 'alerta', vFamilia: sc.variant === 'familia', vAsistente: sc.variant === 'asistente', vOnboard: sc.variant === 'onboard', vBien: sc.variant === 'bien',
+      wCommand: sc.variant === 'command', wAnalytics: sc.variant === 'analytics', wSmartcity: sc.variant === 'smartcity', wForms: sc.variant === 'forms', wCorporate: sc.variant === 'corporate',
+      segs, playIcon: s.playing ? '❚❚' : '▶',
+      togglePlay: () => this.setState((x) => ({ playing: !x.playing })),
+      prev: () => this.go(s.scene - 1), next: () => this.go(s.scene + 1),
+      innerRef: (el) => { this._inner = el; },
+    };
+  }
+}
+</script>
+</body>
+</html>

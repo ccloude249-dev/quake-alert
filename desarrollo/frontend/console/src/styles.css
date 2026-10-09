@@ -1,0 +1,18 @@
+/* Tema QUAKE ALERT — tokens base reutilizables en toda la consola. */
+:root {
+  --qa-bg: #070c14;
+  --qa-surface: rgba(20, 30, 48, 0.5);
+  --qa-border: rgba(120, 160, 200, 0.14);
+  --qa-cyan: #22d3ee;
+  --qa-red: #fb5670;
+  --qa-amber: #f5a623;
+  --qa-green: #20c997;
+  --qa-text: #eaf1f8;
+  --qa-muted: #93a4ba;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--qa-bg); color: var(--qa-text); font-family: 'IBM Plex Sans', sans-serif; }
+.qa-mono { font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.14em; text-transform: uppercase; }
+.qa-display { font-family: 'Space Grotesk', sans-serif; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(120,160,200,0.2); border-radius: 4px; }

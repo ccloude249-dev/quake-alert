@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUAKE ALERT">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="./qa-db.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #060a12; }
+  @keyframes qaPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  @keyframes qaBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,160,200,0.2); border-radius: 4px; }
+  @media (max-width: 900px) {
+    .qa-sh-root { grid-template-rows: auto auto !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
+    .qa-sh-header { flex-wrap: wrap !important; height: auto !important; padding: 14px 18px !important; gap: 10px !important; }
+    .qa-sh-body { grid-template-columns: 1fr !important; overflow: visible !important; }
+  }
+</style>
+</helmet>
+<div class="qa-sh-root" style="height:100vh; width:100%; background:{{ pageBg }}; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; display:grid; grid-template-rows:66px 1fr; overflow:hidden; transition:background 0.5s ease;">
+
+  <div class="qa-sh-header" style="background:rgba(8,13,22,0.7); border-bottom:1px solid rgba(120,160,200,0.1); display:flex; align-items:center; justify-content:space-between; padding:0 26px;">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#22d3ee,#0e7490); box-shadow:0 0 18px rgba(34,211,238,0.4); display:flex; align-items:center; justify-content:center; font-size:17px; color:#06141a;">⌂</div>
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">Hogar · Casa García</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7b8ca3; margin-top:1px;">HOME ASSISTANT · SMARTTHINGS · ALEXA · GOOGLE</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="display:flex; align-items:center; gap:9px; padding:8px 14px; border-radius:999px; background:{{ statusBg }}; border:1px solid {{ statusBorder }};">
+        <span style="width:7px; height:7px; border-radius:50%; background:{{ statusDot }}; animation:qaBlink 1.6s ease-in-out infinite;"></span>
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:{{ statusDot }};">{{ statusText }}</span>
+      </div>
+      <sc-if value="{{ calm }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ trigger }}" style="border:none; cursor:pointer; padding:11px 22px; border-radius:10px; background:linear-gradient(135deg,#fb5670,#c4243d); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; box-shadow:0 6px 18px rgba(251,86,112,0.3); display:flex; align-items:center; gap:8px;"><span>▲</span> Simular sismo</button>
+      </sc-if>
+      <sc-if value="{{ active }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ reset }}" style="border:1px solid rgba(255,255,255,0.2); cursor:pointer; padding:11px 22px; border-radius:10px; background:rgba(255,255,255,0.06); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;">Restablecer hogar</button>
+      </sc-if>
+    </div>
+  </div>
+
+  <div class="qa-sh-body" style="display:grid; grid-template-columns:420px 1fr; overflow:hidden;">
+
+    <div style="border-right:1px solid rgba(120,160,200,0.1); padding:24px; overflow-y:auto; display:flex; flex-direction:column; gap:18px;">
+      <div style="border-radius:18px; overflow:hidden; background:{{ protoBg }}; border:1px solid {{ protoBorder }}; transition:all 0.4s ease;">
+        <div style="padding:20px 22px; border-bottom:1px solid rgba(120,160,200,0.1);">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:{{ protoAccent }};">PROTOCOLO SÍSMICO AUTOMÁTICO</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#fff; margin-top:6px;">{{ protoTitle }}</div>
+          <div style="font-size:14px; color:#9fb4ad; margin-top:4px;">{{ protoSub }}</div>
+        </div>
+        <div style="padding:18px 22px; display:flex; flex-direction:column; gap:4px;">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+            <div style="display:flex; align-items:center; gap:14px; padding:11px 0;">
+              <span style="width:26px; height:26px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; background:{{ s.dotBg }}; color:{{ s.dotColor }}; border:1px solid {{ s.dotBorder }}; transition:all 0.4s ease {{ s.delay }};">{{ s.icon }}</span>
+              <span style="flex:1; font-size:16px; color:{{ s.textColor }}; transition:color 0.4s ease {{ s.delay }};">{{ s.label }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:{{ s.tagColor }}; opacity:{{ s.tagOp }}; transition:opacity 0.4s ease {{ s.delay }};">{{ s.tag }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <span style="padding:8px 14px; border-radius:999px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.16); font-size:13px; color:#9fb4ad;">Respuesta &lt; 1s</span>
+        <span style="padding:8px 14px; border-radius:999px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.16); font-size:13px; color:#9fb4ad;">Local y cifrado</span>
+      </div>
+    </div>
+
+    <div style="padding:24px; overflow-y:auto;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:16px;">DISPOSITIVOS DEL HOGAR</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px;">
+        <sc-for list="{{ devices }}" as="d" hint-placeholder-count="6">
+          <div style="border-radius:16px; background:{{ d.cardBg }}; border:1px solid {{ d.cardBorder }}; padding:20px; transition:all 0.4s ease;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px;">
+              <div style="width:46px; height:46px; border-radius:13px; background:{{ d.iconBg }}; display:flex; align-items:center; justify-content:center; font-size:22px; color:{{ d.iconColor }};">{{ d.icon }}</div>
+              <span style="width:42px; height:24px; border-radius:999px; background:{{ d.toggleBg }}; position:relative; transition:background 0.4s ease;"><span style="position:absolute; top:3px; left:{{ d.knobLeft }}; width:18px; height:18px; border-radius:50%; background:#fff; transition:left 0.4s ease;"></span></span>
+            </div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">{{ d.name }}</div>
+            <div style="font-size:14px; color:{{ d.stateColor }}; margin-top:4px;">{{ d.state }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1512, &quot;height&quot;: 950}}">
+class Component extends DCLogic {
+  state = { active: false };
+
+  trigger() {
+    if (window.QADB) { const sess = window.QADB.session.get(); window.QADB.log('Hogar ejecutó protocolo sísmico · gas/puertas/luces/sirena', { user: sess && sess.name, color: '#fb5670' }); }
+    this.setState({ active: true });
+  }
+  reset() {
+    if (window.QADB) window.QADB.log('Restableció hogar a modo normal', { color: '#20c997' });
+    this.setState({ active: false });
+  }
+
+  renderVals() {
+    const a = this.state.active;
+
+    const stepDefs = [
+      { icon: '⛔', label: 'Cortar suministro de gas', tag: 'CERRADO' },
+      { icon: '⏏', label: 'Desbloquear puertas y portón', tag: 'ABIERTO' },
+      { icon: '☀', label: 'Encender luces de emergencia', tag: 'ON' },
+      { icon: '◔', label: 'Activar sirena del hogar', tag: 'ON' },
+      { icon: '✓', label: 'Notificar a la familia', tag: 'ENVIADO' },
+    ];
+    const steps = stepDefs.map((s, i) => ({
+      label: s.label,
+      icon: a ? '✓' : (i + 1),
+      delay: (i * 0.22).toFixed(2) + 's',
+      dotBg: a ? 'rgba(32,201,151,0.18)' : 'rgba(255,255,255,0.04)',
+      dotColor: a ? '#20c997' : '#7b8ca3',
+      dotBorder: a ? 'rgba(32,201,151,0.4)' : 'rgba(120,160,200,0.18)',
+      textColor: a ? '#eaf1f8' : '#9fb4ad',
+      tag: s.tag,
+      tagColor: '#20c997',
+      tagOp: a ? '1' : '0',
+    }));
+
+    const dev = (icon, name, onState, onColor, offState) => ({
+      icon, name,
+      state: a ? onState : offState,
+      stateColor: a ? onColor : '#7b8ca3',
+      cardBg: a ? 'rgba(20,30,48,0.7)' : 'rgba(20,30,48,0.5)',
+      cardBorder: a ? 'rgba(34,211,238,0.25)' : 'rgba(120,160,200,0.14)',
+      iconBg: a ? 'rgba(34,211,238,0.14)' : 'rgba(255,255,255,0.04)',
+      iconColor: a ? onColor : '#9fb4ad',
+      toggleBg: a ? '#22d3ee' : 'rgba(255,255,255,0.12)',
+      knobLeft: a ? '21px' : '3px',
+    });
+
+    const devices = [
+      dev('▽', 'Válvula de gas', 'Cerrada · segura', '#20c997', 'Abierta'),
+      dev('▯', 'Puerta principal', 'Desbloqueada', '#22d3ee', 'Cerrada'),
+      dev('▭', 'Portón / garaje', 'Abierto', '#22d3ee', 'Cerrado'),
+      dev('☀', 'Luces de emergencia', 'Encendidas', '#f5a623', 'Apagadas'),
+      dev('♪', 'Sirena del hogar', 'Sonando', '#fb5670', 'En espera'),
+      dev('▦', 'Hub central', 'Modo emergencia', '#22d3ee', 'Modo normal'),
+    ];
+
+    return {
+      active: a, calm: !a,
+      trigger: () => this.trigger(),
+      reset: () => this.reset(),
+      steps, devices,
+      pageBg: a ? 'radial-gradient(80% 50% at 80% 0%, rgba(251,86,112,0.08), transparent 55%), #070c14' : '#070c14',
+      statusText: a ? 'PROTOCOLO SÍSMICO EJECUTADO' : 'HOGAR EN MODO NORMAL',
+      statusDot: a ? '#fb5670' : '#20c997',
+      statusBg: a ? 'rgba(251,86,112,0.1)' : 'rgba(32,201,151,0.1)',
+      statusBorder: a ? 'rgba(251,86,112,0.3)' : 'rgba(32,201,151,0.28)',
+      protoBg: a ? 'linear-gradient(180deg,rgba(32,201,151,0.1),rgba(20,30,48,0.4))' : 'rgba(20,30,48,0.5)',
+      protoBorder: a ? 'rgba(32,201,151,0.3)' : 'rgba(120,160,200,0.14)',
+      protoAccent: a ? '#20c997' : '#22d3ee',
+      protoTitle: a ? 'Ejecutado en 0.8s' : 'Listo para activarse',
+      protoSub: a ? '5 de 5 acciones completadas' : 'Se dispara al detectar un sismo fuerte',
+    };
+  }
+}
+</script>
+</body>
+</html>

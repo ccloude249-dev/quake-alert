@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #05080f; overflow: hidden; }
+  @keyframes qaIn { 0% { opacity: 0; transform: translateY(28px); } 100% { opacity: 1; transform: translateY(0); } }
+  @keyframes qaInSlow { 0% { opacity: 0; transform: scale(0.94); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes qaRing { 0% { transform: scale(0.12); opacity: 0.9; } 100% { transform: scale(1.05); opacity: 0; } }
+  @keyframes qaPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  @keyframes qaBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes qaWave { 0%,100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+  @keyframes qaFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+  @keyframes qaDrift { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(40px,-26px) scale(1.15); } }
+  .qa-anim > * { animation: qaIn 0.9s cubic-bezier(.2,.7,.2,1) both; }
+  .qa-anim > *:nth-child(2) { animation-delay: 0.12s; }
+  .qa-anim > *:nth-child(3) { animation-delay: 0.24s; }
+  .qa-anim > *:nth-child(4) { animation-delay: 0.36s; }
+  .qa-anim > *:nth-child(5) { animation-delay: 0.48s; }
+</style>
+</helmet>
+<template id="__bundler_thumbnail" data-bg-color="#05080f">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#05080f"/>
+    <circle cx="600" cy="400" r="150" fill="none" stroke="#22d3ee" stroke-width="4" opacity="0.5"/>
+    <circle cx="600" cy="400" r="230" fill="none" stroke="#22d3ee" stroke-width="3" opacity="0.3"/>
+    <circle cx="600" cy="400" r="310" fill="none" stroke="#22d3ee" stroke-width="2" opacity="0.18"/>
+    <path d="M600 330 l-46 86 h34 v54 l46 -86 h-34 z" fill="#22d3ee"/>
+    <text x="600" y="560" text-anchor="middle" fill="#eaf1f8" font-family="sans-serif" font-weight="700" font-size="62" letter-spacing="6">QUAKE ALERT</text>
+  </svg>
+</template>
+<div style="position:relative; width:100vw; height:100vh; overflow:hidden; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; background:{{ sceneBg }}; transition:background 1.1s ease;">
+
+  <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.045) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.045) 1px,transparent 1px); background-size:5vw 5vw; mask-image:radial-gradient(110% 100% at 50% 40%,#000,transparent 82%); pointer-events:none;"></div>
+  <div style="position:absolute; top:-12vh; right:-8vw; width:46vw; height:46vw; border-radius:50%; background:radial-gradient(circle, {{ auroraA }}, transparent 62%); filter:blur(60px); animation:qaDrift 15s ease-in-out infinite; pointer-events:none;"></div>
+  <div style="position:absolute; bottom:-16vh; left:-10vw; width:42vw; height:42vw; border-radius:50%; background:radial-gradient(circle, {{ auroraB }}, transparent 62%); filter:blur(70px); animation:qaDrift 19s ease-in-out infinite reverse; pointer-events:none;"></div>
+
+  <div style="position:absolute; top:34px; left:44px; z-index:20; display:flex; align-items:center; gap:12px;">
+    <img src="assets/quake-alert-logo.png" alt="QUAKE ALERT" style="height:34px; width:auto; display:block; opacity:0.92;" />
+  </div>
+  <div style="position:absolute; top:40px; right:46px; z-index:20; font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.2em; color:#5f7187;">PUBLIC SAFETY INTELLIGENCE · {{ sceneNum }} / {{ total }}</div>
+
+  <div ref="{{ innerRef }}" class="qa-anim" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:7vh 8vw; z-index:10;">
+
+    <sc-if value="{{ isLogo }}" hint-placeholder-val="{{ true }}">
+      <div style="position:relative; display:flex; align-items:center; justify-content:center; margin-bottom:3vh;">
+        <div style="position:absolute; width:30vw; height:30vw; pointer-events:none;">
+          <div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.4); border-radius:50%; animation:qaRing 4s ease-out infinite;"></div>
+          <div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.4); border-radius:50%; animation:qaRing 4s ease-out infinite 1.3s;"></div>
+          <div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.4); border-radius:50%; animation:qaRing 4s ease-out infinite 2.6s;"></div>
+        </div>
+        <img src="assets/quake-alert-logo.png" alt="QUAKE ALERT" style="position:relative; height:13vh; width:auto; display:block; animation:qaFloat 5s ease-in-out infinite;" />
+      </div>
+    </sc-if>
+
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:clamp(13px,1.25vw,22px); letter-spacing:0.32em; text-transform:uppercase; color:{{ accent }};">{{ kicker }}</div>
+
+    <sc-if value="{{ bigTitle }}" hint-placeholder-val="{{ true }}">
+      <h1 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(44px,7.2vw,132px); line-height:0.98; letter-spacing:-0.03em; margin:2.2vh 0 0; max-width:1500px; text-shadow:0 8px 60px rgba(0,0,0,0.5);">{{ title1 }}<sc-if value="{{ hasTitle2 }}" hint-placeholder-val="{{ true }}"><br><span style="color:{{ accent }};">{{ title2 }}</span></sc-if></h1>
+    </sc-if>
+    <sc-if value="{{ compactTitle }}" hint-placeholder-val="{{ false }}">
+      <h1 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(30px,3.6vw,58px); line-height:1.04; letter-spacing:-0.02em; margin:1.4vh 0 2.6vh; max-width:1100px;">{{ title1 }}<sc-if value="{{ hasTitle2 }}" hint-placeholder-val="{{ true }}"> <span style="color:{{ accent }};">{{ title2 }}</span></sc-if></h1>
+    </sc-if>
+
+    <sc-if value="{{ isCountdown }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; align-items:flex-end; gap:2vw; margin-top:1vh;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(120px,22vw,360px); line-height:0.8; color:#fff; text-shadow:0 0 80px rgba(251,86,112,0.65);">08</div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:clamp(28px,4vw,72px); color:#fb5670; margin-bottom:3vh;">seg</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative; width:clamp(230px,17vw,290px); height:clamp(460px,33vw,560px); border-radius:38px; background:#0b121c; border:7px solid #1b2638; box-shadow:0 30px 80px rgba(0,0,0,0.6); overflow:hidden; animation:qaFloat 5s ease-in-out infinite; margin-top:1vh;">
+        <sc-if value="{{ appAlerta }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute; inset:0; background:radial-gradient(90% 60% at 50% 30%, rgba(251,86,112,0.3), transparent 62%), linear-gradient(180deg,#23070f,#160409); display:flex; flex-direction:column; align-items:center; padding:13% 9% 8%; text-align:center;">
+            <div style="display:flex; align-items:center; gap:7px;"><span style="width:9px; height:9px; border-radius:50%; background:#fb5670; animation:qaPulse 0.8s infinite;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#fb5670;">ALERTA SÍSMICA</span></div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(90px,9vw,128px); line-height:0.85; color:#fff; margin-top:8%; text-shadow:0 0 40px rgba(251,86,112,0.6);">08</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:16px; color:#fb5670;">segundos</div>
+            <div style="margin-top:auto; width:100%; background:rgba(10,5,8,0.6); border:1px solid rgba(34,211,238,0.3); border-radius:14px; padding:11px; font-size:13px; color:#eaf1f8;">Agáchate, cúbrete y sujétate</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ appFamilia }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; background:linear-gradient(180deg,#0c1320,#0a0f18); display:flex; flex-direction:column; padding:13% 8% 8%;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px; color:#fff;">Tu familia</div>
+            <div style="font-size:12px; color:#20c997; margin:2px 0 14px;">4 / 4 a salvo</div>
+            <div style="display:flex; flex-direction:column; gap:9px;">
+              <div style="display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:10px; background:rgba(255,255,255,0.03);"><span style="width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#22d3ee,#0e7490);"></span><span style="flex:1; font-size:13px; color:#fff;">Mamá</span><span style="width:8px; height:8px; border-radius:50%; background:#20c997;"></span></div>
+              <div style="display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:10px; background:rgba(255,255,255,0.03);"><span style="width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#f5a623,#b46c00);"></span><span style="flex:1; font-size:13px; color:#fff;">Sofía</span><span style="width:8px; height:8px; border-radius:50%; background:#20c997;"></span></div>
+              <div style="display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:10px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.25);"><span style="width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#fb5670,#7a1726);"></span><span style="flex:1; font-size:13px; color:#fff;">Diego</span><span style="width:8px; height:8px; border-radius:50%; background:#f5a623;"></span></div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ appAsistente }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; background:linear-gradient(180deg,#0c1320,#0a0f18); display:flex; flex-direction:column; padding:13% 7% 7%;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;"><span style="width:30px; height:30px; border-radius:9px; background:rgba(34,211,238,0.16); display:flex; align-items:center; justify-content:center; font-size:14px; color:#22d3ee;">✦</span><span style="font-size:13px; color:#fff; font-weight:500;">Asistente IA</span></div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="align-self:flex-start; max-width:82%; background:rgba(20,30,48,0.85); border:1px solid rgba(120,160,200,0.14); border-radius:13px; padding:9px 11px; font-size:12px; color:#eaf1f8; line-height:1.4;">¿Qué hago durante un sismo?</div>
+              <div style="align-self:flex-end; max-width:82%; background:rgba(34,211,238,0.16); border:1px solid rgba(34,211,238,0.3); border-radius:13px; padding:9px 11px; font-size:12px; color:#eaf1f8; line-height:1.4;">Agáchate, cúbrete y sujétate. Aléjate de ventanas.</div>
+              <div style="align-self:flex-start; max-width:82%; background:rgba(20,30,48,0.85); border:1px solid rgba(120,160,200,0.14); border-radius:13px; padding:9px 11px; font-size:12px; color:#eaf1f8; line-height:1.4;">¿Mi familia está bien?</div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isWeb }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative; width:clamp(480px,60vw,860px); height:clamp(300px,36vw,520px); border-radius:14px; background:#070c15; border:1px solid rgba(120,160,200,0.18); box-shadow:0 30px 80px rgba(0,0,0,0.55); overflow:hidden; margin-top:1vh;">
+        <div style="height:38px; background:#0a0f1a; border-bottom:1px solid rgba(120,160,200,0.12); display:flex; align-items:center; gap:7px; padding:0 14px;"><span style="width:11px; height:11px; border-radius:50%; background:#fb5670;"></span><span style="width:11px; height:11px; border-radius:50%; background:#f5a623;"></span><span style="width:11px; height:11px; border-radius:50%; background:#20c997;"></span><span style="margin-left:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">console.quakealert.gt</span></div>
+        <sc-if value="{{ webCommand }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute; top:38px; left:0; right:0; bottom:0; display:grid; grid-template-columns:1fr 200px;">
+            <div style="position:relative; background:radial-gradient(60% 60% at 45% 50%, rgba(34,211,238,0.07), transparent 60%), #060a12; overflow:hidden;">
+              <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.07) 1px,transparent 1px); background-size:34px 34px;"></div>
+              <div style="position:absolute; left:42%; top:54%; width:90px; height:90px; margin:-45px;"><div style="position:absolute; inset:0; border:1.5px solid rgba(251,86,112,0.6); border-radius:50%; animation:qaRing 2.8s ease-out infinite;"></div><div style="position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px; background:#fb5670; border-radius:50%; box-shadow:0 0 16px 4px rgba(251,86,112,0.8);"></div></div>
+              <div style="position:absolute; left:24%; top:34%; width:8px; height:8px; background:#22d3ee; border-radius:50%; box-shadow:0 0 10px 2px rgba(34,211,238,0.8);"></div>
+              <div style="position:absolute; left:64%; top:40%; width:8px; height:8px; background:#22d3ee; border-radius:50%; box-shadow:0 0 10px 2px rgba(34,211,238,0.8);"></div>
+              <div style="position:absolute; left:16px; bottom:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">VISTA NACIONAL · LIVE</div>
+            </div>
+            <div style="border-left:1px solid rgba(120,160,200,0.12); padding:14px; display:flex; flex-direction:column; gap:10px;">
+              <div style="border-radius:10px; background:rgba(251,86,112,0.1); border:1px solid rgba(251,86,112,0.3); padding:11px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#fb5670;">EVENTO ACTIVO</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#fff;">M6.8 · Escuintla</div></div>
+              <div style="border-radius:10px; background:rgba(255,255,255,0.03); padding:11px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#22d3ee;">312</div><div style="font-size:10px; color:#7b8ca3;">SENSORES</div></div>
+              <div style="border-radius:10px; background:rgba(255,255,255,0.03); padding:11px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#20c997;">1.2M</div><div style="font-size:10px; color:#7b8ca3;">PROTEGIDOS</div></div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ webAnalytics }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; top:38px; left:0; right:0; bottom:0; padding:18px 20px; display:flex; flex-direction:column;">
+            <div style="display:flex; gap:14px; margin-bottom:16px;">
+              <div style="flex:1; border-radius:10px; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); padding:11px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#22d3ee;">7.2s</div><div style="font-size:10px; color:#7b8ca3;">ALERTA PROM.</div></div>
+              <div style="flex:1; border-radius:10px; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); padding:11px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#20c997;">98%</div><div style="font-size:10px; color:#7b8ca3;">COBERTURA</div></div>
+              <div style="flex:1; border-radius:10px; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); padding:11px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#fff;">1.2M</div><div style="font-size:10px; color:#7b8ca3;">USUARIOS</div></div>
+            </div>
+            <div style="flex:1; display:flex; align-items:flex-end; gap:10px; padding:0 4px;">
+              <div style="flex:1; height:36%; border-radius:5px 5px 0 0; background:rgba(34,211,238,0.45);"></div>
+              <div style="flex:1; height:58%; border-radius:5px 5px 0 0; background:rgba(34,211,238,0.55);"></div>
+              <div style="flex:1; height:46%; border-radius:5px 5px 0 0; background:rgba(34,211,238,0.5);"></div>
+              <div style="flex:1; height:74%; border-radius:5px 5px 0 0; background:rgba(34,211,238,0.7);"></div>
+              <div style="flex:1; height:90%; border-radius:5px 5px 0 0; background:#22d3ee;"></div>
+              <div style="flex:1; height:64%; border-radius:5px 5px 0 0; background:rgba(34,211,238,0.6);"></div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ webSmartcity }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; top:38px; left:0; right:0; bottom:0; display:grid; grid-template-columns:1fr 190px;">
+            <div style="position:relative; background:#060a12; overflow:hidden;">
+              <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.07) 1px,transparent 1px); background-size:30px 30px;"></div>
+              <div style="position:absolute; left:30%; top:36%; width:11px; height:11px; margin:-5px; background:#fb5670; border-radius:50%; box-shadow:0 0 12px 3px rgba(251,86,112,0.8);"></div>
+              <div style="position:absolute; left:56%; top:30%; width:11px; height:11px; background:#fb5670; border-radius:50%; box-shadow:0 0 12px 3px rgba(251,86,112,0.8);"></div>
+              <div style="position:absolute; left:46%; top:62%; width:11px; height:11px; background:#fb5670; border-radius:50%; box-shadow:0 0 12px 3px rgba(251,86,112,0.8);"></div>
+              <div style="position:absolute; left:16px; bottom:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fb5670;">SIRENAS ACTIVAS · ESCUINTLA</div>
+            </div>
+            <div style="border-left:1px solid rgba(120,160,200,0.12); padding:14px; display:flex; flex-direction:column; gap:9px;">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#7b8ca3;">SIRENAS</div>
+              <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px; background:rgba(251,86,112,0.1); border:1px solid rgba(251,86,112,0.3);"><span style="width:7px;height:7px;border-radius:50%;background:#fb5670;"></span><span style="flex:1; font-size:12px; color:#fff;">Zona 1</span><span style="font-size:9px; color:#fb5670;">ON</span></div>
+              <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px; background:rgba(251,86,112,0.1); border:1px solid rgba(251,86,112,0.3);"><span style="width:7px;height:7px;border-radius:50%;background:#fb5670;"></span><span style="flex:1; font-size:12px; color:#fff;">Zona 2</span><span style="font-size:9px; color:#fb5670;">ON</span></div>
+              <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px; background:rgba(255,255,255,0.03);"><span style="width:7px;height:7px;border-radius:50%;background:#20c997;"></span><span style="flex:1; font-size:12px; color:#cdd9e8;">Paneles LED</span></div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ webDrills }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; top:38px; left:0; right:0; bottom:0; padding:20px 22px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#f5a623; margin-bottom:6px;">SIMULACRO EN VIVO</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(48px,7vw,90px); line-height:1; color:#fff;">78<span style="font-size:0.5em; color:#f5a623;">%</span></div>
+            <div style="font-size:13px; color:#9fb4ad; margin:6px 0 18px;">evacuación · 967 de 1,240</div>
+            <div style="width:70%; height:10px; border-radius:6px; background:rgba(0,0,0,0.3); overflow:hidden;"><div style="height:100%; width:78%; border-radius:6px; background:linear-gradient(90deg,#f5a623,#20c997);"></div></div>
+            <div style="display:flex; gap:14px; margin-top:18px;"><div style="text-align:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#22d3ee;">02:48</div><div style="font-size:10px; color:#7b8ca3;">TIEMPO</div></div><div style="text-align:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#fff;">24</div><div style="font-size:10px; color:#7b8ca3;">BRIGADISTAS</div></div></div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isStat }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; gap:3vw; margin-top:4.5vh; flex-wrap:wrap; justify-content:center;">
+        <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+          <div style="text-align:center;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(40px,5.5vw,96px); line-height:1; color:{{ s.color }};">{{ s.value }}</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:clamp(11px,1vw,17px); letter-spacing:0.14em; color:#9fb4ad; margin-top:1.4vh;">{{ s.label }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isWave }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; align-items:flex-end; gap:1.1vw; height:13vh; margin-top:4.5vh;">
+        <div style="width:0.7vw; height:100%; border-radius:1vw; background:{{ accent }}; transform-origin:bottom; animation:qaWave 0.9s ease-in-out infinite 0.0s;"></div>
+        <div style="width:0.7vw; height:100%; border-radius:1vw; background:{{ accent }}; transform-origin:bottom; animation:qaWave 0.9s ease-in-out infinite 0.12s;"></div>
+        <div style="width:0.7vw; height:100%; border-radius:1vw; background:{{ accent }}; transform-origin:bottom; animation:qaWave 0.9s ease-in-out infinite 0.24s;"></div>
+        <div style="width:0.7vw; height:100%; border-radius:1vw; background:{{ accent }}; transform-origin:bottom; animation:qaWave 0.9s ease-in-out infinite 0.36s;"></div>
+        <div style="width:0.7vw; height:100%; border-radius:1vw; background:{{ accent }}; transform-origin:bottom; animation:qaWave 0.9s ease-in-out infinite 0.48s;"></div>
+        <div style="width:0.7vw; height:100%; border-radius:1vw; background:{{ accent }}; transform-origin:bottom; animation:qaWave 0.9s ease-in-out infinite 0.6s;"></div>
+        <div style="width:0.7vw; height:100%; border-radius:1vw; background:{{ accent }}; transform-origin:bottom; animation:qaWave 0.9s ease-in-out infinite 0.72s;"></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasSub }}" hint-placeholder-val="{{ true }}">
+      <p style="font-size:clamp(18px,2vw,34px); color:#aebfd4; line-height:1.5; margin:4vh 0 0; max-width:1100px;">{{ sub }}</p>
+    </sc-if>
+
+    <sc-if value="{{ hasChips }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; gap:1vw; margin-top:4vh; flex-wrap:wrap; justify-content:center;">
+        <sc-for list="{{ chips }}" as="c" hint-placeholder-count="4">
+          <span style="padding:1.1vh 1.6vw; border:1px solid rgba(120,160,200,0.28); border-radius:999px; font-size:clamp(13px,1.2vw,20px); color:#cdd9e8;">{{ c }}</span>
+        </sc-for>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <div style="position:absolute; left:0; right:0; bottom:0; z-index:30; padding:22px 44px; display:flex; align-items:center; gap:20px; background:linear-gradient(180deg,transparent,rgba(5,8,15,0.85));">
+    <button onClick="{{ togglePlay }}" style="border:none; cursor:pointer; width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">{{ playIcon }}</button>
+    <button onClick="{{ prev }}" style="border:1px solid rgba(120,160,200,0.25); cursor:pointer; height:42px; padding:0 16px; border-radius:11px; background:rgba(255,255,255,0.04); color:#eaf1f8; font-size:14px;">←</button>
+    <div style="flex:1; display:flex; gap:6px; align-items:center;">
+      <sc-for list="{{ segs }}" as="g" hint-placeholder-count="15">
+        <div onClick="{{ g.onJump }}" style="flex:1; height:5px; border-radius:3px; background:rgba(255,255,255,0.1); cursor:pointer; overflow:hidden;"><div style="height:100%; border-radius:3px; background:{{ g.fillColor }}; width:{{ g.fill }};"></div></div>
+      </sc-for>
+    </div>
+    <button onClick="{{ next }}" style="border:1px solid rgba(120,160,200,0.25); cursor:pointer; height:42px; padding:0 16px; border-radius:11px; background:rgba(255,255,255,0.04); color:#eaf1f8; font-size:14px;">→</button>
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#7b8ca3; flex-shrink:0; width:54px; text-align:right;">{{ sceneNum }}/{{ total }}</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1600, &quot;height&quot;: 900}}">
+class Component extends DCLogic {
+  NAVY = 'radial-gradient(90% 70% at 70% 20%, rgba(34,211,238,0.10), transparent 55%), linear-gradient(160deg,#070d18 0%,#05080f 100%)';
+  RED = 'radial-gradient(90% 70% at 50% 35%, rgba(251,86,112,0.22), transparent 60%), linear-gradient(160deg,#1a0710,#0a0510)';
+  CYAN = 'radial-gradient(100% 80% at 50% 30%, rgba(34,211,238,0.18), transparent 58%), linear-gradient(160deg,#08111f,#05080f)';
+
+  SCENES = [
+    { motif: 'logo', bg: 'cyan', accent: '#22d3ee', kicker: 'Public Safety Intelligence Platform',
+      title1: 'La próxima generación', title2: 'en protección civil', sub: 'Una plataforma que convierte segundos en vidas salvadas, para toda Latinoamérica.' },
+    { motif: 'rings', bg: 'red', accent: '#fb5670', kicker: 'El problema',
+      title1: 'La diferencia entre la vida', title2: 'y la tragedia: segundos', sub: 'Centroamérica vive sobre el Cinturón de Fuego. Hoy esos segundos se desperdician.' },
+    { motif: 'rings', bg: 'navy', accent: '#22d3ee', kicker: 'La visión',
+      title1: 'No es una app.', title2: 'Es el sistema nervioso de un país.', sub: 'Detecta, alerta, coordina y automatiza — conectando personas, hogares, instituciones y ciudades.' },
+    { motif: 'rings', bg: 'navy', accent: '#22d3ee', kicker: 'Módulo 01 · Detección',
+      title1: 'Detecta el sismo', title2: 'antes de que llegue', sub: 'Red de sensores QuakeBox + IA que captan la onda y calculan el impacto en milisegundos.' },
+    { motif: 'countdown', bg: 'red', accent: '#fb5670', kicker: 'El momento que salva vidas',
+      title1: 'Alertas que llegan', title2: 'antes que el sismo', sub: 'Cuenta regresiva, nivel de riesgo, mapa del epicentro e instrucciones de la IA — en cada teléfono.' },
+    { motif: 'app', variant: 'alerta', bg: 'navy', accent: '#22d3ee', kicker: 'App ciudadana · iOS y Android',
+      title1: 'La alerta', title2: 'en tu bolsillo', sub: 'Funciona con la app cerrada, en segundo plano y en pantalla bloqueada.' },
+    { motif: 'app', variant: 'familia', bg: 'navy', accent: '#20c997', kicker: 'App ciudadana · Red familiar',
+      title1: 'Tu familia,', title2: 'localizada y a salvo', sub: 'Un toque comunica tu estado a todos los que importan.' },
+    { motif: 'app', variant: 'asistente', bg: 'navy', accent: '#22d3ee', kicker: 'App ciudadana · Asistente IA',
+      title1: 'Una voz que', title2: 'te guía paso a paso', sub: 'Inteligencia conversacional que responde y dirige bajo presión.' },
+    { motif: 'rings', bg: 'navy', accent: '#20c997', kicker: 'Red familiar',
+      title1: '"¿Estás bien?"', title2: 'Respondido en segundos', sub: 'Tu familia confirma que está a salvo con un toque. Geolocalización autorizada en vivo.' },
+    { motif: 'wave', bg: 'navy', accent: '#22d3ee', kicker: 'IA + Asistentes de voz',
+      title1: 'Una voz que te guía', title2: 'cuando cada segundo cuenta', sub: 'Alexa, Google y Siri anuncian la alerta automáticamente. La IA te dirige paso a paso.' },
+    { motif: 'rings', bg: 'navy', accent: '#f5a623', kicker: 'Smart Home · IoT · Smart City',
+      title1: 'Tu casa y tu ciudad', title2: 'reaccionan solas', sub: 'Corta el gas, abre puertas, enciende sirenas y paneles LED — sin que nadie toque un botón.' },
+    { motif: 'rings', bg: 'navy', accent: '#22d3ee', kicker: 'GIS Command Center',
+      title1: 'Una sala de control', title2: 'para todo el país', sub: 'Gobiernos y protección civil ven sensores, alertas e instituciones en tiempo real.' },
+    { motif: 'web', variant: 'command', bg: 'navy', accent: '#22d3ee', kicker: 'Plataforma web · Command Center',
+      title1: 'El país entero,', title2: 'en una sola pantalla', sub: 'Capas en vivo de sensores, alertas e instituciones sobre el mapa nacional.' },
+    { motif: 'web', variant: 'analytics', bg: 'navy', accent: '#22d3ee', kicker: 'Plataforma web · Analytics & BI',
+      title1: 'Decisiones', title2: 'basadas en datos', sub: 'Métricas de cobertura, tiempos de alerta y tendencias en tiempo real.' },
+    { motif: 'web', variant: 'smartcity', bg: 'navy', accent: '#fb5670', kicker: 'Plataforma web · Smart City',
+      title1: 'La ciudad entera', title2: 'responde a la vez', sub: 'Sirenas públicas, paneles LED y botones de pánico, coordinados desde un panel.' },
+    { motif: 'web', variant: 'drills', bg: 'navy', accent: '#f5a623', kicker: 'Plataforma web · Simulacros',
+      title1: 'Simulacros', title2: 'medibles en vivo', sub: 'Evacuación en tiempo real, coordinación de brigadas y scoring automático.' },
+    { motif: 'rings', bg: 'navy', accent: '#f5a623', kicker: 'Simulacros con IA',
+      title1: 'Entrena a una', title2: 'nación entera', sub: 'Simulacros inteligentes con coordinación en vivo, scoring y certificación verificable.' },
+    { motif: 'stat', bg: 'navy', accent: '#22d3ee', kicker: 'Inteligencia & analítica',
+      title1: 'Datos que anticipan', title2: 'el desastre',
+      stats: [ {value:'7.2s', label:'ALERTA PROMEDIO', color:'#22d3ee'}, {value:'98%', label:'COBERTURA', color:'#20c997'}, {value:'24/7', label:'MONITOREO', color:'#fff'} ] },
+    { motif: 'stat', bg: 'cyan', accent: '#22d3ee', kicker: 'Un ecosistema completo',
+      title1: '17 superficies.', title2: 'Un solo sistema.',
+      stats: [ {value:'1.2M+', label:'PROTEGIDOS', color:'#22d3ee'}, {value:'13', label:'MÓDULOS', color:'#fff'}, {value:'3', label:'IDIOMAS · ES·PT·EN', color:'#20c997'}, {value:'iOS·Android·Web', label:'MULTIPLATAFORMA', color:'#fff'} ] },
+    { motif: 'chips', bg: 'navy', accent: '#22d3ee', kicker: 'Modelo de negocio',
+      title1: 'Cuatro motores', title2: 'de ingreso', sub: 'Una plataforma, múltiples mercados — escalable a toda la región.',
+      chips: ['B2C · Familias', 'B2B · Empresas', 'B2G · Gobiernos', 'Telco · White-label'] },
+    { motif: 'chips', bg: 'navy', accent: '#20c997', kicker: 'Roadmap',
+      title1: 'De Guatemala', title2: 'a toda Latinoamérica', sub: 'Una expansión por fases, construida sobre tecnología probada.',
+      chips: ['Fase 1 · Guatemala', 'Fase 2 · Centroamérica', 'Fase 3 · Latinoamérica'] },
+    { motif: 'logo', bg: 'cyan', accent: '#22d3ee', kicker: 'Quake Alert',
+      title1: 'No vendemos una app.', title2: 'Damos segundos que salvan vidas.', sub: 'Construyamos juntos la próxima generación en protección civil.' },
+  ];
+
+  DUR = 8000;
+
+  state = { scene: 0, playing: true, progress: 0 };
+
+  componentDidMount() {
+    try {
+      const saved = parseInt(localStorage.getItem('qa_pitch_scene') || '0', 10);
+      if (saved > 0 && saved < this.SCENES.length) this.setState({ scene: saved });
+    } catch (e) {}
+    this._t = setInterval(() => {
+      if (!this.state.playing) return;
+      this.setState((s) => {
+        const np = s.progress + (100 / (this.DUR / 100));
+        if (np >= 100) {
+          const next = (s.scene + 1) % this.SCENES.length;
+          try { localStorage.setItem('qa_pitch_scene', String(next)); } catch (e) {}
+          return { scene: next, progress: 0 };
+        }
+        return { progress: np };
+      });
+    }, 100);
+  }
+
+  componentDidUpdate() {
+    if (this._lastScene !== this.state.scene) {
+      this._lastScene = this.state.scene;
+      const el = this._inner;
+      if (el) { el.classList.remove('qa-anim'); void el.offsetWidth; el.classList.add('qa-anim'); }
+      try { localStorage.setItem('qa_pitch_scene', String(this.state.scene)); } catch (e) {}
+    }
+  }
+
+  componentWillUnmount() { clearInterval(this._t); }
+
+  go(i) { this.setState({ scene: (i + this.SCENES.length) % this.SCENES.length, progress: 0 }); }
+
+  renderVals() {
+    const s = this.state;
+    const sc = this.SCENES[s.scene];
+    const bg = sc.bg === 'red' ? this.RED : sc.bg === 'cyan' ? this.CYAN : this.NAVY;
+    const auroraA = sc.bg === 'red' ? 'rgba(251,86,112,0.18)' : 'rgba(34,211,238,0.16)';
+    const auroraB = sc.bg === 'red' ? 'rgba(245,166,35,0.12)' : 'rgba(251,86,112,0.10)';
+
+    const segs = this.SCENES.map((_, i) => ({
+      onJump: () => this.go(i),
+      fill: i < s.scene ? '100%' : i === s.scene ? s.progress + '%' : '0%',
+      fillColor: sc.accent,
+    }));
+
+    return {
+      sceneBg: bg, auroraA, auroraB,
+      total: this.SCENES.length, sceneNum: s.scene + 1,
+      accent: sc.accent, kicker: sc.kicker,
+      title1: sc.title1, title2: sc.title2 || '', hasTitle2: !!sc.title2,
+      sub: sc.sub || '', hasSub: !!sc.sub,
+      isLogo: sc.motif === 'logo', isCountdown: sc.motif === 'countdown',
+      isStat: sc.motif === 'stat', isWave: sc.motif === 'wave',
+      isApp: sc.motif === 'app', appAlerta: sc.variant === 'alerta', appFamilia: sc.variant === 'familia', appAsistente: sc.variant === 'asistente',
+      isWeb: sc.motif === 'web', webCommand: sc.variant === 'command', webAnalytics: sc.variant === 'analytics', webSmartcity: sc.variant === 'smartcity', webDrills: sc.variant === 'drills',
+      bigTitle: sc.motif !== 'app' && sc.motif !== 'web', compactTitle: sc.motif === 'app' || sc.motif === 'web',
+      hasChips: sc.motif === 'chips', chips: sc.chips || [],
+      stats: sc.stats || [],
+      segs,
+      playIcon: s.playing ? '❚❚' : '▶',
+      togglePlay: () => this.setState((x) => ({ playing: !x.playing })),
+      prev: () => this.go(s.scene - 1),
+      next: () => this.go(s.scene + 1),
+      innerRef: (el) => { this._inner = el; },
+    };
+  }
+}
+</script>
+</body>
+</html>

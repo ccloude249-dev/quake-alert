@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUAKE ALERT">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script src="./support.js"></script>
+<script>
+  if ('serviceWorker' in navigator && window.parent === window) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
+  }
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #060a12; }
+  a { text-decoration: none; }
+  @keyframes qaRing { 0% { transform: scale(0.15); opacity: 0.9; } 100% { transform: scale(1.05); opacity: 0; } }
+  @keyframes qaBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,160,200,0.2); border-radius: 4px; }
+</style>
+</helmet>
+<div style="min-height:100vh; width:100%; background:radial-gradient(80% 50% at 80% 0%, rgba(34,211,238,0.08), transparent 55%), radial-gradient(70% 50% at 0% 100%, rgba(251,86,112,0.06), transparent 55%), #070c15; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8;">
+
+  <div style="position:relative; overflow:hidden; padding:60px 64px 50px; border-bottom:1px solid rgba(120,160,200,0.1);">
+    <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.04) 1px,transparent 1px); background-size:60px 60px; mask-image:radial-gradient(100% 100% at 70% 0%,#000,transparent 75%);"></div>
+    <div style="position:absolute; right:120px; top:-40px; width:360px; height:360px;">
+      <div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.4); border-radius:50%; animation:qaRing 3.8s ease-out infinite;"></div>
+      <div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.4); border-radius:50%; animation:qaRing 3.8s ease-out infinite 1.3s;"></div>
+      <div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.4); border-radius:50%; animation:qaRing 3.8s ease-out infinite 2.6s;"></div>
+      <div style="position:absolute; left:50%; top:50%; width:14px; height:14px; margin:-7px; background:#22d3ee; border-radius:50%; box-shadow:0 0 24px 5px rgba(34,211,238,0.7);"></div>
+    </div>
+
+    <div style="position:relative; display:flex; align-items:center; gap:13px; margin-bottom:30px;">
+      <img src="assets/quake-alert-logo.png" alt="QUAKE ALERT" style="height:42px; width:auto; display:block;" />
+      <span style="display:flex; align-items:center; gap:7px; margin-left:4px; padding:6px 12px; border-radius:999px; background:rgba(32,201,151,0.1); border:1px solid rgba(32,201,151,0.28);"><span style="width:6px; height:6px; border-radius:50%; background:#20c997; animation:qaBlink 2s infinite;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#20c997;">PLATAFORMA EN VIVO</span></span>
+    </div>
+
+    <h1 style="position:relative; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:64px; line-height:1.0; letter-spacing:-0.03em; margin:0; max-width:980px;">Plataforma de inteligencia para <span style="color:#22d3ee;">alertas tempranas</span> y protección civil</h1>
+    <p style="position:relative; font-size:20px; color:#aebfd4; margin:24px 0 0; max-width:720px; line-height:1.55;">Diecisiete superficies, un solo sistema nervioso: del ciudadano al gobierno, del hogar a la ciudad. Explora cada experiencia del ecosistema QUAKE ALERT.</p>
+    <div style="position:relative; display:flex; gap:10px; margin-top:26px;">
+      <span style="padding:8px 16px; border:1px solid rgba(120,160,200,0.22); border-radius:999px; font-size:14px; color:#cdd9e8;">Guatemala</span>
+      <span style="padding:8px 16px; border:1px solid rgba(120,160,200,0.22); border-radius:999px; font-size:14px; color:#cdd9e8;">Centroamérica</span>
+      <span style="padding:8px 16px; border:1px solid rgba(120,160,200,0.22); border-radius:999px; font-size:14px; color:#cdd9e8;">Latinoamérica</span>
+    </div>
+  </div>
+
+  <div style="padding:42px 64px 70px;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.22em; text-transform:uppercase; color:#7b8ca3; margin-bottom:22px;">Explora la plataforma</div>
+
+    <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:18px;">
+
+      <a href="Quake%20Alert%20Pitch.dc.html" style="grid-column:span 6; display:flex; align-items:center; gap:28px; border-radius:20px; overflow:hidden; background:linear-gradient(120deg,rgba(34,211,238,0.18),rgba(251,86,112,0.1) 60%,rgba(20,30,48,0.5)); border:1px solid rgba(34,211,238,0.4); padding:24px 30px; transition:transform 180ms ease, border-color 180ms ease; margin-bottom:6px;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.75);">
+        <div style="flex-shrink:0; width:64px; height:64px; border-radius:16px; background:rgba(34,211,238,0.16); border:1px solid rgba(34,211,238,0.45); display:flex; align-items:center; justify-content:center; font-size:26px; color:#22d3ee;">▶</div>
+        <div style="flex:1;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#22d3ee;">PRESENTACIÓN · TIPO VIDEO</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; color:#fff; margin:6px 0 6px;">Pitch para accionistas</div>
+          <p style="font-size:15px; color:#aebfd4; margin:0; line-height:1.5; max-width:680px;">Presentación cinematográfica que se reproduce sola: títulos gigantes y todas las innovaciones del proyecto. Pantalla completa para impactar.</p>
+        </div>
+        <span style="flex-shrink:0; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#22d3ee;">Reproducir →</span>
+      </a>
+
+      <a href="Quake%20Alert%20Tour.dc.html" style="grid-column:span 6; display:flex; align-items:center; gap:28px; border-radius:20px; overflow:hidden; background:linear-gradient(120deg,rgba(32,201,151,0.14),rgba(34,211,238,0.1) 55%,rgba(20,30,48,0.5)); border:1px solid rgba(32,201,151,0.35); padding:24px 30px; transition:transform 180ms ease, border-color 180ms ease; margin-bottom:6px;" style-hover="transform: translateY(-4px); border-color: rgba(32,201,151,0.7);">
+        <div style="flex-shrink:0; width:64px; height:64px; border-radius:16px; background:rgba(32,201,151,0.16); border:1px solid rgba(32,201,151,0.4); display:flex; align-items:center; justify-content:center; font-size:28px; color:#20c997;">▸</div>
+        <div style="flex:1;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#20c997;">EMPIEZA AQUÍ · RECORRIDO GUIADO</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; color:#fff; margin:6px 0 6px;">Conoce toda la plataforma paso a paso</div>
+          <p style="font-size:15px; color:#aebfd4; margin:0; line-height:1.5; max-width:680px;">Un walkthrough de las 17 superficies en orden narrativo: qué es cada una, qué demostrar y un botón para abrirla. Ideal para presentar.</p>
+        </div>
+        <span style="flex-shrink:0; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#20c997;">Iniciar recorrido →</span>
+      </a>
+
+      <a href="Quake%20Alert%20Landing.dc.html" style="grid-column:span 6; display:flex; align-items:center; gap:34px; border-radius:20px; overflow:hidden; background:linear-gradient(120deg,rgba(34,211,238,0.16),rgba(20,30,48,0.5) 60%); border:1px solid rgba(34,211,238,0.38); padding:28px 32px; transition:transform 180ms ease, border-color 180ms ease; margin-bottom:6px;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.7);">
+        <div style="flex-shrink:0; position:relative; width:120px; height:120px; display:flex; align-items:center; justify-content:center;">
+          <div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.4); border-radius:50%; animation:qaRing 3.6s ease-out infinite;"></div>
+          <div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.4); border-radius:50%; animation:qaRing 3.6s ease-out infinite 1.8s;"></div>
+          <div style="position:relative; width:70px; border-radius:12px; background:rgba(8,13,22,0.9); border:1px solid rgba(251,86,112,0.4); padding:10px 8px; text-align:center;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#fff; line-height:1;">08</div><div style="font-size:8px; color:#fb5670;">segundos</div></div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#22d3ee;">SITIO PÚBLICO · MARKETING</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; color:#fff; margin:8px 0 8px;">Landing page</div>
+          <p style="font-size:16px; color:#aebfd4; margin:0; line-height:1.5; max-width:620px;">La portada pública: hero impactante, cómo funciona, soluciones, precios y FAQ — el primer contacto con QUAKE ALERT.</p>
+        </div>
+        <span style="flex-shrink:0; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#22d3ee;">Ver landing →</span>
+      </a>
+
+      <a href="Quake%20Alert%20Vision.dc.html" style="grid-column:span 3; display:block; border-radius:20px; overflow:hidden; background:linear-gradient(135deg,rgba(34,211,238,0.12),rgba(20,30,48,0.5)); border:1px solid rgba(34,211,238,0.3); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.6);">
+        <div style="height:150px; position:relative; overflow:hidden; background:radial-gradient(80% 100% at 70% 0%, rgba(34,211,238,0.2), transparent 60%); border-bottom:1px solid rgba(34,211,238,0.18);">
+          <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.06) 1px,transparent 1px); background-size:34px 34px;"></div>
+          <div style="position:absolute; left:32px; bottom:28px; width:90px; height:90px;"><div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.5); border-radius:50%; animation:qaRing 3.6s ease-out infinite;"></div><div style="position:absolute; inset:0; border:1px solid rgba(34,211,238,0.5); border-radius:50%; animation:qaRing 3.6s ease-out infinite 1.8s;"></div><div style="position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px; background:#22d3ee; border-radius:50%; box-shadow:0 0 18px 4px rgba(34,211,238,0.7);"></div></div>
+        </div>
+        <div style="padding:24px 26px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#22d3ee;">VISIÓN · 17 SLIDES</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:#fff; margin:8px 0 8px;">Deck de Visión</div>
+          <p style="font-size:15px; color:#aebfd4; margin:0 0 14px; line-height:1.5;">El panorama completo: el problema, los 15 módulos, arquitectura, modelo de negocio y roadmap.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#22d3ee;">Abrir presentación →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20App.dc.html" style="grid-column:span 3; display:block; border-radius:20px; overflow:hidden; background:linear-gradient(135deg,rgba(32,201,151,0.1),rgba(20,30,48,0.5)); border:1px solid rgba(32,201,151,0.28); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(32,201,151,0.55);">
+        <div style="height:150px; position:relative; overflow:hidden; background:radial-gradient(80% 100% at 30% 0%, rgba(32,201,151,0.18), transparent 60%); border-bottom:1px solid rgba(32,201,151,0.18); display:flex; align-items:flex-end; justify-content:center; padding-bottom:0;">
+          <div style="width:96px; height:120px; border-radius:18px 18px 0 0; background:rgba(8,13,22,0.8); border:1.5px solid rgba(32,201,151,0.4); border-bottom:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;"><div style="width:40px; height:40px; border-radius:50%; background:rgba(32,201,151,0.2); display:flex; align-items:center; justify-content:center; color:#20c997; font-size:18px;">✓</div><div style="width:54px; height:6px; border-radius:3px; background:rgba(255,255,255,0.1);"></div></div>
+        </div>
+        <div style="padding:24px 26px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#20c997;">APP · INTERACTIVA</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:#fff; margin:8px 0 8px;">App Ciudadana</div>
+          <p style="font-size:15px; color:#aebfd4; margin:0 0 14px; line-height:1.5;">Vive el flujo completo: alerta con cuenta regresiva, instrucciones de la IA y check-in familiar.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#20c997;">Abrir prototipo →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Alarma%20M%C3%B3vil.dc.html" style="grid-column:span 2; display:block; border-radius:20px; overflow:hidden; background:linear-gradient(135deg,rgba(32,201,151,0.12),rgba(20,30,48,0.5)); border:1px solid rgba(32,201,151,0.35); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(32,201,151,0.7);">
+        <div style="height:128px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(32,201,151,0.18), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12); display:flex; align-items:center; justify-content:center;">
+          <div style="width:64px; height:64px; border-radius:50%; background:rgba(32,201,151,0.14); border:2px solid rgba(32,201,151,0.5); display:flex; align-items:center; justify-content:center; font-size:26px; color:#20c997;">◉</div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#20c997;">PARA TU TELÉFONO · IOS Y ANDROID</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:7px 0 7px;">Alarma Móvil</div>
+          <p style="font-size:14px; color:#aebfd4; margin:0 0 12px; line-height:1.5;">Vibración, sonido y aviso cuando un sismo real entra en tu radio configurado.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#20c997;">Armar alarma →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Sismos%20en%20Vivo.dc.html" style="grid-column:span 2; display:block; border-radius:20px; overflow:hidden; background:linear-gradient(135deg,rgba(251,86,112,0.12),rgba(20,30,48,0.5)); border:1px solid rgba(251,86,112,0.35); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(251,86,112,0.7);">
+        <div style="height:128px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(251,86,112,0.18), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12);">
+          <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.06) 1px,transparent 1px); background-size:26px 26px;"></div>
+          <div style="position:absolute; left:50%; top:48%; width:18px; height:18px; margin:-9px; border:1.5px solid rgba(251,86,112,0.7); border-radius:50%; animation:qaRing 2.6s ease-out infinite;"></div>
+          <div style="position:absolute; left:50%; top:48%; width:18px; height:18px; margin:-9px; border:1.5px solid rgba(251,86,112,0.7); border-radius:50%; animation:qaRing 2.6s ease-out infinite 1.3s;"></div>
+          <div style="position:absolute; left:50%; top:48%; width:10px; height:10px; margin:-5px; background:#fb5670; border-radius:50%; box-shadow:0 0 12px 3px rgba(251,86,112,0.8);"></div>
+          <div style="position:absolute; left:24%; top:30%; width:7px; height:7px; background:#f5a623; border-radius:50%; box-shadow:0 0 8px 2px rgba(245,166,35,0.7);"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#fb5670;">DATOS REALES · USGS EN VIVO</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:7px 0 7px;">Sismos en Vivo</div>
+          <p style="font-size:14px; color:#aebfd4; margin:0 0 12px; line-height:1.5;">Qué tiembla ahora en el mundo, distancia a Guatemala y el caso real de Venezuela.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#fb5670;">Ver mapa en vivo →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Command%20Center.dc.html" style="grid-column:span 2; display:block; border-radius:20px; overflow:hidden; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.16); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.5);">
+        <div style="height:128px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(34,211,238,0.12), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12);">
+          <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.06) 1px,transparent 1px); background-size:26px 26px;"></div>
+          <div style="position:absolute; left:30%; top:40%; width:7px; height:7px; background:#22d3ee; border-radius:50%; box-shadow:0 0 8px 2px rgba(34,211,238,0.7);"></div>
+          <div style="position:absolute; left:55%; top:32%; width:7px; height:7px; background:#22d3ee; border-radius:50%; box-shadow:0 0 8px 2px rgba(34,211,238,0.7);"></div>
+          <div style="position:absolute; left:62%; top:60%; width:9px; height:9px; background:#fb5670; border-radius:50%; box-shadow:0 0 10px 2px rgba(251,86,112,0.8);"></div>
+          <div style="position:absolute; left:40%; top:64%; width:8px; height:8px; border-radius:2px; background:#20c997; box-shadow:0 0 8px 2px rgba(32,201,151,0.6);"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#22d3ee;">GOBIERNO · GIS</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:7px 0 7px;">Command Center</div>
+          <p style="font-size:14px; color:#aebfd4; margin:0 0 12px; line-height:1.5;">Sala de control nacional con mapa, sensores y capas en vivo.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee;">Abrir panel →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Drills.dc.html" style="grid-column:span 2; display:block; border-radius:20px; overflow:hidden; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.16); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(245,166,35,0.5);">
+        <div style="height:128px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(245,166,35,0.14), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12);">
+          <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.06) 1px,transparent 1px); background-size:26px 26px;"></div>
+          <div style="position:absolute; left:24%; top:30%; width:46px; height:34px; border-radius:7px; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3);"></div>
+          <div style="position:absolute; left:54%; top:34%; width:46px; height:34px; border-radius:7px; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3);"></div>
+          <div style="position:absolute; left:48%; top:74%; width:30px; height:30px; margin:-15px; border-radius:50%; border:2px solid #20c997; background:rgba(32,201,151,0.16);"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#f5a623;">SIMULACROS · IA</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:7px 0 7px;">Simulacros</div>
+          <p style="font-size:14px; color:#aebfd4; margin:0 0 12px; line-height:1.5;">Planifica, ejecuta y evalúa simulacros con scoring y certificación.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#f5a623;">Abrir plataforma →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Corporate.dc.html" style="grid-column:span 2; display:block; border-radius:20px; overflow:hidden; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.16); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.5);">
+        <div style="height:128px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(34,211,238,0.1), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12); display:flex; align-items:center; justify-content:center; gap:8px;">
+          <div style="width:38px; height:48px; border-radius:7px; background:rgba(32,201,151,0.14); border:1px solid rgba(32,201,151,0.35);"></div>
+          <div style="width:38px; height:48px; border-radius:7px; background:rgba(245,166,35,0.14); border:1px solid rgba(245,166,35,0.35);"></div>
+          <div style="width:38px; height:48px; border-radius:7px; background:rgba(34,211,238,0.14); border:1px solid rgba(34,211,238,0.35);"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#22d3ee;">EMPRESAS · MULTI-SEDE</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:7px 0 7px;">Protección Corporativa</div>
+          <p style="font-size:14px; color:#aebfd4; margin:0 0 12px; line-height:1.5;">Estado por sede para bancos, hospitales y universidades.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee;">Abrir panel →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Analytics.dc.html" style="grid-column:span 2; display:block; border-radius:20px; overflow:hidden; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.16); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.5);">
+        <div style="height:128px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(34,211,238,0.1), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12); display:flex; align-items:flex-end; justify-content:center; gap:7px; padding:0 30px 26px;">
+          <div style="flex:1; height:30%; border-radius:4px 4px 0 0; background:rgba(34,211,238,0.4);"></div>
+          <div style="flex:1; height:55%; border-radius:4px 4px 0 0; background:rgba(34,211,238,0.55);"></div>
+          <div style="flex:1; height:42%; border-radius:4px 4px 0 0; background:rgba(34,211,238,0.45);"></div>
+          <div style="flex:1; height:72%; border-radius:4px 4px 0 0; background:rgba(34,211,238,0.7);"></div>
+          <div style="flex:1; height:90%; border-radius:4px 4px 0 0; background:#22d3ee;"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#22d3ee;">INTELIGENCIA · BI</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:7px 0 7px;">Analytics &amp; BI</div>
+          <p style="font-size:14px; color:#aebfd4; margin:0 0 12px; line-height:1.5;">KPIs, cobertura y tendencias con selector de período.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee;">Abrir dashboard →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Assistant.dc.html" style="grid-column:span 2; display:block; border-radius:20px; overflow:hidden; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.16); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.5);">
+        <div style="height:128px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(34,211,238,0.1), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12); display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:8px; padding:0 26px;">
+          <div style="max-width:62%; padding:9px 13px; border-radius:14px; background:rgba(20,30,48,0.9); border:1px solid rgba(120,160,200,0.16); font-size:12px; color:#cdd9e8;">¿Qué hago ahora?</div>
+          <div style="align-self:flex-end; max-width:62%; padding:9px 13px; border-radius:14px; background:rgba(34,211,238,0.18); border:1px solid rgba(34,211,238,0.3); font-size:12px; color:#bfe9f4;">Agáchate y cúbrete →</div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#22d3ee;">ASISTENTE · IA</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:7px 0 7px;">Asistente de Emergencias</div>
+          <p style="font-size:14px; color:#aebfd4; margin:0 0 12px; line-height:1.5;">Chat que guía, localiza a tu familia y reporta daños.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee;">Abrir chat →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Smart%20City.dc.html" style="grid-column:span 2; display:block; border-radius:20px; overflow:hidden; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.16); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(245,166,35,0.5);">
+        <div style="height:128px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(245,166,35,0.1), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12);">
+          <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.07) 1px,transparent 1px); background-size:28px 28px;"></div>
+          <div style="position:absolute; left:30%; top:36%; width:9px; height:9px; margin:-4px; background:#fb5670; border-radius:50%; box-shadow:0 0 10px 2px rgba(251,86,112,0.8);"></div>
+          <div style="position:absolute; left:58%; top:46%; width:9px; height:9px; background:#fb5670; border-radius:50%; box-shadow:0 0 10px 2px rgba(251,86,112,0.8);"></div>
+          <div style="position:absolute; left:44%; top:64%; width:9px; height:9px; border-radius:2px; background:#f5a623; box-shadow:0 0 8px 2px rgba(245,166,35,0.6);"></div>
+          <div style="position:absolute; left:70%; top:64%; width:8px; height:8px; background:#22d3ee; border-radius:50%; box-shadow:0 0 8px 2px rgba(34,211,238,0.6);"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#f5a623;">CIUDAD · IoT</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:7px 0 7px;">Smart City Municipal</div>
+          <p style="font-size:14px; color:#aebfd4; margin:0 0 12px; line-height:1.5;">Sirenas, paneles LED y botones de pánico de la ciudad.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#f5a623;">Abrir panel →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Smart%20Home.dc.html" style="grid-column:span 2; display:block; border-radius:20px; overflow:hidden; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.16); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(32,201,151,0.5);">
+        <div style="height:128px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(32,201,151,0.12), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12); display:flex; align-items:center; justify-content:center; gap:10px;">
+          <div style="width:46px; height:30px; border-radius:8px; background:rgba(32,201,151,0.14); border:1px solid rgba(32,201,151,0.35); display:flex; align-items:center; justify-content:flex-end; padding:0 4px;"><span style="width:14px; height:14px; border-radius:50%; background:#20c997;"></span></div>
+          <div style="width:46px; height:30px; border-radius:8px; background:rgba(34,211,238,0.14); border:1px solid rgba(34,211,238,0.35); display:flex; align-items:center; justify-content:flex-end; padding:0 4px;"><span style="width:14px; height:14px; border-radius:50%; background:#22d3ee;"></span></div>
+          <div style="width:46px; height:30px; border-radius:8px; background:rgba(245,166,35,0.14); border:1px solid rgba(245,166,35,0.35); display:flex; align-items:center; justify-content:flex-end; padding:0 4px;"><span style="width:14px; height:14px; border-radius:50%; background:#f5a623;"></span></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#20c997;">HOGAR · AUTOMATIZACIÓN</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:7px 0 7px;">Smart Home</div>
+          <p style="font-size:14px; color:#aebfd4; margin:0 0 12px; line-height:1.5;">Corta el gas, abre puertas y enciende luces ante un sismo.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#20c997;">Abrir panel →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Studio.dc.html" style="grid-column:span 2; display:block; border-radius:20px; overflow:hidden; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.16); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.5);">
+        <div style="height:128px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(34,211,238,0.1), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12); display:flex; align-items:center; justify-content:center; gap:0;">
+          <div style="width:34px; height:26px; border-radius:6px; background:rgba(251,86,112,0.16); border:1px solid rgba(251,86,112,0.4);"></div>
+          <div style="width:22px; height:2px; background:rgba(120,160,200,0.4);"></div>
+          <div style="width:34px; height:26px; border-radius:6px; background:rgba(245,166,35,0.16); border:1px solid rgba(245,166,35,0.4);"></div>
+          <div style="width:22px; height:2px; background:rgba(120,160,200,0.4);"></div>
+          <div style="width:34px; height:26px; border-radius:6px; background:rgba(34,211,238,0.16); border:1px solid rgba(34,211,238,0.4);"></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#22d3ee;">INTEGRACIONES · LOW-CODE</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:7px 0 7px;">Integration Studio</div>
+          <p style="font-size:14px; color:#aebfd4; margin:0 0 12px; line-height:1.5;">Crea workflows y automatizaciones sin programar.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee;">Abrir estudio →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Onboarding.dc.html" style="grid-column:span 2; display:block; border-radius:20px; overflow:hidden; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.16); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.5);">
+        <div style="height:128px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(34,211,238,0.1), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12); display:flex; align-items:center; justify-content:center;">
+          <div style="width:60px; height:60px; border-radius:16px; background:linear-gradient(145deg,#101c2c,#0a131e); border:1px solid rgba(34,211,238,0.3); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;"><div style="position:absolute; inset:0; background-image:repeating-linear-gradient(45deg, rgba(34,211,238,0.06) 0 6px, transparent 6px 12px);"></div><span style="width:16px; height:16px; border-radius:50%; background:#22d3ee; box-shadow:0 0 14px 3px rgba(34,211,238,0.7); position:relative;"></span></div>
+        </div>
+        <div style="padding:22px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#22d3ee;">SENSOR · ALTA</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:21px; color:#fff; margin:7px 0 7px;">Onboarding QuakeBox</div>
+          <p style="font-size:14px; color:#aebfd4; margin:0 0 12px; line-height:1.5;">Asistente paso a paso para instalar tu sensor.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee;">Abrir asistente →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Form%20Builder.dc.html" style="grid-column:span 6; display:flex; align-items:center; gap:34px; border-radius:20px; overflow:hidden; background:linear-gradient(120deg,rgba(34,211,238,0.12),rgba(20,30,48,0.5) 60%); border:1px solid rgba(34,211,238,0.3); padding:26px 30px; transition:transform 180ms ease, border-color 180ms ease; margin-bottom:18px;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.6);">
+        <div style="flex-shrink:0; width:120px; height:120px; border-radius:16px; background:#0b121c; border:1px solid rgba(34,211,238,0.3); display:flex; flex-direction:column; justify-content:center; gap:9px; padding:18px;">
+          <div style="height:12px; border-radius:4px; background:rgba(34,211,238,0.5);"></div>
+          <div style="height:12px; border-radius:4px; background:rgba(120,160,200,0.25);"></div>
+          <div style="height:12px; border-radius:4px; background:rgba(120,160,200,0.25); width:68%;"></div>
+          <div style="height:26px; border-radius:6px; background:rgba(34,211,238,0.18); border:1px solid rgba(34,211,238,0.3);"></div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#22d3ee;">CATÁLOGOS · FORMULARIOS DINÁMICOS</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:#fff; margin:8px 0 8px;">Constructor de Formularios</div>
+          <p style="font-size:16px; color:#aebfd4; margin:0; line-height:1.5; max-width:620px;">Arrastra campos para armar cualquier catálogo. Se guarda como definición JSON y se renderiza solo — en la consola y en la app.</p>
+        </div>
+        <span style="flex-shrink:0; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#22d3ee;">Abrir builder →</span>
+      </a>
+
+      <a href="Quake%20Alert%20Voice.dc.html" style="grid-column:span 6; display:flex; align-items:center; gap:34px; border-radius:20px; overflow:hidden; background:linear-gradient(120deg,rgba(251,86,112,0.12),rgba(20,30,48,0.5) 60%); border:1px solid rgba(251,86,112,0.3); padding:26px 30px; transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(251,86,112,0.6);">
+        <div style="flex-shrink:0; width:120px; height:120px; border-radius:16px; background:radial-gradient(circle at 50% 30%, rgba(251,86,112,0.25), transparent 65%), #0b121c; border:1px solid rgba(251,86,112,0.3); display:flex; align-items:center; justify-content:center; gap:5px;">
+          <div style="width:6px; height:30px; border-radius:3px; background:#fb5670;"></div>
+          <div style="width:6px; height:54px; border-radius:3px; background:#fb5670;"></div>
+          <div style="width:6px; height:38px; border-radius:3px; background:#fb5670;"></div>
+          <div style="width:6px; height:60px; border-radius:3px; background:#fb5670;"></div>
+          <div style="width:6px; height:34px; border-radius:3px; background:#fb5670;"></div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#fb5670;">MÓDULO 04 · ASISTENTES DE VOZ</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:#fff; margin:8px 0 8px;">Alexa, Google &amp; Siri anuncian la alerta</div>
+          <p style="font-size:16px; color:#aebfd4; margin:0; line-height:1.5; max-width:620px;">"Atención. Se ha detectado un sismo fuerte." Tu hogar habla por todos los altavoces inteligentes, automáticamente.</p>
+        </div>
+        <span style="flex-shrink:0; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#fb5670;">Vivir el momento →</span>
+      </a>
+
+      <a href="Quake%20Alert%20Auth%20Web.dc.html" style="grid-column:span 3; display:block; border-radius:20px; overflow:hidden; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.16); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.5);">
+        <div style="height:140px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(34,211,238,0.1), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; padding:0 40px;">
+          <div style="width:100%; height:14px; border-radius:5px; background:rgba(255,255,255,0.06);"></div>
+          <div style="width:100%; height:14px; border-radius:5px; background:rgba(255,255,255,0.06);"></div>
+          <div style="width:100%; height:30px; border-radius:7px; background:linear-gradient(135deg,#22d3ee,#0e7490);"></div>
+        </div>
+        <div style="padding:24px 26px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#22d3ee;">ACCESO · MULTILINGÜE</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:24px; color:#fff; margin:8px 0 8px;">Autenticación (Web)</div>
+          <p style="font-size:15px; color:#aebfd4; margin:0 0 14px; line-height:1.5;">Bienvenida, login, registro, recuperar contraseña y 2FA — ES / PT / EN.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee;">Abrir acceso →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Auth%20Mobile.dc.html" style="grid-column:span 3; display:block; border-radius:20px; overflow:hidden; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.16); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.5);">
+        <div style="height:140px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(34,211,238,0.1), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12); display:flex; align-items:center; justify-content:center;">
+          <div style="width:78px; height:118px; border-radius:16px 16px 0 0; background:#0b121c; border:1.5px solid rgba(34,211,238,0.4); border-bottom:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:14px;">
+            <div style="width:40px; height:40px; border-radius:12px; background:rgba(34,211,238,0.16); display:flex; align-items:center; justify-content:center; font-size:20px; color:#22d3ee;">⊚</div>
+            <div style="width:48px; height:8px; border-radius:4px; background:rgba(255,255,255,0.08);"></div>
+            <div style="width:48px; height:16px; border-radius:5px; background:linear-gradient(135deg,#22d3ee,#0e7490);"></div>
+          </div>
+        </div>
+        <div style="padding:24px 26px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#22d3ee;">ACCESO · MÓVIL (IONIC)</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:24px; color:#fff; margin:8px 0 8px;">Autenticación (Móvil)</div>
+          <p style="font-size:15px; color:#aebfd4; margin:0 0 14px; line-height:1.5;">Bienvenida, login, registro, 2FA y biometría (Face ID / huella) — ES / PT / EN.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee;">Abrir acceso →</span>
+        </div>
+      </a>
+
+      <a href="Quake%20Alert%20Integration%20Hub.dc.html" style="grid-column:span 3; display:block; border-radius:20px; overflow:hidden; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.16); transition:transform 180ms ease, border-color 180ms ease;" style-hover="transform: translateY(-4px); border-color: rgba(34,211,238,0.5);">
+        <div style="height:140px; position:relative; overflow:hidden; background:radial-gradient(70% 100% at 50% 0%, rgba(34,211,238,0.1), transparent 60%); border-bottom:1px solid rgba(120,160,200,0.12); display:flex; align-items:center; gap:14px; padding:0 34px;">
+          <div style="flex-shrink:0; width:70px; height:80px; border-radius:8px; background:#0b121c; border:1px solid rgba(34,211,238,0.3); display:flex; flex-direction:column; justify-content:center; gap:6px; padding:12px;"><div style="height:7px; border-radius:3px; background:rgba(34,211,238,0.5);"></div><div style="height:7px; border-radius:3px; background:rgba(120,160,200,0.25);"></div><div style="height:7px; border-radius:3px; background:rgba(120,160,200,0.25); width:70%;"></div></div>
+          <div style="flex:1; display:flex; flex-direction:column; gap:7px;"><div style="height:10px; border-radius:4px; background:rgba(120,160,200,0.2);"></div><div style="height:10px; border-radius:4px; background:rgba(120,160,200,0.2); width:80%;"></div><div style="height:10px; border-radius:4px; background:rgba(34,211,238,0.3); width:60%;"></div></div>
+        </div>
+        <div style="padding:24px 26px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#22d3ee;">IMPLEMENTADORES · GUÍAS</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:24px; color:#fff; margin:8px 0 8px;">Plataforma &amp; Integraciones</div>
+          <p style="font-size:15px; color:#aebfd4; margin:0 0 14px; line-height:1.5;">Opciones principales + manuales para integrar sensores, voz, IoT, pagos y API.</p>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee;">Abrir guías →</span>
+        </div>
+      </a>
+
+    </div>
+
+    <div style="margin-top:40px; padding-top:26px; border-top:1px solid rgba(120,160,200,0.1); display:flex; align-items:center; justify-content:space-between;">
+      <span style="font-size:14px; color:#5f7187;">QUAKE ALERT · Public Safety Intelligence Platform</span>
+      <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#9fb4ad;">Tecnología que salva vidas</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

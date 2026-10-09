@@ -1,0 +1,6 @@
+node_modules/
+npm-debug.log
+.DS_Store
+.env
+# claves VAPID y suscripciones push (server.js)
+data/

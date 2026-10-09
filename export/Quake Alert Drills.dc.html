@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUAKE ALERT">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="./qa-db.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #060a12; }
+  @keyframes qaPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+  @keyframes qaBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes qaDash { to { stroke-dashoffset: -16; } }
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,160,200,0.2); border-radius: 4px; }
+  @media (max-width: 900px) {
+    .qa-drills-root { grid-template-rows: auto auto !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
+    .qa-drills-header { flex-wrap: wrap !important; height: auto !important; padding: 14px 18px !important; gap: 10px !important; }
+    .qa-drills-body { grid-template-columns: 1fr !important; overflow: visible !important; }
+    .qa-drills-main { overflow: visible !important; }
+    .qa-drills-map { min-height: 320px !important; }
+    .qa-drills-kpis { flex-wrap: wrap !important; }
+    .qa-drills-kpis > div { min-width: 220px !important; }
+  }
+</style>
+</helmet>
+<div class="qa-drills-root" style="height:100vh; width:100%; background:#060a12; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; display:grid; grid-template-rows:66px 1fr; overflow:hidden;">
+
+  <div class="qa-drills-header" style="background:#080d16; border-bottom:1px solid rgba(120,160,200,0.1); display:flex; align-items:center; justify-content:space-between; padding:0 26px;">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#f5a623,#b46c00); box-shadow:0 0 18px rgba(245,166,35,0.4); display:flex; align-items:center; justify-content:center; font-size:17px; color:#1a0e02;">◎</div>
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">Plataforma de Simulacros</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7b8ca3; margin-top:1px;">SIMULACROS INTELIGENTES ASISTIDOS POR IA</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="display:flex; align-items:center; gap:9px; padding:8px 14px; border-radius:999px; background:rgba(245,166,35,0.1); border:1px solid rgba(245,166,35,0.28);">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#f5a623;">ESCENARIO: SISMO M7.5 · ESCUINTLA</span>
+      </div>
+      <sc-if value="{{ isIdle }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ start }}" style="border:none; cursor:pointer; padding:11px 22px; border-radius:10px; background:linear-gradient(135deg,#f5a623,#d4860a); color:#1a0e02; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; box-shadow:0 6px 18px rgba(245,166,35,0.3); display:flex; align-items:center; gap:8px;"><span>▶</span> Iniciar simulacro</button>
+      </sc-if>
+      <sc-if value="{{ isRunning }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ finish }}" style="border:none; cursor:pointer; padding:11px 22px; border-radius:10px; background:linear-gradient(135deg,#fb5670,#c4243d); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;">Finalizar simulacro</button>
+      </sc-if>
+      <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ reset }}" style="border:1px solid rgba(255,255,255,0.2); cursor:pointer; padding:11px 22px; border-radius:10px; background:rgba(255,255,255,0.06); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;">Nuevo simulacro</button>
+      </sc-if>
+    </div>
+  </div>
+
+  <div class="qa-drills-body" style="display:grid; grid-template-columns:1fr 392px; overflow:hidden;">
+
+    <div class="qa-drills-main" style="padding:22px 24px; display:flex; flex-direction:column; gap:18px; overflow:hidden;">
+
+      <div class="qa-drills-kpis" style="display:flex; gap:14px;">
+        <div style="flex:1.4; background:linear-gradient(135deg,rgba(245,166,35,0.12),rgba(20,30,48,0.5)); border:1px solid rgba(245,166,35,0.28); border-radius:16px; padding:20px 22px; display:flex; align-items:center; gap:22px;">
+          <div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#caa863;">EVACUACIÓN</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:52px; line-height:1; color:#fff; margin-top:4px;">{{ evacNum }}<span style="font-size:26px; color:#caa863;">%</span></div></div>
+          <div style="flex:1;"><div style="height:10px; border-radius:6px; background:rgba(0,0,0,0.3); overflow:hidden;"><div style="height:100%; border-radius:6px; background:linear-gradient(90deg,#f5a623,#20c997); width:{{ evacPct }}; transition:width 1.4s cubic-bezier(.3,.8,.3,1);"></div></div><div style="display:flex; justify-content:space-between; gap:10px; margin-top:8px; font-size:12px; color:#9fb4ad; white-space:nowrap;"><span>{{ evacuated }} evacuadas</span><span>{{ pending }} pendientes</span></div></div>
+        </div>
+        <div style="flex:1; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:18px; display:flex; flex-direction:column; justify-content:center;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">TIEMPO TRANSCURRIDO</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:34px; color:#22d3ee; margin-top:4px;">{{ clock }}</div></div>
+        <div style="flex:1; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:18px; display:flex; flex-direction:column; justify-content:center;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">BRIGADISTAS</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:34px; color:#fff; margin-top:4px;">24<span style="font-size:17px; color:#9fb4ad;"> activos</span></div></div>
+      </div>
+
+      <div class="qa-drills-map" style="flex:1; position:relative; border-radius:18px; overflow:hidden; background:radial-gradient(70% 60% at 50% 50%, rgba(34,211,238,0.05), transparent 60%), #070c15; border:1px solid rgba(120,160,200,0.14);">
+        <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.05) 1px,transparent 1px); background-size:46px 46px;"></div>
+        <div style="position:absolute; left:22px; top:18px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#7b8ca3;">CAMPUS CENTRAL · MAPA DE EVACUACIÓN</div>
+
+        <svg style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none;" preserveAspectRatio="none">
+          <line x1="26%" y1="42%" x2="50%" y2="78%" stroke="{{ routeColor }}" stroke-width="2" stroke-dasharray="7 7" style="animation:qaDash 1s linear infinite;"></line>
+          <line x1="52%" y1="38%" x2="50%" y2="78%" stroke="{{ routeColor }}" stroke-width="2" stroke-dasharray="7 7" style="animation:qaDash 1s linear infinite;"></line>
+          <line x1="74%" y1="46%" x2="78%" y2="74%" stroke="{{ routeColor }}" stroke-width="2" stroke-dasharray="7 7" style="animation:qaDash 1s linear infinite;"></line>
+        </svg>
+
+        <div style="position:absolute; left:18%; top:34%; width:120px; height:90px; border-radius:12px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.3); padding:12px;"><div style="font-size:13px; color:#fff; font-weight:500;">Edificio A</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9fb4ad; margin-top:4px;">{{ bldgA }}</div></div>
+        <div style="position:absolute; left:45%; top:28%; width:120px; height:90px; border-radius:12px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.3); padding:12px;"><div style="font-size:13px; color:#fff; font-weight:500;">Edificio B</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9fb4ad; margin-top:4px;">{{ bldgB }}</div></div>
+        <div style="position:absolute; left:68%; top:38%; width:120px; height:90px; border-radius:12px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.3); padding:12px;"><div style="font-size:13px; color:#fff; font-weight:500;">Laboratorios</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9fb4ad; margin-top:4px;">{{ bldgC }}</div></div>
+
+        <div style="position:absolute; left:50%; top:78%; transform:translate(-50%,-50%); display:flex; flex-direction:column; align-items:center;"><div style="width:54px; height:54px; border-radius:50%; background:rgba(32,201,151,0.16); border:2px solid #20c997; display:flex; align-items:center; justify-content:center; font-size:22px; color:#20c997;">✓</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#20c997; margin-top:7px;">PUNTO 1 · {{ pt1 }}</div></div>
+        <div style="position:absolute; left:78%; top:74%; transform:translate(-50%,-50%); display:flex; flex-direction:column; align-items:center;"><div style="width:54px; height:54px; border-radius:50%; background:rgba(32,201,151,0.16); border:2px solid #20c997; display:flex; align-items:center; justify-content:center; font-size:22px; color:#20c997;">✓</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#20c997; margin-top:7px;">PUNTO 2 · {{ pt2 }}</div></div>
+
+        <sc-if value="{{ isIdle }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute; inset:0; background:rgba(6,10,18,0.78); backdrop-filter:blur(3px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#f5a623;">ESCENARIO GENERADO POR IA</div>
+            <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:34px; color:#fff; margin:14px 0 8px;">Terremoto magnitud 7.5</h2>
+            <p style="font-size:15px; color:#9fb4ad; max-width:480px; line-height:1.55; margin:0 0 26px;">Epicentro simulado en Escuintla · réplicas · interrupción eléctrica · 1,240 participantes en 3 edificios. La IA generó rutas, brigadas y puntos de reunión.</p>
+            <div style="display:flex; gap:12px;"><span style="padding:8px 16px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(120,160,200,0.2); font-size:13px; color:#cdd9e8;">Magnitud 7.5</span><span style="padding:8px 16px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(120,160,200,0.2); font-size:13px; color:#cdd9e8;">1,240 personas</span><span style="padding:8px 16px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid rgba(120,160,200,0.2); font-size:13px; color:#cdd9e8;">24 brigadistas</span></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; background:rgba(6,10,18,0.82); backdrop-filter:blur(3px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#20c997;">SIMULACRO COMPLETADO</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:74px; line-height:1; color:#fff; margin:16px 0 4px;">94<span style="font-size:30px; color:#9fb4ad;">/100</span></div>
+            <div style="font-size:16px; color:#20c997; margin-bottom:26px;">Índice de Preparación Sísmica · Excelente</div>
+            <div style="display:flex; gap:30px;">
+              <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; color:#fff;">4:12</div><div style="font-size:12px; color:#7b8ca3;">tiempo total</div></div>
+              <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; color:#fff;">96%</div><div style="font-size:12px; color:#7b8ca3;">participación</div></div>
+              <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; color:#fff;">100%</div><div style="font-size:12px; color:#7b8ca3;">evacuación</div></div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="background:#080d16; border-left:1px solid rgba(120,160,200,0.1); overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px;">
+
+      <div style="border-radius:16px; overflow:hidden; background:linear-gradient(180deg,rgba(34,211,238,0.1),rgba(20,30,48,0.4)); border:1px solid rgba(34,211,238,0.3);">
+        <div style="padding:15px 18px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(34,211,238,0.18);"><span style="width:30px; height:30px; border-radius:8px; background:rgba(34,211,238,0.18); display:flex; align-items:center; justify-content:center; font-size:15px; color:#22d3ee;">✦</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; color:#22d3ee;">DRILL AI COORDINATOR</span></div>
+        <div style="padding:18px;">
+          <sc-if value="{{ isIdle }}" hint-placeholder-val="{{ true }}">
+            <p style="font-size:14px; color:#9fb4ad; margin:0; line-height:1.55;">Escenario listo. Brigadas asignadas y rutas optimizadas. Pulsa <span style="color:#22d3ee;">Iniciar simulacro</span> para comenzar la coordinación en vivo.</p>
+          </sc-if>
+          <sc-if value="{{ isRunning }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:13px;">
+              <div style="display:flex; gap:11px;"><span style="color:#f5a623; margin-top:1px;">▹</span><span style="font-size:14px; color:#eaf1f8; line-height:1.45;">Cuello de botella en escalera B — reasignando 2 brigadistas.</span></div>
+              <div style="display:flex; gap:11px;"><span style="color:#22d3ee; margin-top:1px;">▹</span><span style="font-size:14px; color:#eaf1f8; line-height:1.45;">Ruta este liberada. Redirigiendo Laboratorios al Punto 2.</span></div>
+              <div style="display:flex; gap:11px;"><span style="color:#20c997; margin-top:1px;">▹</span><span style="font-size:14px; color:#eaf1f8; line-height:1.45;">Edificio A evacuado por debajo del tiempo objetivo.</span></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+            <p style="font-size:14px; color:#9fb4ad; margin:0 0 14px; line-height:1.55;">Hallazgo principal: la escalera B concentró el 60% del retraso. Recomendación: señalización adicional y una salida alterna.</p>
+            <button onClick="{{ downloadReport }}" style="border:none; cursor:pointer; width:100%; padding:12px; border-radius:10px; background:rgba(34,211,238,0.14); border:1px solid rgba(34,211,238,0.3); color:#22d3ee; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;">{{ reportLabel }}</button>
+          </sc-if>
+        </div>
+      </div>
+
+      <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius:16px; background:linear-gradient(135deg,rgba(32,201,151,0.12),rgba(20,30,48,0.4)); border:1px solid rgba(32,201,151,0.3); padding:18px; display:flex; align-items:center; gap:16px;">
+          <div style="width:52px; height:52px; border-radius:12px; background:rgba(32,201,151,0.18); display:flex; align-items:center; justify-content:center; font-size:24px; color:#20c997;">✦</div>
+          <div style="flex:1;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:#fff;">Certificado emitido</div><div style="font-size:13px; color:#9fb4ad; margin-top:2px;">Insignia verificable · compartible en LinkedIn</div></div>
+        </div>
+      </sc-if>
+
+      <div style="border-radius:16px; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); padding:18px; flex:1;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; color:#7b8ca3;">BRIGADISTAS</span><span style="font-size:12px; color:#20c997;">24 activos</span></div>
+        <div style="display:flex; flex-direction:column; gap:11px;">
+          <div style="display:flex; align-items:center; gap:12px;"><span style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#22d3ee,#0e7490); flex-shrink:0;"></span><div style="flex:1;"><div style="font-size:15px; color:#fff;">Carlos M. <span style="font-size:12px; color:#7b8ca3;">· Líder área A</span></div><div style="font-size:12px; color:#7b8ca3;">Edificio A · ruta oeste</div></div><span style="padding:4px 11px; border-radius:999px; font-size:11px; background:rgba(32,201,151,0.18); color:#20c997;">{{ brigStatus }}</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#f5a623,#b46c00); flex-shrink:0;"></span><div style="flex:1;"><div style="font-size:15px; color:#fff;">Lucía R. <span style="font-size:12px; color:#7b8ca3;">· Brigadista</span></div><div style="font-size:12px; color:#7b8ca3;">Edificio B · escalera B</div></div><span style="padding:4px 11px; border-radius:999px; font-size:11px; background:rgba(245,166,35,0.18); color:#f5a623;">{{ brigStatus2 }}</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#20c997,#0e7c5b); flex-shrink:0;"></span><div style="flex:1;"><div style="font-size:15px; color:#fff;">Pedro G. <span style="font-size:12px; color:#7b8ca3;">· Brigadista</span></div><div style="font-size:12px; color:#7b8ca3;">Laboratorios · ruta este</div></div><span style="padding:4px 11px; border-radius:999px; font-size:11px; background:rgba(32,201,151,0.18); color:#20c997;">{{ brigStatus }}</span></div>
+          <div style="display:flex; align-items:center; gap:12px;"><span style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#9aa7b8,#5f7187); flex-shrink:0;"></span><div style="flex:1;"><div style="font-size:15px; color:#fff;">Ana S. <span style="font-size:12px; color:#7b8ca3;">· Observadora</span></div><div style="font-size:12px; color:#7b8ca3;">Punto de reunión 1</div></div><span style="padding:4px 11px; border-radius:999px; font-size:11px; background:rgba(34,211,238,0.18); color:#22d3ee;">Evaluando</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1512, &quot;height&quot;: 950}}">
+class Component extends DCLogic {
+  state = { phase: 'idle', t: 0, reportLabel: 'Descargar reporte PDF' };
+  componentDidMount() {
+    if (!window.QADB) window.addEventListener('qadb-ready', () => this.forceUpdate(), { once: true });
+  }
+  componentWillUnmount() { clearInterval(this._iv); }
+  start() {
+    clearInterval(this._iv);
+    this.setState({ phase: 'running', t: 0 });
+    if (window.QADB) { const sess = window.QADB.session.get(); window.QADB.log('Inició simulacro · Sismo M7.5 Escuintla', { user: sess && sess.name, color: '#f5a623' }); }
+    this._iv = setInterval(() => {
+      this.setState(s => (s.phase === 'running' ? { t: s.t + 1 } : {}));
+    }, 1000);
+  }
+  finish() {
+    clearInterval(this._iv);
+    if (window.QADB) {
+      const sess = window.QADB.session.get();
+      window.QADB.insert('simulacros', { name: 'Simulacro Sismo M7.5 · Escuintla', fecha: Date.now(), participantes: 1240, score: 94, status: 'Completado' });
+      window.QADB.log('Completó simulacro · score 94/100', { user: sess && sess.name, color: '#20c997' });
+    }
+    this.setState({ phase: 'done' });
+  }
+  reset() { clearInterval(this._iv); this.setState({ phase: 'idle', t: 0, reportLabel: 'Descargar reporte PDF' }); }
+  downloadReport() {
+    if (window.QADB) window.QADB.log('Descargó reporte de simulacro (PDF)', { color: '#22d3ee' });
+    this.setState({ reportLabel: '✓ Reporte generado' });
+  }
+  fmt(sec) { const m = Math.floor(sec / 60), s = sec % 60; return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s; }
+  renderVals() {
+    const p = this.state.phase, t = this.state.t;
+    const running = p === 'running', done = p === 'done';
+    const TOTAL = 1240;
+    const pct = done ? 100 : running ? Math.min(78, Math.round((t / 24) * 78)) : 0;
+    const evac = Math.round(TOTAL * pct / 100);
+    const bld = (cap) => done ? 'Evacuado' : running ? (Math.min(cap, Math.round(cap * pct / 100)) + ' / ' + cap) : (cap + ' personas');
+    return {
+      isIdle: p === 'idle', isRunning: running, isDone: done,
+      evacNum: done ? '100' : running ? String(pct) : '0',
+      evacPct: (done ? 100 : running ? pct : 0) + '%',
+      evacuated: done ? '1,240' : running ? evac.toLocaleString('en-US') : '0',
+      pending: done ? '0' : running ? (TOTAL - evac).toLocaleString('en-US') : '1,240',
+      clock: done ? '04:12' : running ? this.fmt(60 + t) : '00:00',
+      routeColor: (running || done) ? 'rgba(245,166,35,0.7)' : 'rgba(120,160,200,0.18)',
+      bldgA: bld(380), bldgB: bld(520), bldgC: bld(340),
+      pt1: done ? '720' : running ? String(Math.round(720 * pct / 100)) : '0',
+      pt2: done ? '520' : running ? String(Math.round(520 * pct / 100)) : '0',
+      brigStatus: done ? 'Completo' : 'En posición',
+      brigStatus2: done ? 'Completo' : 'Coordinando',
+      start: () => this.start(),
+      finish: () => this.finish(),
+      reset: () => this.reset(),
+      downloadReport: () => this.downloadReport(),
+      reportLabel: this.state.reportLabel,
+    };
+  }
+}
+</script>
+</body>
+</html>

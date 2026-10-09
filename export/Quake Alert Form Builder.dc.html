@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUAKE ALERT">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="./qa-db.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #060a12; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,160,200,0.2); border-radius: 4px; }
+  input, select, textarea { font-family: 'IBM Plex Sans', sans-serif; }
+  @media (max-width: 900px) {
+    .qa-fb-root { grid-template-rows: auto auto !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
+    .qa-fb-header { flex-wrap: wrap !important; height: auto !important; padding: 14px 18px !important; gap: 10px !important; }
+    .qa-fb-header input { width: 100% !important; }
+    .qa-fb-body { grid-template-columns: 1fr !important; overflow: visible !important; }
+  }
+</style>
+</helmet>
+<div class="qa-fb-root" style="height:100vh; width:100%; background:#070c14; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; display:grid; grid-template-rows:66px 1fr; overflow:hidden;">
+
+  <div class="qa-fb-header" style="background:#080d16; border-bottom:1px solid rgba(120,160,200,0.1); display:flex; align-items:center; justify-content:space-between; padding:0 26px;">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#22d3ee,#0e7490); box-shadow:0 0 18px rgba(34,211,238,0.4); display:flex; align-items:center; justify-content:center; font-size:17px; color:#06141a;">▤</div>
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">Constructor de Formularios</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7b8ca3; margin-top:1px;">CATÁLOGOS DINÁMICOS · ARRASTRA CAMPOS</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <input value="{{ catalog }}" onInput="{{ onCatalog }}" style="padding:9px 14px; border-radius:9px; border:1px solid rgba(120,160,200,0.18); background:#0b121c; color:#fff; font-size:14px; width:230px;" />
+      <div style="display:flex; gap:4px; padding:4px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.14);">
+        <button onClick="{{ setBuild }}" style="border:none; cursor:pointer; padding:8px 16px; border-radius:7px; background:{{ buildBg }}; color:{{ buildColor }}; font-weight:500; font-size:13px;">Construir</button>
+        <button onClick="{{ setPreview }}" style="border:none; cursor:pointer; padding:8px 16px; border-radius:7px; background:{{ previewBg }}; color:{{ previewColor }}; font-weight:500; font-size:13px;">Vista previa</button>
+      </div>
+      <button onClick="{{ saveCatalog }}" style="border:none; cursor:pointer; padding:9px 18px; border-radius:9px; background:linear-gradient(135deg,#20c997,#0e7c5b); color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">{{ saveLabel }}</button>
+    </div>
+  </div>
+
+  <sc-if value="{{ isBuild }}" hint-placeholder-val="{{ true }}">
+    <div class="qa-fb-body" style="display:grid; grid-template-columns:224px 1fr 326px; overflow:hidden;">
+
+      <div style="border-right:1px solid rgba(120,160,200,0.1); padding:18px; overflow-y:auto;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:14px;">CAMPOS DISPONIBLES</div>
+        <div style="display:flex; flex-direction:column; gap:9px;">
+          <sc-for list="{{ types }}" as="t" hint-placeholder-count="9">
+            <div draggable="true" onDragStart="{{ t.onDragStart }}" onClick="{{ t.onAdd }}" style="display:flex; align-items:center; gap:11px; padding:11px 13px; border-radius:11px; background:rgba(34,211,238,0.06); border:1px solid rgba(34,211,238,0.22); cursor:grab;">
+              <span style="width:26px; height:26px; border-radius:7px; background:rgba(34,211,238,0.14); display:flex; align-items:center; justify-content:center; font-size:14px; color:#22d3ee; flex-shrink:0;">{{ t.icon }}</span>
+              <span style="font-size:14px; color:#eaf1f8;">{{ t.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:18px; font-size:12px; color:#5f7187; line-height:1.5;">Arrastra al lienzo o haz clic para agregar.</div>
+      </div>
+
+      <div onDragOver="{{ onDragOver }}" onDrop="{{ onDrop }}" style="padding:26px; overflow-y:auto; background:radial-gradient(60% 50% at 50% 0%, rgba(34,211,238,0.04), transparent 60%);">
+        <div style="max-width:640px; margin:0 auto;">
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#fff; margin-bottom:4px;">{{ catalog }}</div>
+          <div style="font-size:13px; color:#7b8ca3; margin-bottom:22px;">{{ fieldCount }} campos · {{ savedHint }}</div>
+
+          <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1.5px dashed rgba(120,160,200,0.3); border-radius:16px; padding:54px; text-align:center; color:#7b8ca3;">Arrastra campos aquí para empezar a construir el catálogo</div>
+          </sc-if>
+
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <sc-for list="{{ fields }}" as="f" hint-placeholder-count="4">
+              <div onClick="{{ f.onSelect }}" style="border:1px solid {{ f.border }}; border-radius:12px; background:{{ f.bg }}; padding:14px 16px; cursor:pointer; display:flex; align-items:center; gap:13px;">
+                <span style="color:#5f7187; cursor:grab; font-size:15px;">⠿</span>
+                <div style="flex:1;">
+                  <div style="font-size:15px; color:#fff;">{{ f.label }} <span style="color:#fb5670;">{{ f.reqMark }}</span></div>
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3; margin-top:2px;">{{ f.name }} · {{ f.typeLabel }}</div>
+                </div>
+                <span onClick="{{ f.onUp }}" style="width:26px; height:26px; border-radius:6px; background:rgba(255,255,255,0.04); display:flex; align-items:center; justify-content:center; color:#9fb4ad; font-size:12px;">▲</span>
+                <span onClick="{{ f.onDown }}" style="width:26px; height:26px; border-radius:6px; background:rgba(255,255,255,0.04); display:flex; align-items:center; justify-content:center; color:#9fb4ad; font-size:12px;">▼</span>
+                <span onClick="{{ f.onRemove }}" style="width:26px; height:26px; border-radius:6px; background:rgba(251,86,112,0.1); display:flex; align-items:center; justify-content:center; color:#fb5670; font-size:13px;">✕</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-left:1px solid rgba(120,160,200,0.1); padding:18px; overflow-y:auto; background:#080d16;">
+        <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:16px;">PROPIEDADES DEL CAMPO</div>
+          <label style="display:block; font-size:12px; color:#9fb4ad; margin-bottom:6px;">Etiqueta</label>
+          <input value="{{ selLabel }}" onInput="{{ onLabel }}" style="width:100%; padding:10px 12px; border-radius:9px; border:1px solid rgba(120,160,200,0.18); background:#0b121c; color:#fff; font-size:14px; margin-bottom:14px;" />
+          <label style="display:block; font-size:12px; color:#9fb4ad; margin-bottom:6px;">Nombre / clave</label>
+          <input value="{{ selName }}" onInput="{{ onName }}" style="width:100%; padding:10px 12px; border-radius:9px; border:1px solid rgba(120,160,200,0.18); background:#0b121c; color:#fff; font-size:14px; font-family:'IBM Plex Mono',monospace; margin-bottom:14px;" />
+          <label style="display:block; font-size:12px; color:#9fb4ad; margin-bottom:6px;">Placeholder</label>
+          <input value="{{ selPlaceholder }}" onInput="{{ onPlaceholder }}" style="width:100%; padding:10px 12px; border-radius:9px; border:1px solid rgba(120,160,200,0.18); background:#0b121c; color:#fff; font-size:14px; margin-bottom:14px;" />
+          <sc-if value="{{ selHasOptions }}" hint-placeholder-val="{{ false }}">
+            <label style="display:block; font-size:12px; color:#9fb4ad; margin-bottom:6px;">Opciones (separadas por coma)</label>
+            <input value="{{ selOptionsText }}" onInput="{{ onOptions }}" style="width:100%; padding:10px 12px; border-radius:9px; border:1px solid rgba(120,160,200,0.18); background:#0b121c; color:#fff; font-size:14px; margin-bottom:14px;" />
+          </sc-if>
+          <div onClick="{{ onToggleReq }}" style="display:flex; align-items:center; justify-content:space-between; padding:11px 13px; border-radius:9px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.14); cursor:pointer; margin-bottom:22px;">
+            <span style="font-size:14px; color:#eaf1f8;">Campo obligatorio</span>
+            <span style="width:42px; height:24px; border-radius:999px; background:{{ reqToggleBg }}; position:relative;"><span style="position:absolute; top:3px; left:{{ reqKnob }}; width:18px; height:18px; border-radius:50%; background:#fff;"></span></span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ noSelection }}" hint-placeholder-val="{{ true }}">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:16px;">PROPIEDADES</div>
+          <div style="border:1px dashed rgba(120,160,200,0.2); border-radius:12px; padding:24px; text-align:center; font-size:13px; color:#7b8ca3; line-height:1.5; margin-bottom:22px;">Selecciona un campo para editar sus propiedades.</div>
+        </sc-if>
+
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:10px;">DEFINICIÓN (JSON)</div>
+        <pre style="margin:0; padding:14px; border-radius:10px; background:#05080e; border:1px solid rgba(120,160,200,0.12); font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; color:#9fdbe8; white-space:pre-wrap; word-break:break-word;">{{ schemaJson }}</pre>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isPreview }}" hint-placeholder-val="{{ false }}">
+    <div style="overflow-y:auto; padding:34px;">
+      <div style="max-width:560px; margin:0 auto; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:18px; padding:32px;">
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:24px; color:#fff; margin-bottom:6px;">{{ catalog }}</div>
+        <div style="font-size:13px; color:#7b8ca3; margin-bottom:26px;">Formulario generado dinámicamente desde la definición</div>
+        <div style="display:flex; flex-direction:column; gap:18px;">
+          <sc-for list="{{ fields }}" as="f" hint-placeholder-count="4">
+            <div>
+              <label style="display:block; font-size:14px; color:#cdd9e8; margin-bottom:7px; font-weight:500;">{{ f.label }} <span style="color:#fb5670;">{{ f.reqMark }}</span></label>
+              <sc-if value="{{ f.isInput }}" hint-placeholder-val="{{ true }}">
+                <input type="{{ f.inputType }}" placeholder="{{ f.placeholder }}" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:15px;" />
+              </sc-if>
+              <sc-if value="{{ f.isTextarea }}" hint-placeholder-val="{{ false }}">
+                <textarea placeholder="{{ f.placeholder }}" rows="3" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:15px; resize:vertical;"></textarea>
+              </sc-if>
+              <sc-if value="{{ f.isSelect }}" hint-placeholder-val="{{ false }}">
+                <select style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:15px;">
+                  <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="2"><option>{{ o }}</option></sc-for>
+                </select>
+              </sc-if>
+              <sc-if value="{{ f.isCheckbox }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; align-items:center; gap:10px;"><input type="checkbox" style="width:18px; height:18px;" /><span style="font-size:14px; color:#9fb4ad;">{{ f.placeholder }}</span></div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <button onClick="{{ saveRecord }}" style="margin-top:26px; border:none; cursor:pointer; padding:13px 26px; border-radius:11px; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px;">{{ recordLabel }}</button>
+        <div style="margin-top:14px; font-size:13px; color:#7b8ca3;">{{ recordCount }} registros guardados en este catálogo</div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1512, &quot;height&quot;: 950}}">
+class Component extends DCLogic {
+  TYPES = [
+    { key: 'text', label: 'Texto', icon: 'A' },
+    { key: 'textarea', label: 'Párrafo', icon: '¶' },
+    { key: 'number', label: 'Número', icon: '#' },
+    { key: 'email', label: 'Email', icon: '@' },
+    { key: 'tel', label: 'Teléfono', icon: '☎' },
+    { key: 'date', label: 'Fecha', icon: '▦' },
+    { key: 'select', label: 'Lista', icon: '▾' },
+    { key: 'checkbox', label: 'Casilla', icon: '☑' },
+    { key: 'location', label: 'Ubicación', icon: '◎' },
+  ];
+
+  TYPE_LABEL = Object.fromEntries(this.TYPES.map((t) => [t.key, t.label]));
+
+  state = {
+    catalog: 'Sensores QuakeBox',
+    mode: 'build',
+    dragType: null,
+    selectedId: 1,
+    seq: 4,
+    formId: null,
+    saveLabel: 'Guardar catálogo',
+    recordLabel: 'Guardar registro',
+    fields: [
+      { id: 1, type: 'text', label: 'Nombre del sensor', name: 'nombre', required: true, placeholder: 'Ej. QuakeBox Centro', options: [] },
+      { id: 2, type: 'text', label: 'ID / Serie', name: 'serie', required: true, placeholder: 'A7F3-2210', options: [] },
+      { id: 3, type: 'select', label: 'Zona', name: 'zona', required: false, placeholder: '', options: ['Zona 1', 'Zona 2', 'Zona 3'] },
+      { id: 4, type: 'location', label: 'Ubicación', name: 'ubicacion', required: true, placeholder: '', options: [] },
+    ],
+  };
+
+  slug(s) {
+    return (s || 'campo').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'campo';
+  }
+
+  componentDidMount() {
+    const boot = () => {
+      const saved = window.QADB.get('formularios').find((f) => f.catalog === this.state.catalog || f.name === this.state.catalog);
+      if (saved && Array.isArray(saved.fields) && saved.fields.length) {
+        let seq = 0;
+        const fields = saved.fields.map((f) => { seq += 1; return { id: seq, type: f.type, label: f.label, name: f.name, required: !!f.required, placeholder: f.placeholder || '', options: f.options || [] }; });
+        this.setState({ formId: saved.id, fields, seq, selectedId: fields[0] ? fields[0].id : null });
+      }
+      this._off = window.QADB.on(() => this.forceUpdate());
+    };
+    if (window.QADB) boot(); else window.addEventListener('qadb-ready', boot, { once: true });
+  }
+  componentWillUnmount() { if (this._off) this._off(); }
+
+  schemaFields() {
+    return this.state.fields.map((f) => {
+      const o = { type: f.type, label: f.label, name: f.name, required: f.required };
+      if (f.placeholder) o.placeholder = f.placeholder;
+      if (f.type === 'select') o.options = f.options;
+      return o;
+    });
+  }
+
+  saveCatalog() {
+    const DB = window.QADB; if (!DB) return;
+    const payload = { name: this.state.catalog, catalog: this.state.catalog, fields: this.schemaFields() };
+    let id = this.state.formId;
+    if (id && DB.find('formularios', id)) { DB.update('formularios', id, payload); }
+    else { const rec = DB.insert('formularios', payload); id = rec.id; }
+    DB.log('Guardó catálogo · ' + this.state.catalog + ' (' + this.state.fields.length + ' campos)', { color: '#20c997' });
+    this.setState({ formId: id, saveLabel: '✓ Guardado' });
+    setTimeout(() => this.setState({ saveLabel: 'Guardar catálogo' }), 1800);
+  }
+
+  saveRecord() {
+    const DB = window.QADB; if (!DB) return;
+    DB.insert('registros', { formId: this.state.formId, catalog: this.state.catalog, values: {}, createdBy: (DB.session.get() || {}).id });
+    DB.log('Nuevo registro en catálogo · ' + this.state.catalog, { color: '#22d3ee' });
+    this.setState({ recordLabel: '✓ Registro guardado' });
+    setTimeout(() => this.setState({ recordLabel: 'Guardar registro' }), 1800);
+  }
+
+  addField(type) {
+    this.setState((s) => {
+      const id = s.seq + 1;
+      const label = this.TYPE_LABEL[type] || 'Campo';
+      const field = {
+        id, type, label,
+        name: this.slug(label) + '_' + id,
+        required: false,
+        placeholder: '',
+        options: type === 'select' ? ['Opción 1', 'Opción 2'] : [],
+      };
+      return { fields: [...s.fields, field], seq: id, selectedId: id };
+    });
+  }
+
+  update(patch) {
+    this.setState((s) => ({
+      fields: s.fields.map((f) => (f.id === s.selectedId ? { ...f, ...patch } : f)),
+    }));
+  }
+
+  remove(id) {
+    this.setState((s) => ({
+      fields: s.fields.filter((f) => f.id !== id),
+      selectedId: s.selectedId === id ? null : s.selectedId,
+    }));
+  }
+
+  move(id, dir) {
+    this.setState((s) => {
+      const i = s.fields.findIndex((f) => f.id === id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= s.fields.length) return {};
+      const fields = s.fields.slice();
+      [fields[i], fields[j]] = [fields[j], fields[i]];
+      return { fields };
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const sel = s.fields.find((f) => f.id === s.selectedId) || null;
+
+    const types = this.TYPES.map((t) => ({
+      label: t.label, icon: t.icon,
+      onAdd: () => this.addField(t.key),
+      onDragStart: () => this.setState({ dragType: t.key }),
+    }));
+
+    const fields = s.fields.map((f) => {
+      const selected = f.id === s.selectedId;
+      const isInput = ['text', 'number', 'email', 'tel', 'date', 'location'].includes(f.type);
+      const inputType = f.type === 'location' ? 'text' : (f.type === 'tel' ? 'tel' : f.type);
+      return {
+        label: f.label,
+        name: f.name,
+        typeLabel: this.TYPE_LABEL[f.type],
+        reqMark: f.required ? '*' : '',
+        border: selected ? 'rgba(34,211,238,0.5)' : 'rgba(120,160,200,0.14)',
+        bg: selected ? 'rgba(34,211,238,0.07)' : 'rgba(20,30,48,0.5)',
+        onSelect: () => this.setState({ selectedId: f.id }),
+        onUp: () => this.move(f.id, -1),
+        onDown: () => this.move(f.id, 1),
+        onRemove: () => this.remove(f.id),
+        isInput, inputType,
+        isTextarea: f.type === 'textarea',
+        isSelect: f.type === 'select',
+        isCheckbox: f.type === 'checkbox',
+        placeholder: f.placeholder || (f.type === 'checkbox' ? 'Sí / No' : ''),
+        options: f.options,
+      };
+    });
+
+    const schema = s.fields.map((f) => {
+      const o = { type: f.type, label: f.label, name: f.name, required: f.required };
+      if (f.placeholder) o.placeholder = f.placeholder;
+      if (f.type === 'select') o.options = f.options;
+      return o;
+    });
+
+    return {
+      catalog: s.catalog,
+      onCatalog: (e) => this.setState({ catalog: e.target.value }),
+      saveCatalog: () => this.saveCatalog(),
+      saveLabel: s.saveLabel,
+      saveRecord: () => this.saveRecord(),
+      recordLabel: s.recordLabel,
+      savedHint: s.formId ? 'catálogo guardado en la base · persiste al recargar' : 'se guarda como definición JSON',
+      recordCount: window.QADB ? window.QADB.count('registros', (r) => r.catalog === s.catalog) : 0,
+      isBuild: s.mode === 'build',
+      isPreview: s.mode === 'preview',
+      setBuild: () => this.setState({ mode: 'build' }),
+      setPreview: () => this.setState({ mode: 'preview' }),
+      buildBg: s.mode === 'build' ? 'rgba(34,211,238,0.18)' : 'transparent',
+      buildColor: s.mode === 'build' ? '#22d3ee' : '#9fb4ad',
+      previewBg: s.mode === 'preview' ? 'rgba(34,211,238,0.18)' : 'transparent',
+      previewColor: s.mode === 'preview' ? '#22d3ee' : '#9fb4ad',
+      types,
+      fields,
+      fieldCount: s.fields.length,
+      empty: s.fields.length === 0,
+      onDragOver: (e) => e.preventDefault(),
+      onDrop: (e) => { e.preventDefault(); if (s.dragType) this.addField(s.dragType); this.setState({ dragType: null }); },
+      hasSelection: !!sel,
+      noSelection: !sel,
+      selLabel: sel ? sel.label : '',
+      selName: sel ? sel.name : '',
+      selPlaceholder: sel ? sel.placeholder : '',
+      selHasOptions: sel ? sel.type === 'select' : false,
+      selOptionsText: sel ? (sel.options || []).join(', ') : '',
+      onLabel: (e) => this.update({ label: e.target.value }),
+      onName: (e) => this.update({ name: e.target.value }),
+      onPlaceholder: (e) => this.update({ placeholder: e.target.value }),
+      onOptions: (e) => this.update({ options: e.target.value.split(',').map((x) => x.trim()).filter(Boolean) }),
+      onToggleReq: () => this.update({ required: sel ? !sel.required : false }),
+      reqToggleBg: sel && sel.required ? '#22d3ee' : 'rgba(255,255,255,0.12)',
+      reqKnob: sel && sel.required ? '21px' : '3px',
+      schemaJson: JSON.stringify({ catalog: s.catalog, fields: schema }, null, 2),
+    };
+  }
+}
+</script>
+</body>
+</html>

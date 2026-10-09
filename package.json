@@ -1,0 +1,17 @@
+{
+  "name": "quake-alert-prototype",
+  "version": "1.1.0",
+  "description": "QUAKE ALERT — ecosistema de prototipos interactivos + vigilante USGS con Web Push (Public Safety Intelligence Platform)",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "vapid": "web-push generate-vapid-keys"
+  },
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "web-push": "^3.6.7"
+  }
+}

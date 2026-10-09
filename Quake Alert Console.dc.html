@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUAKE ALERT">
+<link rel="manifest" href="manifest-console.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script src="./support.js"></script>
+<script>
+  if ('serviceWorker' in navigator && window.parent === window) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
+  }
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="./qa-db.js"></script>
+<script src="./qa-push.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #060a12; }
+  a { text-decoration: none; color: inherit; }
+  input, select { font-family: 'IBM Plex Sans', sans-serif; outline: none; }
+  @keyframes qaBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,160,200,0.2); border-radius: 4px; }
+  .qa-burger { display: none; }
+  @media (max-width: 900px) {
+    .qa-burger { display: flex !important; }
+    .qa-shell { grid-template-columns: 1fr !important; }
+    .qa-topbar, .qa-content { grid-column: 1 !important; }
+    .qa-sidebar { position: fixed !important; top: 0 !important; left: 0 !important; bottom: 0 !important; width: 82vw !important; max-width: 300px !important; z-index: 200 !important; transform: translateX(-110%) !important; transition: transform 220ms ease !important; box-shadow: 0 20px 50px rgba(0,0,0,0.6) !important; }
+    .qa-sidebar.qa-sidebar-open { transform: translateX(0) !important; }
+    .qa-topbar { padding: 0 14px !important; }
+    .qa-search { display: none !important; }
+    .qa-grid-4 { grid-template-columns: repeat(2,1fr) !important; }
+    .qa-settings-shell { grid-template-columns: 1fr !important; grid-auto-rows: min-content !important; }
+  }
+  @media (max-width: 520px) {
+    .qa-grid-4 { grid-template-columns: 1fr !important; }
+  }
+</style>
+</helmet>
+<div class="qa-shell" style="height:100vh; width:100%; overflow:hidden; background:#070c14; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; display:grid; grid-template-columns:264px 1fr; grid-template-rows:64px 1fr;">
+
+  <sc-if value="{{ mobileNavOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeMobileNav }}" style="position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:190;"></div>
+  </sc-if>
+  <div class="qa-sidebar {{ sidebarOpenClass }}" style="grid-row:1 / 3; grid-column:1; background:#0a0f1a; border-right:1px solid rgba(120,160,200,0.1); display:flex; flex-direction:column; overflow-y:auto;">
+    <div style="padding:18px 20px; border-bottom:1px solid rgba(120,160,200,0.1);"><img src="assets/quake-alert-logo.png" alt="QUAKE ALERT" style="height:34px; width:auto; display:block;" /></div>
+    <div style="padding:16px 12px; flex:1;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#5f7187; padding:0 10px 8px;">PRINCIPAL</div>
+      <div onClick="{{ goResumen }}" style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; cursor:pointer; background:{{ resumenBg }}; border:1px solid {{ resumenBorder }}; margin-bottom:3px;"><span style="width:20px; text-align:center; font-size:15px; color:{{ resumenIcon }};">◈</span><span style="font-size:14px; color:{{ resumenText }};">Resumen</span></div>
+
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#5f7187; padding:16px 10px 8px;">MÓDULOS</div>
+      <sc-for list="{{ modules }}" as="m" hint-placeholder-count="11">
+        <div onClick="{{ m.onOpen }}" style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; cursor:pointer; margin-bottom:3px; background:{{ m.bg }}; border:1px solid {{ m.border }};">
+          <span style="width:20px; text-align:center; font-size:15px; color:#22d3ee;">{{ m.icon }}</span>
+          <span style="font-size:14px; color:{{ m.textColor }}; flex:1;">{{ m.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="padding:12px; border-top:1px solid rgba(120,160,200,0.1);">
+      <div onClick="{{ goSettings }}" style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; cursor:pointer; background:{{ settingsBg }}; border:1px solid {{ settingsBorder }};"><span style="width:20px; text-align:center; font-size:15px; color:{{ settingsIcon }};">⚙</span><span style="font-size:14px; color:{{ settingsText }};">Configuración</span></div>
+      <a href="Quake%20Alert%20Landing.dc.html" onClick="{{ logout }}" style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px;"><span style="width:20px; text-align:center; font-size:15px; color:#fb5670;">⏻</span><span style="font-size:14px; color:#cdd9e8;">Cerrar sesión</span></a>
+    </div>
+  </div>
+
+  <div class="qa-topbar" style="grid-row:1; grid-column:2; background:#0a0f1a; border-bottom:1px solid rgba(120,160,200,0.1); display:flex; align-items:center; justify-content:space-between; padding:0 26px;">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <button onClick="{{ toggleMobileNav }}" class="qa-burger" style="display:none; align-items:center; justify-content:center; width:36px; height:36px; border-radius:9px; border:1px solid rgba(120,160,200,0.25); background:rgba(255,255,255,0.03); color:#eaf1f8; font-size:17px; cursor:pointer; flex-shrink:0;">☰</button>
+      <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:18px; color:#fff;">{{ viewTitle }}</span>
+      <span style="display:flex; align-items:center; gap:7px; padding:6px 12px; border-radius:999px; background:rgba(32,201,151,0.1); border:1px solid rgba(32,201,151,0.28);"><span style="width:6px; height:6px; border-radius:50%; background:#20c997; animation:qaBlink 2s infinite;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#20c997;">SISTEMA OPERATIVO</span></span>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div class="qa-search" style="display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.14); font-size:13px; color:#7b8ca3; width:220px;">Buscar…</div>
+      <div style="position:relative; font-size:18px; color:#9fb4ad;">◔<span style="position:absolute; top:-2px; right:-2px; width:7px; height:7px; border-radius:50%; background:#fb5670;"></span></div>
+      <div style="display:flex; align-items:center; gap:9px;"><div style="width:34px; height:34px; border-radius:50%; background:{{ sessAvatar }};"></div><div><div style="font-size:13px; color:#fff;">{{ sessName }}</div><div style="font-size:11px; color:#7b8ca3;">{{ sessRole }}</div></div></div>
+      <sc-if value="{{ noSession }}" hint-placeholder-val="{{ false }}">
+        <a href="Quake%20Alert%20Auth%20Web.dc.html" style="padding:8px 14px; border-radius:9px; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; white-space:nowrap;">Iniciar sesión</a>
+      </sc-if>
+    </div>
+  </div>
+
+  <div class="qa-content" style="grid-row:2; grid-column:2; overflow:hidden; position:relative;">
+
+    <sc-if value="{{ isModule }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid rgba(120,160,200,0.1); background:#0a0f1a;">
+          <span onClick="{{ goResumen }}" style="cursor:pointer; font-size:13px; color:#22d3ee;">← Resumen</span>
+          <span style="font-size:13px; color:#5f7187;">/</span>
+          <span style="font-size:14px; color:#fff; font-weight:500;">{{ moduleLabel }}</span>
+          <a href="{{ moduleSrc }}" target="_blank" style="margin-left:auto; font-size:12px; color:#7b8ca3;">Abrir en pestaña ↗</a>
+        </div>
+        <iframe src="{{ moduleSrc }}" title="módulo" style="flex:1; width:100%; border:none; background:#070c14;"></iframe>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isResumen }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute; inset:0; overflow-y:auto; padding:26px;">
+        <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap; background:rgba(20,30,48,0.5); border:1px solid {{ pushCardBorder }}; border-radius:16px; padding:16px 20px; margin-bottom:16px;">
+          <div style="display:flex; align-items:center; gap:10px; min-width:240px; flex:1.4;">
+            <span style="width:9px; height:9px; border-radius:50%; background:{{ srvDot }}; flex-shrink:0;"></span>
+            <div style="min-width:0;">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">VIGILANTE USGS · TIEMPO REAL</div>
+              <div style="font-size:13px; color:#fff; margin-top:3px; line-height:1.4;">{{ srvText }}</div>
+            </div>
+          </div>
+          <div style="min-width:220px; flex:1;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">ÚLTIMO SISMO REGIONAL</div>
+            <div style="font-size:13px; color:#fff; margin-top:3px; line-height:1.4;">{{ lastEventText }}</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button onClick="{{ pushAction }}" style="border:none; cursor:pointer; min-height:38px; padding:0 16px; border-radius:10px; background:{{ pushBtnBg }}; color:{{ pushBtnColor }}; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">{{ pushBtnLabel }}</button>
+            <sc-if value="{{ pushSubscribed }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ pushTest }}" style="border:1px solid rgba(34,211,238,0.4); cursor:pointer; min-height:38px; padding:0 16px; border-radius:10px; background:rgba(34,211,238,0.08); color:#22d3ee; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">{{ pushTestLabel }}</button>
+            </sc-if>
+            <span style="font-size:12px; color:#f5a623; max-width:320px;">{{ pushError }}</span>
+          </div>
+        </div>
+        <div class="qa-grid-4" style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+          <div style="background:linear-gradient(180deg,rgba(34,211,238,0.1),rgba(20,30,48,0.5)); border:1px solid rgba(34,211,238,0.25); border-radius:16px; padding:20px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">PERSONAS PROTEGIDAS</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:34px; color:#22d3ee; margin-top:6px;">1.24M</div></div>
+          <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:20px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">SENSORES ACTIVOS</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:34px; color:#fff; margin-top:6px;">{{ kpiSensores }}</div></div>
+          <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:20px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">MUNICIPIOS</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:34px; color:#fff; margin-top:6px;">48</div></div>
+          <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:20px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">ALERTA PROMEDIO</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:34px; color:#20c997; margin-top:6px;">7.2s</div></div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:14px;">ACCESO RÁPIDO · TODOS LOS MÓDULOS</div>
+        <div class="qa-grid-4" style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
+          <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="12">
+            <div onClick="{{ t.onOpen }}" style="cursor:pointer; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:20px; transition:transform 160ms ease, border-color 160ms ease;" style-hover="transform: translateY(-3px); border-color: rgba(34,211,238,0.5);">
+              <div style="width:42px; height:42px; border-radius:11px; background:rgba(34,211,238,0.12); border:1px solid rgba(34,211,238,0.28); display:flex; align-items:center; justify-content:center; font-size:19px; color:#22d3ee; margin-bottom:14px;">{{ t.icon }}</div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">{{ t.label }}</div>
+              <div style="font-size:13px; color:#93a4ba; margin-top:5px; line-height:1.45;">{{ t.desc }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+      <div class="qa-settings-shell" style="position:absolute; inset:0; display:grid; grid-template-columns:248px 1fr;">
+
+        <div style="border-right:1px solid rgba(120,160,200,0.1); overflow-y:auto; padding:22px 14px;">
+          <div style="display:flex; align-items:center; gap:12px; padding:0 8px 18px;">
+            <div style="width:40px; height:40px; border-radius:11px; background:rgba(34,211,238,0.12); border:1px solid rgba(34,211,238,0.3); display:flex; align-items:center; justify-content:center; font-size:18px; color:#22d3ee;">⚙</div>
+            <div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:#fff;">Configuración</div><div style="font-size:12px; color:#7b8ca3;">Administración</div></div>
+          </div>
+          <sc-for list="{{ settingsGroups }}" as="g" hint-placeholder-count="4">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; color:#5f7187; padding:14px 10px 7px;">{{ g.label }}</div>
+            <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="4">
+              <div onClick="{{ it.onSelect }}" style="display:flex; align-items:center; gap:11px; padding:9px 11px; border-radius:9px; cursor:pointer; background:{{ it.bg }}; border:1px solid {{ it.border }}; margin-bottom:2px;">
+                <span style="width:18px; text-align:center; font-size:14px; color:{{ it.iconColor }};">{{ it.icon }}</span>
+                <span style="font-size:14px; color:{{ it.textColor }}; flex:1;">{{ it.label }}</span>
+                <span style="font-size:11px; color:#5f7187;">{{ it.arrow }}</span>
+              </div>
+            </sc-for>
+          </sc-for>
+        </div>
+
+        <div style="overflow-y:auto; padding:30px 34px;">
+          <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:#fff; margin:0 0 4px;">{{ secTitle }}</h2>
+          <p style="font-size:14px; color:#7b8ca3; margin:0 0 26px;">{{ secSub }}</p>
+
+          <sc-if value="{{ secGeneral }}" hint-placeholder-val="{{ true }}">
+            <div style="max-width:920px;">
+              <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:24px; margin-bottom:18px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:18px; color:#fff;">Datos de la empresa</div>
+                <p style="font-size:13px; color:#7b8ca3; margin:4px 0 20px;">Identidad de tu organización. Aparece en reportes y comunicaciones.</p>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+                  <div><label style="display:block; font-size:13px; color:#9fb4ad; margin-bottom:7px;">Nombre comercial</label><input value="{{ orgNombre }}" onChange="{{ setOrgNombre }}" style="width:100%; padding:11px 13px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;" /></div>
+                  <div><label style="display:block; font-size:13px; color:#9fb4ad; margin-bottom:7px;">Razón social</label><input value="{{ orgRazon }}" onChange="{{ setOrgRazon }}" style="width:100%; padding:11px 13px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;" /></div>
+                  <div><label style="display:block; font-size:13px; color:#9fb4ad; margin-bottom:7px;">Identificación fiscal (NIT)</label><input value="{{ orgNit }}" onChange="{{ setOrgNit }}" style="width:100%; padding:11px 13px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;" /></div>
+                  <div><label style="display:block; font-size:13px; color:#9fb4ad; margin-bottom:7px;">Sitio web</label><input value="{{ orgWeb }}" onChange="{{ setOrgWeb }}" style="width:100%; padding:11px 13px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;" /></div>
+                  <div><label style="display:block; font-size:13px; color:#9fb4ad; margin-bottom:7px;">Correo de soporte</label><input value="{{ orgSoporte }}" onChange="{{ setOrgSoporte }}" style="width:100%; padding:11px 13px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;" /></div>
+                  <div><label style="display:block; font-size:13px; color:#9fb4ad; margin-bottom:7px;">Teléfono</label><input value="{{ orgTel }}" onChange="{{ setOrgTel }}" style="width:100%; padding:11px 13px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;" /></div>
+                </div>
+              </div>
+              <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:24px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:18px; color:#fff;">Preferencias regionales</div>
+                <p style="font-size:13px; color:#7b8ca3; margin:4px 0 20px;">Comportamiento por defecto del sistema.</p>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px;">
+                  <div><label style="display:block; font-size:13px; color:#9fb4ad; margin-bottom:7px;">Idioma por defecto</label><select style="width:100%; padding:11px 13px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;"><option>Español (GT)</option><option>Português (BR)</option><option>English</option></select></div>
+                  <div><label style="display:block; font-size:13px; color:#9fb4ad; margin-bottom:7px;">Zona horaria</label><select style="width:100%; padding:11px 13px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;"><option>GMT-6 · Guatemala</option><option>GMT-3 · Brasil</option></select></div>
+                  <div><label style="display:block; font-size:13px; color:#9fb4ad; margin-bottom:7px;">Moneda</label><select style="width:100%; padding:11px 13px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;"><option>GTQ · Quetzal</option><option>USD</option></select></div>
+                  <div><label style="display:block; font-size:13px; color:#9fb4ad; margin-bottom:7px;">Formato de fecha</label><select style="width:100%; padding:11px 13px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;"><option>DD/MM/AAAA</option><option>MM/DD/AAAA</option></select></div>
+                  <div><label style="display:block; font-size:13px; color:#9fb4ad; margin-bottom:7px;">Primer día de semana</label><select style="width:100%; padding:11px 13px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;"><option>Lunes</option><option>Domingo</option></select></div>
+                  <div><label style="display:block; font-size:13px; color:#9fb4ad; margin-bottom:7px;">Sistema de medida</label><select style="width:100%; padding:11px 13px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;"><option>Métrico</option></select></div>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center; margin-top:22px;"><span onClick="{{ saveOrg }}" style="cursor:pointer; padding:11px 22px; border-radius:10px; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;">Guardar cambios</span><span onClick="{{ cancelOrg }}" style="cursor:pointer; padding:11px 22px; border-radius:10px; border:1px solid rgba(120,160,200,0.2); color:#cdd9e8; font-size:14px;">Cancelar</span><span style="font-size:13px; color:#20c997;">{{ orgSaved }}</span></div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ secUsuarios }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:980px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <div style="font-size:13px; color:#7b8ca3;">{{ userCount }} usuarios · se sincronizan con Auth en tiempo real</div>
+                <button onClick="{{ toggleUserForm }}" style="border:none; cursor:pointer; padding:10px 18px; border-radius:10px; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">{{ userFormBtn }}</button>
+              </div>
+              <sc-if value="{{ showUserForm }}" hint-placeholder-val="{{ false }}">
+                <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(34,211,238,0.28); border-radius:14px; padding:18px 20px; margin-bottom:16px;">
+                  <div style="display:grid; grid-template-columns:1.4fr 1.6fr 1fr 1fr; gap:12px; align-items:end;">
+                    <div><label style="display:block; font-size:12px; color:#9fb4ad; margin-bottom:6px;">Nombre</label><input value="{{ nuName }}" onChange="{{ setNuName }}" placeholder="Nombre completo" style="width:100%; padding:10px 12px; border-radius:9px; border:1px solid {{ nuNameBorder }}; background:#0b121c; color:#fff; font-size:14px;" /></div>
+                    <div><label style="display:block; font-size:12px; color:#9fb4ad; margin-bottom:6px;">Correo</label><input value="{{ nuEmail }}" onChange="{{ setNuEmail }}" placeholder="correo@org.gt" style="width:100%; padding:10px 12px; border-radius:9px; border:1px solid {{ nuEmailBorder }}; background:#0b121c; color:#fff; font-size:14px;" /></div>
+                    <div><label style="display:block; font-size:12px; color:#9fb4ad; margin-bottom:6px;">Rol</label><select value="{{ nuRole }}" onChange="{{ setNuRole }}" style="width:100%; padding:10px 12px; border-radius:9px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:14px;"><option>Admin</option><option>Operador</option><option>Analista</option><option>Municipal</option><option>Sectorial</option><option>Ciudadano</option></select></div>
+                    <button onClick="{{ saveUser }}" style="border:none; cursor:pointer; padding:11px 14px; border-radius:9px; background:#20c997; color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;">Agregar</button>
+                  </div>
+                  <div style="min-height:14px; font-size:12px; color:#fb5670; margin-top:8px;">{{ nuErr }}</div>
+                </div>
+              </sc-if>
+              <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; overflow:hidden;">
+                <div style="display:grid; grid-template-columns:2fr 1.6fr 1fr 1fr 40px; padding:14px 20px; border-bottom:1px solid rgba(120,160,200,0.12); font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#7b8ca3;"><span>USUARIO</span><span>CORREO</span><span>ROL</span><span>ESTADO</span><span></span></div>
+                <sc-for list="{{ users }}" as="u" hint-placeholder-count="5">
+                  <div style="display:grid; grid-template-columns:2fr 1.6fr 1fr 1fr 40px; padding:13px 20px; border-bottom:1px solid rgba(120,160,200,0.08); align-items:center;"><div style="display:flex; align-items:center; gap:11px;"><span style="width:30px; height:30px; border-radius:50%; background:{{ u.avatar }};"></span><span style="font-size:14px; color:#fff;">{{ u.name }}</span></div><span style="font-size:13px; color:#9fb4ad;">{{ u.email }}</span><span style="font-size:13px; color:#cdd9e8;">{{ u.role }}</span><span style="font-size:12px; color:{{ u.statusColor }};">● {{ u.status }}</span><span onClick="{{ u.onRemove }}" title="Eliminar" style="cursor:pointer; font-size:15px; color:#5f7187; text-align:center;" style-hover="color:#fb5670;">✕</span></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ secRoles }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:980px;">
+              <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; overflow:hidden; margin-bottom:20px;">
+                <div style="display:grid; grid-template-columns:1.3fr 2fr 0.7fr 0.8fr; padding:14px 20px; border-bottom:1px solid rgba(120,160,200,0.12); font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#7b8ca3;"><span>ROL</span><span>ALCANCE</span><span>USUARIOS</span><span>NIVEL</span></div>
+                <sc-for list="{{ roles }}" as="r" hint-placeholder-count="5">
+                  <div style="display:grid; grid-template-columns:1.3fr 2fr 0.7fr 0.8fr; padding:13px 20px; border-bottom:1px solid rgba(120,160,200,0.08); align-items:center;"><span style="font-size:14px; color:#fff; font-weight:500;">{{ r.name }}</span><span style="font-size:13px; color:#9fb4ad;">{{ r.scope }}</span><span style="font-size:13px; color:#cdd9e8;">{{ r.users }}</span><span style="font-size:12px; color:{{ r.levelColor }};">{{ r.level }}</span></div>
+                </sc-for>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:12px;">MATRIZ DE PERMISOS (RBAC)</div>
+              <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; overflow:hidden;">
+                <div style="display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr 1fr; padding:14px 20px; border-bottom:1px solid rgba(120,160,200,0.12); font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; color:#7b8ca3;"><span>RECURSO</span><span>Admin</span><span>Operador</span><span>Analista</span><span>Municipal</span></div>
+                <sc-for list="{{ permisos }}" as="p" hint-placeholder-count="6">
+                  <div style="display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr 1fr; padding:12px 20px; border-bottom:1px solid rgba(120,160,200,0.08); align-items:center;"><span style="font-size:14px; color:#eaf1f8;">{{ p.res }}</span><span style="font-size:14px; color:{{ p.c1 }};">{{ p.v1 }}</span><span style="font-size:14px; color:{{ p.c2 }};">{{ p.v2 }}</span><span style="font-size:14px; color:{{ p.c3 }};">{{ p.v3 }}</span><span style="font-size:14px; color:{{ p.c4 }};">{{ p.v4 }}</span></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ secSeguridad }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:1000px;">
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:20px;">
+                <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:22px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:#fff; margin-bottom:14px;">Autenticación</div><div style="display:flex; flex-direction:column; gap:11px; font-size:14px; color:#cdd9e8;"><div style="display:flex; justify-content:space-between;">Doble factor (2FA) <span style="color:#20c997;">Obligatorio</span></div><div style="display:flex; justify-content:space-between;">OAuth2 · OIDC <span style="color:#20c997;">Activo</span></div><div style="display:flex; justify-content:space-between;">SSO · SAML <span style="color:#20c997;">Activo</span></div><div style="display:flex; justify-content:space-between;">Biometría móvil <span style="color:#20c997;">Activa</span></div></div></div>
+                <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:22px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:#fff; margin-bottom:14px;">Sesiones & acceso</div><div style="display:flex; flex-direction:column; gap:11px; font-size:14px; color:#cdd9e8;"><div style="display:flex; justify-content:space-between;">Expiración <span style="color:#9fb4ad;">30 min</span></div><div style="display:flex; justify-content:space-between;">Rotación de tokens <span style="color:#20c997;">Activa</span></div><div style="display:flex; justify-content:space-between;">Política de contraseña <span style="color:#9fb4ad;">Fuerte</span></div><div style="display:flex; justify-content:space-between;">IP permitidas <span style="color:#20c997;">12 reglas</span></div></div></div>
+                <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:22px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:#fff; margin-bottom:14px;">Cumplimiento</div><div style="display:flex; flex-direction:column; gap:11px; font-size:14px; color:#cdd9e8;"><div style="display:flex; justify-content:space-between;">RBAC granular <span style="color:#20c997;">Activo</span></div><div style="display:flex; justify-content:space-between;">Multi-tenant aislado <span style="color:#20c997;">Sí</span></div><div style="display:flex; justify-content:space-between;">ISO 27001 <span style="color:#22d3ee;">En proceso</span></div><div style="display:flex; justify-content:space-between;">Respaldos <span style="color:#20c997;">Diarios</span></div></div></div>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#7b8ca3; margin-bottom:12px;">CIFRADO DE DATOS</div>
+              <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:18px;">
+                <div style="background:linear-gradient(180deg,rgba(32,201,151,0.1),rgba(20,30,48,0.5)); border:1px solid rgba(32,201,151,0.28); border-radius:16px; padding:18px;"><div style="font-size:20px; color:#20c997; margin-bottom:8px;">▣</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#fff;">En reposo</div><div style="font-size:12px; color:#9fb4ad; margin-top:3px;">AES-256 · MongoDB</div></div>
+                <div style="background:linear-gradient(180deg,rgba(32,201,151,0.1),rgba(20,30,48,0.5)); border:1px solid rgba(32,201,151,0.28); border-radius:16px; padding:18px;"><div style="font-size:20px; color:#20c997; margin-bottom:8px;">◆</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#fff;">En tránsito</div><div style="font-size:12px; color:#9fb4ad; margin-top:3px;">TLS 1.3 · HSTS</div></div>
+                <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:18px;"><div style="font-size:20px; color:#22d3ee; margin-bottom:8px;">⚷</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#fff;">Llaves</div><div style="font-size:12px; color:#9fb4ad; margin-top:3px;">KMS · 90 días</div></div>
+                <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:18px;"><div style="font-size:20px; color:#22d3ee; margin-bottom:8px;">▤</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#fff;">Respaldos</div><div style="font-size:12px; color:#9fb4ad; margin-top:3px;">Cifrados · diarios</div></div>
+              </div>
+              <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:20px;"><div style="display:flex; flex-direction:column; gap:11px;"><div style="display:flex; justify-content:space-between; font-size:14px; color:#cdd9e8;">Ubicación de usuarios <span style="color:#20c997;">● Cifrado E2E</span></div><div style="display:flex; justify-content:space-between; font-size:14px; color:#cdd9e8;">Datos de salud <span style="color:#20c997;">● Cifrado + anonimizado</span></div><div style="display:flex; justify-content:space-between; font-size:14px; color:#cdd9e8;">Credenciales y tokens <span style="color:#20c997;">● Hash + vault</span></div><div style="display:flex; justify-content:space-between; font-size:14px; color:#cdd9e8;">Información de pago <span style="color:#20c997;">● Tokenizado (PCI)</span></div></div></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ secBitacora }}" hint-placeholder-val="{{ false }}">
+            <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; overflow:hidden; max-width:1000px;">
+              <div style="display:grid; grid-template-columns:1fr 1.4fr 1.8fr 1fr; padding:14px 20px; border-bottom:1px solid rgba(120,160,200,0.12); font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#7b8ca3;"><span>FECHA / HORA</span><span>USUARIO</span><span>ACCIÓN</span><span>IP</span></div>
+              <sc-for list="{{ logs }}" as="l" hint-placeholder-count="6">
+                <div style="display:grid; grid-template-columns:1fr 1.4fr 1.8fr 1fr; padding:12px 20px; border-bottom:1px solid rgba(120,160,200,0.08); align-items:center;"><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#9fb4ad;">{{ l.time }}</span><span style="font-size:13px; color:#fff;">{{ l.user }}</span><span style="font-size:13px; color:{{ l.color }};">{{ l.action }}</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#7b8ca3;">{{ l.ip }}</span></div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ secSimple }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:820px; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:24px;">
+              <div style="display:flex; flex-direction:column; gap:14px;">
+                <sc-for list="{{ simpleRows }}" as="r" hint-placeholder-count="4">
+                  <div style="display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid rgba(120,160,200,0.1);"><div><div style="font-size:15px; color:#fff;">{{ r.label }}</div><div style="font-size:13px; color:#7b8ca3; margin-top:2px;">{{ r.desc }}</div></div><span style="font-size:13px; color:{{ r.valColor }};">{{ r.val }}</span></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ secHardware }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:1000px;">
+              <div style="display:flex; gap:14px; margin-bottom:22px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:180px; background:linear-gradient(180deg,rgba(34,211,238,0.1),rgba(20,30,48,0.5)); border:1px solid rgba(34,211,238,0.28); border-radius:14px; padding:18px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">INTEGRACIONES CONECTADAS</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#22d3ee; margin-top:4px;">{{ intgConnected }} <span style="font-size:15px; color:#9fb4ad;">/ {{ intgTotal }}</span></div></div>
+                <div style="flex:2; min-width:280px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.28); border-radius:14px; padding:18px;"><div style="display:flex; align-items:center; gap:9px; margin-bottom:6px;"><span style="color:#f5a623; font-size:15px;">◆</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#f5a623;">ESTADO ACTUAL</span></div><div style="font-size:14px; color:#cdd9e8; line-height:1.5;">Las que están en <span style="color:#f5a623;">Simulado</span> registran en consola pero no envían a equipos reales. Carga las llaves de cada proveedor para pasarlas a <span style="color:#20c997;">Conectado</span>. El backend real vive en <span style="font-family:'IBM Plex Mono',monospace; color:#9fb4ad;">desarrollo/backend/</span>.</div></div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:16px;">
+                <sc-for list="{{ integraciones }}" as="g" hint-placeholder-count="6">
+                  <div style="background:rgba(20,30,48,0.5); border:1px solid {{ g.cardBorder }}; border-radius:16px; overflow:hidden;">
+                    <div style="display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid rgba(120,160,200,0.1);">
+                      <span style="width:42px; height:42px; border-radius:11px; background:{{ g.iconBg }}; display:flex; align-items:center; justify-content:center; font-size:19px; color:{{ g.iconColor }}; flex-shrink:0;">{{ g.icon }}</span>
+                      <div style="flex:1;">
+                        <div style="display:flex; align-items:center; gap:10px;"><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">{{ g.title }}</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; padding:3px 9px; border-radius:999px; background:{{ g.badgeBg }}; color:{{ g.badgeColor }};">{{ g.badge }}</span></div>
+                        <div style="font-size:13px; color:#9fb4ad; margin-top:3px;">{{ g.subtitle }}</div>
+                      </div>
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">{{ g.provider }}</span>
+                    </div>
+                    <div style="padding:18px 22px;">
+                      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+                        <sc-for list="{{ g.fields }}" as="f" hint-placeholder-count="2">
+                          <div><label style="display:block; font-size:12px; color:#9fb4ad; margin-bottom:6px;">{{ f.label }}</label><input value="{{ f.value }}" onInput="{{ f.onInput }}" placeholder="{{ f.placeholder }}" style="width:100%; padding:10px 12px; border-radius:9px; border:1px solid rgba(120,160,200,0.2); background:#0b121c; color:#fff; font-size:13px; font-family:'IBM Plex Mono',monospace;" /></div>
+                        </sc-for>
+                      </div>
+                      <div style="margin-top:14px; padding:12px 14px; border-radius:10px; background:rgba(0,0,0,0.25); border:1px solid rgba(120,160,200,0.1);">
+                        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#5f7187; margin-bottom:5px;">CÓMO CONECTARLO EN REAL</div>
+                        <div style="font-size:13px; color:#cdd9e8; line-height:1.55;">{{ g.howto }}</div>
+                        <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#22d3ee; margin-top:7px;">{{ g.endpoint }}</div>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:10px; margin-top:14px;">
+                        <button onClick="{{ g.onSave }}" style="border:none; cursor:pointer; padding:10px 20px; border-radius:9px; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">Guardar llaves</button>
+                        <button onClick="{{ g.onTest }}" style="border:1px solid rgba(120,160,200,0.25); cursor:pointer; padding:10px 20px; border-radius:9px; background:transparent; color:#cdd9e8; font-size:13px;">Probar señal</button>
+                        <span style="font-size:13px; color:{{ g.msgColor }};">{{ g.msg }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1512, &quot;height&quot;: 950}}">
+class Component extends DCLogic {
+  MODULES = [
+    { label: 'Alarma Móvil', icon: '◉', href: 'Quake%20Alert%20Alarma%20M%C3%B3vil.dc.html' },
+    { label: 'Sismos en Vivo', icon: '◉', href: 'Quake%20Alert%20Sismos%20en%20Vivo.dc.html' },
+    { label: 'Centro de Comando', icon: '▣', href: 'Quake%20Alert%20Command%20Center.dc.html' },
+    { label: 'Analítica & BI', icon: '▤', href: 'Quake%20Alert%20Analytics.dc.html' },
+    { label: 'Simulacros', icon: '◎', href: 'Quake%20Alert%20Drills.dc.html' },
+    { label: 'Corporativo', icon: '▦', href: 'Quake%20Alert%20Corporate.dc.html' },
+    { label: 'Smart City', icon: '⛓', href: 'Quake%20Alert%20Smart%20City.dc.html' },
+    { label: 'Smart Home', icon: '⌂', href: 'Quake%20Alert%20Smart%20Home.dc.html' },
+    { label: 'Asistente IA', icon: '✦', href: 'Quake%20Alert%20Assistant.dc.html' },
+    { label: 'Asistentes de Voz', icon: '♪', href: 'Quake%20Alert%20Voice.dc.html' },
+    { label: 'Formularios', icon: '＋', href: 'Quake%20Alert%20Form%20Builder.dc.html' },
+    { label: 'Low-Code Studio', icon: '⌥', href: 'Quake%20Alert%20Studio.dc.html' },
+    { label: 'Integraciones', icon: '◇', href: 'Quake%20Alert%20Integration%20Hub.dc.html' },
+    { label: 'App ciudadana', icon: '▪', href: 'Quake%20Alert%20App.dc.html' },
+  ];
+  TILES = [
+    { label: 'Alarma Móvil', icon: '◉', desc: 'Vibración + sonido en tu teléfono, radio configurable', href: 'Quake%20Alert%20Alarma%20M%C3%B3vil.dc.html' },
+    { label: 'Sismos en Vivo', icon: '◉', desc: 'Datos reales del USGS · aviso a Guatemala', href: 'Quake%20Alert%20Sismos%20en%20Vivo.dc.html' },
+    { label: 'Centro de Comando', icon: '▣', desc: 'Mapa nacional y alertas en vivo', href: 'Quake%20Alert%20Command%20Center.dc.html' },
+    { label: 'Analítica & BI', icon: '▤', desc: 'Métricas y tendencias', href: 'Quake%20Alert%20Analytics.dc.html' },
+    { label: 'Simulacros', icon: '◎', desc: 'Planifica y evalúa con IA', href: 'Quake%20Alert%20Drills.dc.html' },
+    { label: 'Corporativo', icon: '▦', desc: 'Protección multi-sede', href: 'Quake%20Alert%20Corporate.dc.html' },
+    { label: 'Smart City', icon: '⛓', desc: 'Sirenas y paneles urbanos', href: 'Quake%20Alert%20Smart%20City.dc.html' },
+    { label: 'Smart Home', icon: '⌂', desc: 'Automatización del hogar', href: 'Quake%20Alert%20Smart%20Home.dc.html' },
+    { label: 'Asistente IA', icon: '✦', desc: 'Guía conversacional', href: 'Quake%20Alert%20Assistant.dc.html' },
+    { label: 'Asistentes de Voz', icon: '♪', desc: 'Alexa · Google · Siri', href: 'Quake%20Alert%20Voice.dc.html' },
+    { label: 'Formularios', icon: '＋', desc: 'Catálogos dinámicos', href: 'Quake%20Alert%20Form%20Builder.dc.html' },
+    { label: 'Low-Code Studio', icon: '⌥', desc: 'Workflows sin código', href: 'Quake%20Alert%20Studio.dc.html' },
+    { label: 'Integraciones', icon: '◇', desc: 'Manuales y API', href: 'Quake%20Alert%20Integration%20Hub.dc.html' },
+    { label: 'App ciudadana', icon: '▪', desc: 'Experiencia del usuario', href: 'Quake%20Alert%20App.dc.html' },
+  ];
+  USERS = [
+    { name: 'Ana García', email: 'ana@conred.gt', role: 'Admin', status: 'Activo', statusColor: '#20c997', avatar: 'linear-gradient(135deg,#22d3ee,#0e7490)' },
+    { name: 'Carlos Méndez', email: 'carlos@conred.gt', role: 'Operador', status: 'Activo', statusColor: '#20c997', avatar: 'linear-gradient(135deg,#f5a623,#b46c00)' },
+    { name: 'Lucía Ramírez', email: 'lucia@conred.gt', role: 'Analista', status: 'Activo', statusColor: '#20c997', avatar: 'linear-gradient(135deg,#20c997,#0e7c5b)' },
+    { name: 'Pedro Gómez', email: 'pedro@muni.gt', role: 'Municipal', status: 'Invitado', statusColor: '#f5a623', avatar: 'linear-gradient(135deg,#fb5670,#7a1726)' },
+    { name: 'Sofía Luna', email: 'sofia@hospital.gt', role: 'Sectorial', status: 'Activo', statusColor: '#20c997', avatar: 'linear-gradient(135deg,#9aa7b8,#5f7187)' },
+  ];
+  ROLES = [
+    { name: 'Super Admin', scope: 'Acceso total · todos los tenants', users: '2', level: 'Crítico', levelColor: '#fb5670' },
+    { name: 'Admin · CONRED', scope: 'Gestión nacional y configuración', users: '8', level: 'Alto', levelColor: '#f5a623' },
+    { name: 'Operador', scope: 'Monitoreo y emisión de alertas', users: '34', level: 'Medio', levelColor: '#22d3ee' },
+    { name: 'Analista', scope: 'Analítica y reportes (solo lectura)', users: '12', level: 'Bajo', levelColor: '#20c997' },
+    { name: 'Municipal', scope: 'Su municipio · sirenas y paneles', users: '48', level: 'Acotado', levelColor: '#20c997' },
+  ];
+  LOGS = [
+    { time: '14:32:08', user: 'Ana García', action: 'Emitió alerta M6.8 · Escuintla', color: '#fb5670', ip: '190.4.x.12' },
+    { time: '14:18:44', user: 'Carlos Méndez', action: 'Activó sirenas · Zona 1-2', color: '#f5a623', ip: '190.4.x.31' },
+    { time: '13:50:02', user: 'Lucía Ramírez', action: 'Exportó reporte de cobertura', color: '#9fb4ad', ip: '181.2.x.88' },
+    { time: '13:22:19', user: 'Ana García', action: 'Creó usuario · pedro@muni.gt', color: '#22d3ee', ip: '190.4.x.12' },
+    { time: '12:05:51', user: 'Sistema', action: 'Rotación de llaves KMS completada', color: '#20c997', ip: 'interno' },
+    { time: '11:47:30', user: 'Pedro Gómez', action: 'Inicio de sesión · 2FA verificado', color: '#9fb4ad', ip: '186.151.x.4' },
+  ];
+
+  SECTIONS = {
+    general:    { title: 'General', sub: 'Identidad de la organización y preferencias regionales.', group: 'cuenta' },
+    facturacion:{ title: 'Facturación', sub: 'Plan, consumo y método de pago.', group: 'cuenta' },
+    usuarios:   { title: 'Usuarios', sub: 'Personas con acceso a la plataforma.', group: 'acceso' },
+    roles:      { title: 'Roles y permisos', sub: 'Define qué puede hacer cada rol (RBAC).', group: 'acceso' },
+    seguridad:  { title: 'Seguridad', sub: 'Autenticación, cumplimiento y cifrado de datos.', group: 'acceso' },
+    bitacora:   { title: 'Bitácora', sub: 'Registro de auditoría de toda la actividad.', group: 'acceso' },
+    param:      { title: 'Parametrización', sub: 'Umbrales de alerta, niveles y zonas.', group: 'operacion' },
+    notif:      { title: 'Notificaciones', sub: 'Canales y plantillas de difusión.', group: 'operacion' },
+    integr:     { title: 'Integraciones', sub: 'Conecta servicios externos.', group: 'desarrollo' },
+    api:        { title: 'API & Webhooks', sub: 'Credenciales y eventos para desarrolladores.', group: 'desarrollo' },
+    hardware:   { title: 'Hardware y servicios externos', sub: 'Conecta sensores QuakeBox, push de Google (FCM), SMS y actuadores para pasar de demo a real.', group: 'hardware' },
+  };
+
+  INTEGRACIONES = [
+    { id: 'fcm', title: 'Google Push (FCM)', subtitle: 'Notificaciones push a la app Android/iOS', provider: 'Firebase Cloud Messaging', icon: '◉', iconColor: '#22d3ee',
+      fields: [ { key: 'key', label: 'Server Key / Service Account', placeholder: 'AAAA…' }, { key: 'senderId', label: 'Sender ID', placeholder: '1234567890' } ],
+      howto: 'Crea un proyecto en Firebase Console → Configuración → Cloud Messaging. Copia la "Server key" (o sube el JSON de service account) y el Sender ID. El servicio notification/ los usa para despertar la app aun con pantalla bloqueada.',
+      endpoint: 'desarrollo/backend/notification/src/providers/index.js → push' },
+    { id: 'apns', title: 'Apple Push (APNs)', subtitle: 'Push nativo en iPhone/iPad', provider: 'Apple Push Notification', icon: '◍', iconColor: '#9fb4ad',
+      fields: [ { key: 'key', label: 'Auth Key (.p8)', placeholder: 'Contenido del .p8' }, { key: 'teamId', label: 'Team ID', placeholder: 'ABCDE12345' } ],
+      howto: 'En Apple Developer → Keys, genera una APNs Auth Key (.p8) y toma el Team ID y Key ID. Capacitor entrega el token del dispositivo; notification/ firma con esta llave.',
+      endpoint: 'desarrollo/backend/notification/src/providers/index.js → push (apns)' },
+    { id: 'twilio', title: 'SMS (Twilio)', subtitle: 'Alertas por mensaje de texto', provider: 'Twilio', icon: '▣', iconColor: '#f5a623',
+      fields: [ { key: 'sid', label: 'Account SID', placeholder: 'AC…' }, { key: 'token', label: 'Auth Token', placeholder: '••••••••' }, { key: 'from', label: 'Número emisor', placeholder: '+1502…' } ],
+      howto: 'Crea una cuenta Twilio, compra un número y copia Account SID + Auth Token. notification/ enviará SMS a los ciudadanos sin app o sin datos.',
+      endpoint: 'desarrollo/backend/notification/src/providers/index.js → sms' },
+    { id: 'whatsapp', title: 'WhatsApp', subtitle: 'Difusión por WhatsApp Business', provider: 'WhatsApp Cloud API', icon: '✦', iconColor: '#20c997',
+      fields: [ { key: 'token', label: 'Access Token', placeholder: 'EAAG…' }, { key: 'phoneId', label: 'Phone Number ID', placeholder: '1098…' } ],
+      howto: 'En Meta for Developers → WhatsApp, obtén el token permanente y el Phone Number ID. Útil para confirmaciones y check-in familiar.',
+      endpoint: 'desarrollo/backend/notification/src/providers/index.js → whatsapp' },
+    { id: 'quakebox', title: 'Sensores QuakeBox (Hardware)', subtitle: 'Ingesta de lecturas sísmicas reales', provider: 'detection · puerto 3003', icon: '◆', iconColor: '#fb5670',
+      fields: [ { key: 'endpoint', label: 'Endpoint de ingesta', placeholder: 'https://…/readings' }, { key: 'apiKey', label: 'API Key del dispositivo', placeholder: 'qk_dev_…' } ],
+      howto: 'El firmware del QuakeBox (o un gateway MQTT/LoRa) hace POST /readings con { sensorId, location, peakAmplitude }. El servicio detection/ junta lecturas por quórum y emite seismic.detected → alert-engine.',
+      endpoint: 'POST desarrollo/backend/detection · /readings' },
+    { id: 'iot', title: 'Actuadores IoT', subtitle: 'Sirenas, paneles LED, válvulas, cerraduras', provider: 'iot-gateway · puerto 3007', icon: '▸', iconColor: '#22d3ee',
+      fields: [ { key: 'endpoint', label: 'Endpoint del gateway', placeholder: 'https://iot…' }, { key: 'apiKey', label: 'API Key', placeholder: '••••••••' } ],
+      howto: 'iot-gateway/ consume alert.issued y emite device.commanded a sirenas/LED/gas/puertas vía MQTT o HTTP del fabricante. Configura aquí el endpoint y la llave del gateway físico.',
+      endpoint: 'desarrollo/backend/iot-gateway · device.commanded' },
+    { id: 'rabbitmq', title: 'Bus de eventos (RabbitMQ)', subtitle: 'Conexión entre todos los microservicios', provider: 'CloudAMQP', icon: '⛓', iconColor: '#9fb4ad',
+      fields: [ { key: 'url', label: 'AMQP URL', placeholder: 'amqps://user:pass@host/vhost' } ],
+      howto: 'Crea una instancia en CloudAMQP (RabbitMQ) y pega la AMQP URL. Es el bus que encadena detection → alert-engine → notification/voice/iot/etc.',
+      endpoint: 'exchange quakealert.events (topic)' },
+    { id: 'mongo', title: 'Base de datos (MongoDB)', subtitle: 'Persistencia real multi-tenant', provider: 'MongoDB Atlas', icon: '▤', iconColor: '#20c997',
+      fields: [ { key: 'uri', label: 'Connection URI', placeholder: 'mongodb+srv://…' } ],
+      howto: 'Crea un cluster en MongoDB Atlas y pega la URI. Reemplaza la base de demo del prototipo por datos reales por tenant.',
+      endpoint: 'MONGODB_URI en cada servicio' },
+  ];
+
+  state = { view: 'resumen', moduleSrc: null, moduleLabel: null, section: 'general',
+    showUserForm: false, nu: { name: '', email: '', role: 'Operador' }, nuErr: '',
+    org: null, orgSaved: '', intgDraft: {}, intgMsg: {}, mobileNavOpen: false };
+  toggleMobileNav() { this.setState((s) => ({ mobileNavOpen: !s.mobileNavOpen })); }
+  closeMobileNav() { this.setState({ mobileNavOpen: false }); }
+
+  componentDidMount() {
+    const boot = () => {
+      this.setState({ org: window.QADB.org() });
+      this._off = window.QADB.on(() => this.forceUpdate());
+    };
+    if (window.QADB) boot();
+    else window.addEventListener('qadb-ready', boot, { once: true });
+    // Vigilante USGS en tiempo real (SSE) + Web Push para este navegador (qa-push.js).
+    const bootPush = () => {
+      const P = window.QAPush; if (!P || this._dead) return;
+      this._seenQuakes = new Set();
+      const logQuake = (p, via) => {
+        if (!p || p.type === 'test' || !p.id || this._seenQuakes.has(p.id)) return;
+        this._seenQuakes.add(p.id);
+        if (window.QADB) window.QADB.log('Sismo M' + Number(p.mag).toFixed(1) + ' · ' + (p.place || '') + ' · ' + p.distanceKm + ' km de Guatemala (' + via + ')', { color: p.mag >= 5 ? '#fb5670' : '#f5a623' });
+      };
+      this._offPush = P.on((ps) => { if (!this._dead) this.setState({ push: Object.assign({}, ps) }); });
+      this._offQuake = P.onQuake((p) => logQuake(p, 'USGS en vivo'));
+      this._offMsg = P.onPush((p) => logQuake(p, 'push'));
+      P.init({ radiusKm: 700, minMag: 4 });
+    };
+    if (window.QAPush) bootPush(); else window.addEventListener('qapush-ready', bootPush, { once: true });
+  }
+  componentWillUnmount() { this._dead = true; if (this._off) this._off(); [this._offPush, this._offQuake, this._offMsg].forEach((f) => { if (f) f(); }); }
+
+  enablePush() { const P = window.QAPush; if (!P) return; P.enable({ radiusKm: 700, minMag: 4 }).then((ok) => { if (ok && window.QADB) window.QADB.log('Activó Web Push en la consola web', { color: '#20c997' }); }); }
+  disablePush() { const P = window.QAPush; if (P) P.disable(); }
+  testPush() { const P = window.QAPush; if (!P) return; P.test(10000).then((ok) => { if (ok && window.QADB) window.QADB.log('Programó prueba de push en segundo plano (10 s)', { color: '#22d3ee' }); }); }
+  _pushVals() {
+    const ps = this.state.push || {}, srv = ps.server || {};
+    const srvOk = ps.serverOk === true, subscribed = !!ps.subscribed;
+    const ago = srv.lastPollAt ? Math.max(0, Math.round((Date.now() - srv.lastPollAt) / 1000)) : null;
+    const le = srv.lastEvent, n = srv.subscribers || 0;
+    const testLeft = ps.testAt ? Math.max(0, Math.ceil((ps.testAt - Date.now()) / 1000)) : 0;
+    return {
+      pushCardBorder: srvOk ? 'rgba(32,201,151,0.3)' : 'rgba(245,166,35,0.3)',
+      srvDot: srvOk ? '#20c997' : (ps.serverOk == null ? '#7b8ca3' : '#f5a623'),
+      srvText: srvOk
+        ? ((ps.live ? 'Conexión en vivo' : 'En línea') + ' · USGS cada ' + Math.round((srv.pollMs || 30000) / 1000) + ' s · revisado ' + (ago === null ? 'pendiente' : 'hace ' + ago + ' s') + ' · ' + n + ' dispositivo' + (n === 1 ? '' : 's') + ' con push · ' + (srv.alertsSent || 0) + ' alertas enviadas')
+        : (ps.serverOk == null ? 'Conectando con el servidor…' : 'Sin servidor en este origen: abrí la versión publicada (Heroku) para datos en vivo y push.'),
+      lastEventText: le ? ('M' + Number(le.mag).toFixed(1) + ' · ' + le.place + ' · ' + le.distanceKm + ' km · hace ' + Math.max(0, Math.round((Date.now() - le.time) / 60000)) + ' min') : (srvOk ? 'Sin sismos a menos de 700 km en el feed de hoy' : '—'),
+      pushSubscribed: subscribed,
+      pushBtnLabel: ps.busy ? 'Activando…' : (subscribed ? 'Desactivar push en este navegador' : 'Activar push en este navegador'),
+      pushBtnBg: subscribed ? 'rgba(251,86,112,0.12)' : 'linear-gradient(135deg,#22d3ee,#0e7490)',
+      pushBtnColor: subscribed ? '#fb5670' : '#06141a',
+      pushAction: () => (subscribed ? this.disablePush() : this.enablePush()),
+      pushTest: () => this.testPush(),
+      pushTestLabel: testLeft > 0 ? ('Llega en ' + testLeft + ' s…') : 'Probar (10 s)',
+      pushError: ps.error || '',
+    };
+  }
+
+  fmtTime(ts) {
+    try { const d = new Date(ts); return d.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }); } catch (e) { return ''; }
+  }
+  emailOk(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v || '').trim()); }
+
+  setNu(k, e) { const v = e && e.target ? e.target.value : ''; this.setState(st => ({ nu: { ...st.nu, [k]: v }, nuErr: '' })); }
+  saveUser() {
+    const nu = this.state.nu, sess = window.QADB.session.get();
+    if (!nu.name.trim()) { this.setState({ nuErr: 'El nombre es obligatorio' }); return; }
+    if (!this.emailOk(nu.email)) { this.setState({ nuErr: 'Correo electrónico no válido' }); return; }
+    const exists = window.QADB.where('users', u => (u.email || '').toLowerCase() === nu.email.trim().toLowerCase()).length;
+    if (exists) { this.setState({ nuErr: 'Ese correo ya está registrado' }); return; }
+    window.QADB.insert('users', { name: nu.name.trim(), email: nu.email.trim(), role: nu.role, status: 'Activo', tenant: 'CONRED', password: 'demo1234', avatar: 'linear-gradient(135deg,#22d3ee,#0e7490)' });
+    window.QADB.log('Creó usuario · ' + nu.email.trim(), { user: sess && sess.name, color: '#22d3ee' });
+    this.setState({ showUserForm: false, nu: { name: '', email: '', role: 'Operador' }, nuErr: '' });
+  }
+  removeUser(id) { window.QADB.remove('users', id); window.QADB.log('Eliminó usuario', { color: '#fb5670' }); }
+
+  setOrgField(k, e) { const v = e && e.target ? e.target.value : ''; this.setState(st => ({ org: { ...st.org, [k]: v }, orgSaved: '' })); }
+  saveOrg() {
+    window.QADB.setOrg(this.state.org);
+    window.QADB.log('Actualizó datos de la organización', { color: '#22d3ee' });
+    this.setState({ orgSaved: '✓ Guardado' });
+  }
+  cancelOrg() { this.setState({ org: window.QADB.org(), orgSaved: '' }); }
+  logout() { if (window.QADB) window.QADB.session.clear(); }
+
+  setIntg(id, field, e) {
+    const v = e && e.target ? e.target.value : '';
+    this.setState(st => ({ intgDraft: { ...st.intgDraft, [id]: { ...(st.intgDraft[id] || {}), [field]: v } }, intgMsg: { ...st.intgMsg, [id]: '' } }));
+  }
+  saveIntg(id) {
+    const draft = (this.state.intgDraft || {})[id] || {};
+    const cfg = window.QADB.setIntegracion(id, draft);
+    const def = this.INTEGRACIONES.find(x => x.id === id);
+    window.QADB.log('Configuró integración · ' + (def ? def.title : id) + ' → ' + (cfg.status === 'conectado' ? 'Conectado' : 'Simulado'), { color: cfg.status === 'conectado' ? '#20c997' : '#f5a623' });
+    this.setState(st => ({ intgMsg: { ...st.intgMsg, [id]: cfg.status === 'conectado' ? '✓ Llaves guardadas · Conectado' : 'Guardado · faltan llaves para conectar' } }));
+  }
+  testIntg(id) {
+    const cfg = (window.QADB.integraciones() || {})[id] || {};
+    const def = this.INTEGRACIONES.find(x => x.id === id);
+    const ok = cfg.status === 'conectado';
+    window.QADB.log('Probó señal · ' + (def ? def.title : id) + ' (' + (ok ? 'real' : 'simulada') + ')', { color: ok ? '#20c997' : '#f5a623' });
+    this.setState(st => ({ intgMsg: { ...st.intgMsg, [id]: ok ? '✓ Señal real enviada al proveedor' : '▸ Señal simulada (modo demo · sin llaves)' } }));
+  }
+
+  openModule(href, label) { this.setState({ view: 'module', moduleSrc: href, moduleLabel: label, mobileNavOpen: false }); }
+
+  renderVals() {
+    const v = this.state.view;
+    const sec = this.state.section;
+    const curSrc = this.state.moduleSrc;
+    const DB = window.QADB;
+    const sess = DB ? DB.session.get() : null;
+    const org = this.state.org || (DB ? DB.org() : {}) || {};
+    const statusColor = (s) => s === 'Activo' ? '#20c997' : s === 'Invitado' ? '#f5a623' : s === 'Suspendido' ? '#fb5670' : '#9fb4ad';
+    const dbUsers = DB ? DB.get('users').map((u) => ({ ...u, statusColor: statusColor(u.status), onRemove: () => this.removeUser(u.id) })) : [];
+    const dbLogs = DB ? DB.get('logs').slice(0, 14).map((l) => ({ time: this.fmtTime(l.ts), user: l.user, action: l.action, color: l.color || '#9fb4ad', ip: l.ip || '—' })) : [];
+    const kpiSensores = DB ? String(DB.count('sensores', (s) => s.status === 'En línea')) : '0';
+    const ck = (yes) => yes ? { v: '✓', c: '#20c997' } : { v: '✕', c: '#5f7187' };
+    const perm = (res, a, o, n, mu) => { const x1 = ck(a), x2 = ck(o), x3 = ck(n), x4 = ck(mu); return { res, v1: x1.v, c1: x1.c, v2: x2.v, c2: x2.c, v3: x3.v, c3: x3.c, v4: x4.v, c4: x4.c }; };
+
+    const navItem = (key, label, icon, arrow) => {
+      const on = sec === key;
+      return { label, icon, arrow: arrow || '', onSelect: () => this.setState({ section: key }),
+        bg: on ? 'rgba(34,211,238,0.12)' : 'transparent', border: on ? 'rgba(34,211,238,0.3)' : 'transparent',
+        iconColor: on ? '#22d3ee' : '#9fb4ad', textColor: on ? '#fff' : '#cdd9e8' };
+    };
+    const settingsGroups = [
+      { label: 'CUENTA', items: [ navItem('general', 'General', '▤'), navItem('facturacion', 'Facturación', '◇', '→') ] },
+      { label: 'EQUIPO Y ACCESO', items: [ navItem('usuarios', 'Usuarios', '◍'), navItem('roles', 'Roles y permisos', '◆'), navItem('seguridad', 'Seguridad', '⛨'), navItem('bitacora', 'Bitácora', '▦') ] },
+      { label: 'OPERACIÓN', items: [ navItem('param', 'Parametrización', '⚙'), navItem('notif', 'Notificaciones', '♪') ] },
+      { label: 'DESARROLLO', items: [ navItem('integr', 'Integraciones', '◇'), navItem('api', 'API & Webhooks', '⌥') ] },
+      { label: 'HARDWARE Y SEÑALES', items: [ navItem('hardware', 'Hardware y servicios externos', '◉') ] },
+    ];
+
+    const curSec = this.SECTIONS[sec] || this.SECTIONS.general;
+    const simpleRowsByGroup = {
+      facturacion: [
+        { label: 'Plan actual', desc: 'Gobierno · White-label', val: 'Activo', valColor: '#20c997' },
+        { label: 'Personas cubiertas', desc: 'Incluidas en el plan', val: '1.24M', valColor: '#22d3ee' },
+        { label: 'Método de pago', desc: 'Transferencia institucional', val: 'Configurado', valColor: '#9fb4ad' },
+        { label: 'Próxima renovación', desc: 'Ciclo anual', val: '01 ene 2027', valColor: '#9fb4ad' },
+      ],
+      param: [
+        { label: 'Umbral de alerta', desc: 'Magnitud mínima para difundir', val: 'M ≥ 5.0', valColor: '#22d3ee' },
+        { label: 'Niveles de riesgo', desc: 'Verde · Amarillo · Rojo', val: '3 niveles', valColor: '#9fb4ad' },
+        { label: 'Radio de cobertura', desc: 'Zona poblada a alertar', val: '80 km', valColor: '#9fb4ad' },
+        { label: 'Quórum de sensores', desc: 'Para declarar evento', val: '3 sensores', valColor: '#9fb4ad' },
+      ],
+      notif: [
+        { label: 'Push (FCM / APNs)', desc: 'App ciudadana', val: '● Activo', valColor: '#20c997' },
+        { label: 'SMS', desc: 'Gateway operador', val: '● Activo', valColor: '#20c997' },
+        { label: 'WhatsApp', desc: 'Business API', val: '● Activo', valColor: '#20c997' },
+        { label: 'Sirenas / paneles LED', desc: 'IoT municipal', val: '● Activo', valColor: '#20c997' },
+      ],
+      integr: [
+        { label: 'Centro de manuales', desc: 'Guías de integración', val: 'Abrir hub →', valColor: '#22d3ee' },
+        { label: 'Home Assistant', desc: 'Smart Home', val: '● Conectado', valColor: '#20c997' },
+        { label: 'Alexa · Google · Siri', desc: 'Asistentes de voz', val: '● Conectado', valColor: '#20c997' },
+        { label: 'CloudAMQP', desc: 'Bus de eventos', val: '● Conectado', valColor: '#20c997' },
+      ],
+      api: [
+        { label: 'API Key', desc: 'qk_live_••••••••3f9a', val: 'Activa', valColor: '#20c997' },
+        { label: 'Webhooks', desc: 'alert.issued · checkin.received', val: '2 activos', valColor: '#22d3ee' },
+        { label: 'Rate limit', desc: 'Por tenant', val: '1000 / min', valColor: '#9fb4ad' },
+        { label: 'Documentación', desc: 'OpenAPI 3.1', val: 'Ver docs →', valColor: '#22d3ee' },
+      ],
+    };
+
+    return {
+      mobileNavOpen: this.state.mobileNavOpen,
+      toggleMobileNav: () => this.toggleMobileNav(),
+      closeMobileNav: () => this.closeMobileNav(),
+      sidebarOpenClass: this.state.mobileNavOpen ? 'qa-sidebar-open' : '',
+      modules: this.MODULES.map((m) => {
+        const on = v === 'module' && curSrc === m.href;
+        return { label: m.label, icon: m.icon, onOpen: () => this.openModule(m.href, m.label),
+          bg: on ? 'rgba(34,211,238,0.12)' : 'transparent', border: on ? 'rgba(34,211,238,0.3)' : 'transparent', textColor: on ? '#fff' : '#cdd9e8' };
+      }),
+      tiles: this.TILES.map((t) => ({ label: t.label, icon: t.icon, desc: t.desc, onOpen: () => this.openModule(t.href, t.label) })),
+      users: dbUsers, roles: this.ROLES, logs: dbLogs,
+      userCount: dbUsers.length,
+      showUserForm: this.state.showUserForm,
+      userFormBtn: this.state.showUserForm ? '✕ Cerrar' : '+ Nuevo usuario',
+      toggleUserForm: () => this.setState({ showUserForm: !this.state.showUserForm, nuErr: '' }),
+      nuName: this.state.nu.name, nuEmail: this.state.nu.email, nuRole: this.state.nu.role, nuErr: this.state.nuErr,
+      setNuName: (e) => this.setNu('name', e), setNuEmail: (e) => this.setNu('email', e), setNuRole: (e) => this.setNu('role', e),
+      saveUser: () => this.saveUser(),
+      nuNameBorder: this.state.nuErr && !this.state.nu.name.trim() ? '#fb5670' : 'rgba(120,160,200,0.2)',
+      nuEmailBorder: this.state.nuErr && !this.emailOk(this.state.nu.email) ? '#fb5670' : 'rgba(120,160,200,0.2)',
+      kpiSensores,
+      noSession: !sess,
+      sessName: sess ? sess.name : 'Invitado', sessRole: sess ? (sess.role + (sess.tenant ? ' · ' + sess.tenant : '')) : 'Sin sesión', sessAvatar: sess && sess.avatar ? sess.avatar : 'linear-gradient(135deg,#22d3ee,#0e7490)',
+      logout: () => this.logout(),
+      orgNombre: org.nombreComercial || '', orgRazon: org.razonSocial || '', orgNit: org.nit || '', orgWeb: org.web || '', orgSoporte: org.soporte || '', orgTel: org.telefono || '',
+      setOrgNombre: (e) => this.setOrgField('nombreComercial', e), setOrgRazon: (e) => this.setOrgField('razonSocial', e), setOrgNit: (e) => this.setOrgField('nit', e), setOrgWeb: (e) => this.setOrgField('web', e), setOrgSoporte: (e) => this.setOrgField('soporte', e), setOrgTel: (e) => this.setOrgField('telefono', e),
+      saveOrg: () => this.saveOrg(), cancelOrg: () => this.cancelOrg(), orgSaved: this.state.orgSaved,
+      permisos: [
+        perm('Centro de Comando', true, true, false, false),
+        perm('Emitir alertas', true, true, false, true),
+        perm('Analítica & BI', true, true, true, false),
+        perm('Gestión de usuarios', true, false, false, false),
+        perm('Configurar IoT / sirenas', true, true, false, true),
+        perm('Auditoría y bitácora', true, false, false, false),
+      ],
+      settingsGroups,
+      goResumen: () => this.setState({ view: 'resumen', mobileNavOpen: false }),
+      goSettings: () => this.setState({ view: 'settings', mobileNavOpen: false }),
+      isModule: v === 'module', moduleSrc: curSrc || '', moduleLabel: this.state.moduleLabel || '',
+      isResumen: v === 'resumen', isSettings: v === 'settings',
+      resumenBg: v === 'resumen' ? 'rgba(34,211,238,0.12)' : 'transparent', resumenBorder: v === 'resumen' ? 'rgba(34,211,238,0.3)' : 'transparent', resumenIcon: v === 'resumen' ? '#22d3ee' : '#9fb4ad', resumenText: v === 'resumen' ? '#fff' : '#cdd9e8',
+      settingsBg: v === 'settings' ? 'rgba(34,211,238,0.12)' : 'transparent', settingsBorder: v === 'settings' ? 'rgba(34,211,238,0.3)' : 'transparent', settingsIcon: v === 'settings' ? '#22d3ee' : '#9fb4ad', settingsText: v === 'settings' ? '#fff' : '#cdd9e8',
+      viewTitle: v === 'module' ? (this.state.moduleLabel || 'Módulo') : v === 'settings' ? 'Configuración' : 'Resumen',
+      secTitle: curSec.title, secSub: curSec.sub,
+      secGeneral: sec === 'general', secUsuarios: sec === 'usuarios', secRoles: sec === 'roles', secSeguridad: sec === 'seguridad', secBitacora: sec === 'bitacora',
+      secSimple: ['facturacion', 'param', 'notif', 'integr', 'api'].includes(sec),
+      simpleRows: simpleRowsByGroup[sec] || [],
+      secHardware: sec === 'hardware',
+      ...this._pushVals(),
+      intgConnected: DB ? Object.values(DB.integraciones() || {}).filter(c => c && c.status === 'conectado').length : 0,
+      intgTotal: this.INTEGRACIONES.length,
+      integraciones: (function (self) {
+        const cfgAll = DB ? DB.integraciones() : {};
+        const draft = self.state.intgDraft || {};
+        const msgs = self.state.intgMsg || {};
+        return self.INTEGRACIONES.map(def => {
+          const saved = cfgAll[def.id] || {};
+          const connected = saved.status === 'conectado';
+          return {
+            title: def.title, subtitle: def.subtitle, provider: def.provider, icon: def.icon, iconColor: def.iconColor,
+            howto: def.howto, endpoint: def.endpoint,
+            badge: connected ? 'CONECTADO' : 'SIMULADO',
+            badgeColor: connected ? '#20c997' : '#f5a623',
+            badgeBg: connected ? 'rgba(32,201,151,0.16)' : 'rgba(245,166,35,0.16)',
+            iconBg: connected ? 'rgba(32,201,151,0.14)' : 'rgba(34,211,238,0.1)',
+            cardBorder: connected ? 'rgba(32,201,151,0.3)' : 'rgba(120,160,200,0.14)',
+            fields: def.fields.map(f => ({
+              label: f.label, placeholder: f.placeholder,
+              value: (draft[def.id] && draft[def.id][f.key] != null) ? draft[def.id][f.key] : (saved[f.key] || ''),
+              onInput: (e) => self.setIntg(def.id, f.key, e),
+            })),
+            onSave: () => self.saveIntg(def.id),
+            onTest: () => self.testIntg(def.id),
+            msg: msgs[def.id] || '',
+            msgColor: (msgs[def.id] || '').indexOf('✓') === 0 ? '#20c997' : '#f5a623',
+          };
+        });
+      })(this),
+    };
+  }
+}
+</script>
+</body>
+</html>

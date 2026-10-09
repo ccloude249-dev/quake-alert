@@ -1,0 +1,14 @@
+{
+  "appId": "gt.quakealert.app",
+  "appName": "QUAKE ALERT",
+  "webDir": "www",
+  "server": {
+    "url": "https://TU-APP.herokuapp.com/app",
+    "cleartext": false,
+    "errorPath": "offline.html"
+  },
+  "android": {
+    "backgroundColor": "#070c14",
+    "allowMixedContent": false
+  }
+}

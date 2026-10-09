@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#0e7c5b"/><circle cx="100" cy="100" r="46" fill="none" stroke="#eafff5" stroke-width="7"/><circle cx="100" cy="100" r="16" fill="#eafff5"/></svg></template>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Alarma Sísmica">
+<meta name="theme-color" content="#070c14">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest-alarma.webmanifest">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="./qa-db.js"></script>
+<script src="./qa-push.js"></script>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #070c14; }
+  @keyframes qaBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  @keyframes qaPulseRing { 0% { transform: scale(0.85); opacity: 0.9; } 100% { transform: scale(1.9); opacity: 0; } }
+  @keyframes qaShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+  input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 4px; background: rgba(120,160,200,0.25); }
+  .qa-dark-tiles { filter: invert(1) hue-rotate(190deg) brightness(0.72) saturate(0.55) contrast(1.05); }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #22d3ee; box-shadow: 0 0 0 4px rgba(34,211,238,0.18); }
+</style>
+</helmet>
+<div style="min-height:100vh; width:100%; background:#070c14; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; padding-bottom:34px;">
+  <sc-if value="{{ dimmed }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ toggleDim }}" style="position:fixed; inset:0; z-index:100; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; cursor:pointer;">
+      <div style="width:10px; height:10px; border-radius:50%; background:#20c997; animation:qaBlink 2s ease-in-out infinite;"></div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:34px; color:#6b7d94;">{{ clockText }}</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#6b7d94;">VIGILANDO · PRÓXIMA REVISIÓN EN {{ countdown }} S</div>
+      <div style="font-size:12px; color:#6b7d94; margin-top:20px;">Tocá para volver</div>
+    </div>
+  </sc-if>
+
+  <div style="position:sticky; top:0; z-index:20; background:rgba(7,12,20,0.92); backdrop-filter:blur(10px); border-bottom:1px solid rgba(120,160,200,0.1); padding:16px 18px 14px; display:flex; align-items:center; gap:11px;">
+    <div style="width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,#22d3ee,#0e7490); display:flex; align-items:center; justify-content:center; font-size:15px; color:#06141a; flex-shrink:0;">◉</div>
+    <div style="flex:1; min-width:0;">
+      <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; color:#fff;">Alarma Sísmica</div>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#7b8ca3;">QUAKE ALERT · GUATEMALA</div>
+    </div>
+    <div style="width:8px; height:8px; border-radius:50%; background:{{ statusDot }}; animation:qaBlink 1.6s ease-in-out infinite; flex-shrink:0;"></div>
+  </div>
+
+  <div style="padding:20px 18px 0;">
+
+    <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:stretch;">
+      <div style="position:relative; flex:1; min-width:260px; border-radius:22px; overflow:hidden; background:{{ heroBg }}; border:1px solid {{ heroBorder }}; padding:26px 20px; text-align:center; transition:background 300ms, border-color 300ms;">
+        <sc-if value="{{ alarmFlash }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; background:{{ strobeBg }}; transition:background 120ms;"></div>
+        </sc-if>
+        <div style="position:relative;">
+          <div onClick="{{ toggleArm }}" style="width:120px; height:120px; margin:0 auto; border-radius:50%; background:{{ ringBg }}; border:2px solid {{ ringBorder }}; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative;">
+            <sc-if value="{{ isArmed }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute; inset:0; border-radius:50%; border:2px solid rgba(32,201,151,0.5); animation:qaPulseRing 2.2s ease-out infinite;"></div>
+            </sc-if>
+            <span style="font-size:34px; color:{{ ringIconColor }};">{{ ringIcon }}</span>
+          </div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px; color:#fff; margin-top:16px;">{{ armLabel }}</div>
+          <div style="font-size:13px; color:#9fb4ad; margin-top:5px; line-height:1.5; max-width:280px; margin-left:auto; margin-right:auto;">{{ armSub }}</div>
+        </div>
+      </div>
+
+      <div style="flex:1; min-width:260px; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:18px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#7b8ca3; margin-bottom:16px;">AJUSTES DE ALARMA</div>
+
+        <div style="margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size:13px; color:#cdd9e8;">Radio de aviso</span><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee;">{{ radiusKm }} km</span></div>
+          <input type="range" min="20" max="2500" step="10" value="{{ radiusKm }}" onInput="{{ setRadius }}" style="width:100%; display:block;" />
+        </div>
+        <div style="margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size:13px; color:#cdd9e8;">Magnitud mínima</span><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee;">M{{ minMag }}+</span></div>
+          <input type="range" min="3" max="7" step="0.5" value="{{ minMag }}" onInput="{{ setMinMag }}" style="width:100%; display:block;" />
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="font-size:13px; color:#cdd9e8;">Revisar cada</span><span style="display:flex; align-items:center; gap:6px;"><span style="width:6px; height:6px; border-radius:50%; background:{{ tickDotColor }}; animation:qaBlink 1s ease-in-out infinite;"></span><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee;">{{ pollSec }} s</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">(en {{ countdown }}s)</span></span></div>
+          <input type="range" min="5" max="120" step="5" value="{{ pollSec }}" onInput="{{ setPollSec }}" style="width:100%; display:block;" />
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ nativeAvail }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:14px; border-radius:16px; background:rgba(20,30,48,0.5); border:1px solid {{ nativeBorder }}; padding:18px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#7b8ca3;">ALARMA NATIVA · ANDROID</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; color:{{ nativeStateColor }}; border:1px solid {{ nativeStateColor }}; border-radius:999px; padding:3px 9px; white-space:nowrap;">{{ nativeStateLabel }}</div>
+        </div>
+        <div style="font-size:12px; color:#9fb4ad; line-height:1.5; margin-bottom:14px;">Suena por el canal de alarma del sistema: ni el modo silencio ni la pantalla bloqueada la detienen. Enciende la pantalla, vibra y hace flash.</div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <sc-for list="{{ nativeRows }}" as="row" hint-placeholder-count="5">
+            <div style="display:flex; gap:10px; align-items:flex-start;">
+              <span style="width:8px; height:8px; border-radius:50%; background:{{ row.dot }}; margin-top:5px; flex-shrink:0;"></span>
+              <div style="flex:1; min-width:0;"><div style="font-size:13px; color:#fff;">{{ row.label }}</div><div style="font-size:12px; color:#9fb4ad; margin-top:2px; line-height:1.45;">{{ row.detail }}</div></div>
+              <sc-if value="{{ row.hasAction }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ row.onAction }}" style="flex-shrink:0; min-height:44px; padding:0 14px; border:1px solid rgba(34,211,238,0.4); border-radius:10px; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; color:#22d3ee; background:rgba(34,211,238,0.08);">{{ row.actionLabel }}</button>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex; gap:9px; flex-wrap:wrap; margin-top:16px;">
+          <button onClick="{{ nativeTest }}" style="flex:1; min-width:180px; min-height:46px; border:none; border-radius:12px; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#06141a; background:#22d3ee;">Probar alarma en 10 s</button>
+          <sc-if value="{{ nativeAlarmActive }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ nativeSilence }}" style="flex:1; min-width:180px; min-height:46px; border:none; border-radius:12px; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#fb5670; background:rgba(251,86,112,0.12);">Silenciar alarma</button>
+          </sc-if>
+        </div>
+        <sc-if value="{{ nativeTestPending }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px; border-radius:12px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.35); padding:12px 14px; display:flex; align-items:center; gap:12px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; color:#22d3ee; min-width:34px; text-align:center;">{{ nativeTestLeft }}</div>
+            <div style="font-size:13px; color:#eaf1f8; line-height:1.45;">Poné el teléfono en silencio y bloqueá la pantalla ahora. La alarma completa suena aunque esté apagada.</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hasNativeError }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px; font-size:12px; color:#f5d9a0; line-height:1.5;">{{ nativeError }}</div>
+        </sc-if>
+        <sc-if value="{{ nativeOem }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px; font-size:12px; color:#9fb4ad; line-height:1.5;">En tu marca de teléfono activá también "Inicio automático" o "Sin restricciones" para esta app en los ajustes de batería: si no, el fabricante puede cerrar el vigilante.</div>
+        </sc-if>
+      </div>
+    </sc-if>
+    <div style="display:{{ pushCardDisplay }}; margin-top:14px; border-radius:16px; background:rgba(20,30,48,0.5); border:1px solid {{ bgCardBorder }}; padding:18px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#7b8ca3;">SEGUNDO PLANO · PANTALLA BLOQUEADA</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; color:{{ bgStateColor }}; border:1px solid {{ bgStateColor }}; border-radius:999px; padding:3px 9px; white-space:nowrap;">{{ bgStateLabel }}</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; gap:10px; align-items:flex-start;">
+          <span style="width:8px; height:8px; border-radius:50%; background:{{ srvDot }}; margin-top:5px; flex-shrink:0;"></span>
+          <div style="flex:1; min-width:0;"><div style="font-size:13px; color:#fff;">Servidor vigilando el USGS 24/7</div><div style="font-size:12px; color:#9fb4ad; margin-top:2px; line-height:1.45;">{{ srvText }}</div></div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:flex-start;">
+          <span style="width:8px; height:8px; border-radius:50%; background:{{ pushDot }}; margin-top:5px; flex-shrink:0;"></span>
+          <div style="flex:1; min-width:0;"><div style="font-size:13px; color:#fff;">Notificaciones push en este teléfono</div><div style="font-size:12px; color:#9fb4ad; margin-top:2px; line-height:1.45;">{{ pushText }}</div></div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:flex-start;">
+          <span style="width:8px; height:8px; border-radius:50%; background:{{ installDot }}; margin-top:5px; flex-shrink:0;"></span>
+          <div style="flex:1; min-width:0;"><div style="font-size:13px; color:#fff;">Instalada en la pantalla de inicio</div><div style="font-size:12px; color:#9fb4ad; margin-top:2px; line-height:1.45;">{{ installText }}</div></div>
+        </div>
+      </div>
+      <div style="display:flex; gap:9px; flex-wrap:wrap; margin-top:16px;">
+        <button onClick="{{ togglePush }}" style="flex:1; min-width:180px; min-height:46px; border:none; border-radius:12px; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:{{ pushBtnColor }}; background:{{ pushBtnBg }};">{{ pushBtnLabel }}</button>
+        <sc-if value="{{ pushSubscribed }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ testPush }}" style="flex:1; min-width:180px; min-height:46px; border:1px solid rgba(34,211,238,0.4); border-radius:12px; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#22d3ee; background:rgba(34,211,238,0.08);">Probar con pantalla bloqueada</button>
+        </sc-if>
+      </div>
+      <sc-if value="{{ testPending }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:12px; border-radius:12px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.35); padding:12px 14px; display:flex; align-items:center; gap:12px;">
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:26px; color:#22d3ee; min-width:34px; text-align:center;">{{ testCountdown }}</div>
+          <div style="font-size:13px; color:#eaf1f8; line-height:1.45;">Bloqueá el teléfono ahora. La alerta de prueba llega aunque la pantalla esté apagada.</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ hasPushError }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:12px; font-size:12px; color:#f5d9a0; line-height:1.5;">{{ pushError }}</div>
+      </sc-if>
+      <div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(120,160,200,0.1);">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#7b8ca3; margin-bottom:8px;">MODO GUARDIÁN · CON LA APP ABIERTA</div>
+        <div style="font-size:12px; color:#9fb4ad; line-height:1.5;">{{ guardText }}</div>
+        <sc-if value="{{ isArmed }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ toggleDim }}" style="margin-top:10px; min-height:44px; padding:0 16px; border:1px solid rgba(120,160,200,0.25); border-radius:10px; cursor:pointer; font-family:'IBM Plex Sans',sans-serif; font-size:13px; color:#cdd9e8; background:rgba(255,255,255,0.03);">Modo mesa de noche (pantalla en negro)</button>
+        </sc-if>
+      </div>
+    </div>
+
+    <sc-if value="{{ hasRecent }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:14px; border-radius:16px; background:rgba(251,86,112,0.09); border:1px solid rgba(251,86,112,0.35); padding:16px; animation:{{ recentAnim }};">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;"><span style="width:7px; height:7px; border-radius:50%; background:#fb5670;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#fb5670;">MÁS CERCA DE VOS</span></div>
+        <div style="display:flex; align-items:center; gap:13px;">
+          <div style="width:48px; height:48px; border-radius:12px; background:rgba(251,86,112,0.18); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px; color:#fb5670; flex-shrink:0;">{{ recentMag }}</div>
+          <div style="min-width:0;">
+            <div style="font-size:14px; color:#fff; line-height:1.35;">{{ recentPlace }}</div>
+            <div style="font-size:12px; color:#9fb4ad; margin-top:3px; font-family:'IBM Plex Mono',monospace;">{{ recentMeta }}</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="display:flex; gap:9px; margin-top:14px;">
+      <div style="flex:1; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:13px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:#7b8ca3;">SISMOS HOY</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; color:#fff; margin-top:3px;">{{ totalCount }}</div></div>
+      <div style="flex:1; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:13px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:#7b8ca3;">EN TU RADIO</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; color:#f5a623; margin-top:3px;">{{ relevantCount }}</div></div>
+      <div style="flex:1; background:rgba(20,30,48,0.6); border:1px solid rgba(120,160,200,0.14); border-radius:14px; padding:13px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:#7b8ca3;">ÚLT. REVISIÓN</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; color:#22d3ee; margin-top:6px;">{{ lastCheck }}</div></div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:8px; margin-top:9px; padding:9px 13px; background:rgba(34,211,238,0.05); border:1px solid rgba(34,211,238,0.18); border-radius:11px;">
+      <span style="width:7px; height:7px; border-radius:50%; background:{{ tickDotColor }}; animation:qaBlink 1s ease-in-out infinite; flex-shrink:0;"></span>
+      <span style="font-size:12px; color:#9fb4ad;">{{ tickText }}</span>
+    </div>
+
+    <div style="margin-top:18px; display:flex; gap:14px; flex-wrap:wrap; align-items:flex-start;">
+      <div style="flex:1.3; min-width:260px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#7b8ca3; margin-bottom:10px;">MAPA · GUATEMALA</div>
+        <div ref="{{ mapRef }}" style="position:relative; height:320px; border-radius:16px; overflow:hidden; border:1px solid rgba(120,160,200,0.14); background:#070c15;"></div>
+      </div>
+      <div style="flex:1; min-width:260px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#7b8ca3; margin-bottom:10px;">ÚLTIMOS SISMOS · USGS</div>
+        <div style="display:flex; flex-direction:column; gap:9px; max-height:320px; overflow-y:auto; padding-right:2px;">
+          <sc-for list="{{ quakes }}" as="q" hint-placeholder-count="5">
+            <div style="display:flex; align-items:center; gap:11px; background:{{ q.cardBg }}; border:1px solid {{ q.cardBorder }}; border-radius:13px; padding:11px 13px;">
+              <div style="width:38px; height:38px; border-radius:10px; background:{{ q.magBg }}; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; color:{{ q.magColor }}; flex-shrink:0;">{{ q.mag }}</div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-size:13px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ q.place }}</div>
+                <div style="font-size:11px; color:#7b8ca3; margin-top:2px; font-family:'IBM Plex Mono',monospace;">{{ q.timeAgo }} · {{ q.distance }} km · {{ q.bearing }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:14px; border-radius:12px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.3); padding:12px 14px; font-size:12px; color:#f5d9a0; line-height:1.5;">{{ errorMsg }}</div>
+    </sc-if>
+
+    <p style="font-size:11px; color:#5f7187; line-height:1.6; margin:18px 4px 0;">Fuente: catálogo público del USGS. Este monitor revisa el feed cada pocos segundos mientras está armado — no es detección sísmica en tiempo real por P-onda, así que puede haber minutos de retraso. <span>{{ keepOpenNote }}</span></p>
+
+    <div style="margin-top:14px; border-radius:14px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.28); padding:14px 16px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#f5a623; margin-bottom:6px;">DIFERENCIAS POR TELÉFONO</div>
+      <div style="font-size:12px; color:#cdd9e8; line-height:1.6;">
+        <b>Android</b>: vibración {{ vibrateSupported }}. Además, activá el sistema gratuito de Google en <span style="color:#9fb4ad;">Ajustes → Seguridad y emergencia → Alertas de terremoto</span> — detecta con tu acelerómetro en segundos, más rápido que este monitor.<br/>
+        <b>iPhone</b>: Apple bloquea la vibración y el sonido de páginas web cuando el switch lateral está en silencio — ninguna web puede saltarse eso. Revisá ese switch y el volumen. Sea cual sea el resultado del sonido, la pantalla SIEMPRE hará flash rojo intenso y el título de la pestaña parpadeará — esa señal nunca falla.
+      </div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#7b8ca3; margin-bottom:10px;">ÚLTIMOS {{ chartCount }} SISMOS REGIONALES · MAGNITUD</div>
+      <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:16px; padding:16px 12px 10px; display:flex; align-items:flex-end; gap:3px; height:150px;">
+        <sc-for list="{{ chartBars }}" as="b" hint-placeholder-count="20">
+          <div style="flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;">
+            <div style="font-size:8px; color:#7b8ca3; margin-bottom:3px;">{{ b.magLabel }}</div>
+            <div style="width:100%; max-width:13px; border-radius:3px 3px 0 0; background:{{ b.color }}; height:{{ b.heightPct }}%;"></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="margin-top:14px; border-radius:16px; background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); padding:18px;">
+      <div style="display:flex; align-items:center; gap:9px; margin-bottom:10px;"><span style="width:8px; height:8px; border-radius:50%; background:#22d3ee;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#7b8ca3;">ANÁLISIS SISMOLÓGICO · CONTEXTO REGIONAL</span></div>
+      <p style="font-size:13px; color:#cdd9e8; line-height:1.65; margin:0;">{{ analysisText }}</p>
+      <p style="font-size:11px; color:#5f7187; line-height:1.5; margin:10px 0 0;">Este análisis describe patrones estadísticos del catálogo público del USGS — no predice sismos individuales; nadie puede hacerlo.</p>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 420, &quot;height&quot;: 900}}">
+class Component extends DCLogic {
+  GUATE = { lat: 14.6349, lng: -90.5069 };
+  AUTO_ARM_MAG = 5;
+  FEED = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson';
+
+  state = { loading: true, error: null, quakes: [], raw: [], tab: 'vivo', source: 'live',
+    armed: false, autoArmed: false, radiusKm: 320, minMag: 4, pollSec: 5, seenIds: [], alarmFlash: false, lastCheck: null, push: null, dimmed: false, native: null, nativeAvail: false, nativeError: '', nativeTestAt: 0 };
+
+  REGION_KM = 700; // Centroamérica + sur de México + Caribe occidental — excluye sismos lejanos (Asia, etc.)
+
+  componentDidMount() {
+    this._load();
+    this._scheduleMapInit();
+    this._nextAt = Date.now() + this.state.pollSec * 1000;
+    this._poll = setInterval(() => { this._load(true); this._nextAt = Date.now() + this.state.pollSec * 1000; }, this.state.pollSec * 1000);
+    this._tick = setInterval(() => { if (!this._dead) this.forceUpdate(); }, 1000); // refresca el contador visible cada segundo
+    this._origTitle = document.title;
+    // Segundo plano compartido (qa-push.js): push del servidor, tiempo real por SSE, modo guardián.
+    const bootPush = () => {
+      const P = window.QAPush; if (!P || this._dead) return;
+      this._offPush = P.on((ps) => { if (!this._dead) this.setState({ push: Object.assign({}, ps) }); });
+      this._offPushMsg = P.onPush((p) => this._onPush(p));
+      this._offQuake = P.onQuake((p) => this._onStreamQuake(p));
+      this._offVis = P.onVisible(() => this._load(true)); // al volver del bloqueo: revisar YA
+      P.init({ radiusKm: this.state.radiusKm, minMag: this.state.minMag, lat: this.GUATE.lat, lng: this.GUATE.lng });
+    };
+    if (window.QAPush) bootPush(); else window.addEventListener('qapush-ready', bootPush, { once: true });
+    this._nativeInit();
+  }
+  componentWillUnmount() {
+    this._dead = true; clearInterval(this._poll); clearInterval(this._strobe); clearInterval(this._tick); clearInterval(this._nativeTick);
+    if (this._onVisNative) document.removeEventListener('visibilitychange', this._onVisNative);
+    [this._offPush, this._offPushMsg, this._offQuake, this._offVis].forEach((f) => { if (f) f(); });
+    if (window.QAPush) window.QAPush.guard(false);
+    document.title = this._origTitle || document.title;
+    if (this._map) { try { this._map.remove(); } catch (e) {} this._map = null; }
+  }
+
+  toggleArm() {
+    const arming = !this.state.armed;
+    this._ensureAudio(); // crear/desbloquear audio ahora, dentro del toque del usuario (iOS lo exige)
+    if (arming) {
+      if (window.QAPush) window.QAPush.guard(true); // pantalla encendida + audio anti-suspensión
+      if (window.Notification && Notification.permission === 'default') { try { Notification.requestPermission(); } catch (e) {} }
+      // Al armar: los sismos viejos/que no califican quedan "vistos" (no repetir historial),
+      // pero uno reciente (<15 min) que YA califica se deja sin marcar para que dispare de inmediato.
+      const now = Date.now();
+      const RECENT_MS = 15 * 60 * 1000;
+      const seeds = (this.state.raw || []).filter((q) => {
+        const dist = (typeof q.lat === 'number') ? this._dist(q.lat, q.lng) : Infinity;
+        const qualifies = dist <= this.state.radiusKm && q.mag >= this.state.minMag;
+        const isRecent = (now - q.time) <= RECENT_MS;
+        return !(qualifies && isRecent);
+      }).map((q) => q.id);
+      this.setState({ armed: true, autoArmed: false, seenIds: seeds }, () => this._load(true)); // revisa YA por si algo reciente ya califica
+      if (window.QADB) window.QADB.log('Activó alarma sísmica de bolsillo en su teléfono', { color: '#20c997' });
+      this._nativeStart();
+    } else {
+      if (window.QAPush) window.QAPush.guard(false);
+      this.setState({ armed: false, autoArmed: false, dimmed: false });
+      this._nativeStop();
+    }
+    this._fire('—', 'Prueba manual', '0', 'N'); // el toque siempre demuestra la alarma (sonido/vibración/flash)
+  }
+
+  _scheduleMapInit() { setTimeout(() => this._initMap(0), 60); }
+
+  _initMap(tries) {
+    if (this._dead || this._map) return;
+    if (!this._mapEl || !window.L) { if (tries < 60) setTimeout(() => this._initMap(tries + 1), 150); return; }
+    try {
+      const L = window.L;
+      let host = this._mapEl.querySelector('.qa-map-host');
+      if (!host) {
+        host = document.createElement('div');
+        host.className = 'qa-map-host';
+        host.style.cssText = 'position:absolute;inset:0;';
+        this._mapEl.appendChild(host);
+      }
+      this._map = L.map(host, { center: [this.GUATE.lat, this.GUATE.lng], zoom: 6, zoomControl: false, attributionControl: true });
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 10, className: 'qa-dark-tiles' }).addTo(this._map);
+      L.circleMarker([this.GUATE.lat, this.GUATE.lng], { radius: 6, color: '#22d3ee', weight: 2, fillColor: '#fff', fillOpacity: 1 }).addTo(this._map);
+      this._radiusCircle = L.circle([this.GUATE.lat, this.GUATE.lng], { radius: this.state.radiusKm * 1000, color: '#22d3ee', weight: 1, dashArray: '4 6', fill: false, opacity: 0.5 }).addTo(this._map);
+      this._markers = L.layerGroup().addTo(this._map);
+      this._renderMarkers();
+    } catch (e) {}
+  }
+
+  _renderMarkers() {
+    if (!this._map || !window.L) return;
+    const L = window.L;
+    if (this._radiusCircle) { try { this._radiusCircle.setRadius(this.state.radiusKm * 1000); } catch (e) {} }
+    if (!this._markers) return;
+    this._markers.clearLayers();
+    (this.state.raw || []).forEach((q) => {
+      if (typeof q.lat !== 'number' || typeof q.lng !== 'number') return;
+      const distance = this._dist(q.lat, q.lng);
+      const relevant = distance <= this.state.radiusKm && q.mag >= this.state.minMag;
+      const color = relevant ? '#fb5670' : (distance <= 2500 ? '#f5a623' : '#3a4a5e');
+      const r = Math.max(4, Math.min(20, (q.mag || 1) * 2.4));
+      L.circleMarker([q.lat, q.lng], { radius: r, color, weight: 1.4, fillColor: color, fillOpacity: relevant ? 0.55 : 0.3 })
+        .bindPopup('<b>M' + q.mag.toFixed(1) + '</b> · ' + (q.place || '') + '<br>' + distance.toLocaleString('es-GT') + ' km de Guatemala')
+        .addTo(this._markers);
+    });
+  }
+
+  setRadius(e) { this.setState({ radiusKm: Number(e.target.value) }, () => { this._renderMarkers(); this._syncPrefs(); }); }
+  setMinMag(e) { this.setState({ minMag: Number(e.target.value) }, () => { this._renderMarkers(); this._syncPrefs(); }); }
+  _syncPrefs() { if (window.QAPush) window.QAPush.updatePrefs({ radiusKm: this.state.radiusKm, minMag: this.state.minMag }); this._nativeConfigure(); }
+  setPollSec(e) {
+    const v = Number(e.target.value);
+    this.setState({ pollSec: v });
+    clearInterval(this._poll);
+    this._nextAt = Date.now() + v * 1000;
+    this._poll = setInterval(() => { this._load(true); this._nextAt = Date.now() + v * 1000; }, v * 1000);
+  }
+
+  _fire(mag, place, distance, bearing, skipNotif) {
+    const native = !!this._nativeOn; // en el APK el servicio nativo ya hace sonar, vibrar y encender la pantalla
+    const pattern = [500, 150, 500, 150, 500, 150, 500, 150, 900];
+    if (!native && navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} }
+    if (!native) this._beep();
+    // Notificación local del sistema: en Android trae su propia vibración y suena
+    // aunque la pestaña no esté al frente; en iPhone solo suena/banner (Apple no
+    // deja vibrar desde ninguna notificación de una página web).
+    if (!native && !skipNotif && window.Notification && Notification.permission === 'granted') {
+      const show = (reg) => {
+        const opts = { body: place + ' — ' + distance + ' km, rumbo ' + bearing, tag: 'qa-mobile', requireInteraction: true, vibrate: pattern, renotify: true };
+        if (reg && reg.showNotification) { try { reg.showNotification('⚠ Sismo · M' + mag, opts); return; } catch (e) {} }
+        try { new Notification('⚠ Sismo · M' + mag, opts); } catch (e) {}
+      };
+      if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+        navigator.serviceWorker.ready.then(show).catch(() => show(null));
+      } else show(null);
+    }
+    if (window.QADB) window.QADB.log('Alarma de bolsillo disparada · M' + mag + ' a ' + distance + ' km', { color: '#fb5670' });
+    this._origTitle = this._origTitle || document.title;
+    this.setState({ alarmFlash: true, strobeOn: true, dimmed: false });
+    let n = 0;
+    clearInterval(this._strobe);
+    this._strobe = setInterval(() => {
+      n += 1;
+      document.title = (n % 2 === 0) ? '🔴 ¡SISMO CERCA!' : '⚠ REVISÁ AHORA';
+      this.setState((s) => ({ strobeOn: !s.strobeOn }));
+      if (n > 16) { clearInterval(this._strobe); document.title = this._origTitle; this.setState({ strobeOn: false }); }
+    }, 350);
+    setTimeout(() => { if (!this._dead) this.setState({ alarmFlash: false }); }, 6000);
+  }
+
+  _ensureAudio() {
+    if (!this._audioCtx) {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      this._audioCtx = new Ctx();
+    }
+    const ctx = this._audioCtx;
+    if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
+    // Prime silencioso: reproduce un tono inaudible YA, dentro del mismo toque, para
+    // forzar a iOS a desbloquear el audio en este gesto (no solo llamar a resume()).
+    try {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      g.gain.value = 0.00001;
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime + 0.05);
+    } catch (e) {}
+    return ctx;
+  }
+
+  _beep() {
+    if (window.QAPush) window.QAPush.playSiren(); // <audio>: en iPhone suena aunque el switch lateral esté en silencio
+    try {
+      const ctx = this._ensureAudio();
+      const start = ctx.currentTime + 0.02;
+      const dur = 3.2, step = 0.16;
+      for (let t = 0; t < dur; t += step) {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sawtooth';
+        o.frequency.value = (Math.floor(t / (step * 2)) % 2 === 0) ? 1000 : 720;
+        g.gain.setValueAtTime(0.0001, start + t);
+        g.gain.linearRampToValueAtTime(0.9, start + t + 0.01);
+        g.gain.linearRampToValueAtTime(0.0001, start + t + step * 0.95);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(start + t); o.stop(start + t + step);
+      }
+    } catch (e) {}
+  }
+
+  // ---------- segundo plano ----------
+  _onPush(p) {
+    if (!p) return;
+    if (p.type === 'test') { this._fire('—', 'Prueba en segundo plano recibida', '0', '—', true); return; }
+    this.setState({ seenIds: (this.state.seenIds || []).concat(p.id ? [p.id] : []) }); // que el sondeo local no repita la misma alarma
+    this._fire(p.mag != null ? Number(p.mag).toFixed(1) : '?', p.place || 'Sismo', String(p.distanceKm != null ? p.distanceKm : '?'), p.bearing || '—', true);
+  }
+  // Sismo regional recibido por la conexión en vivo (antes que el próximo sondeo local).
+  _onStreamQuake(p) {
+    if (!p || !p.id) return;
+    const seen = this.state.seenIds || [];
+    if (!seen.includes(p.id) && this.state.armed && p.distanceKm <= this.state.radiusKm && p.mag >= this.state.minMag) {
+      this.setState({ seenIds: seen.concat([p.id]) });
+      this._fire(Number(p.mag).toFixed(1), p.place || 'Sismo', String(p.distanceKm), p.bearing || '—');
+    }
+    this._load(true);
+  }
+  toggleDim() { const on = !this.state.dimmed; if (on && window.QAPush) window.QAPush.guard(true); this.setState({ dimmed: on }); }
+  enablePush() {
+    this._ensureAudio();
+    if (!window.QAPush) return;
+    window.QAPush.enable({ radiusKm: this.state.radiusKm, minMag: this.state.minMag, lat: this.GUATE.lat, lng: this.GUATE.lng }).then((ok) => { if (ok && window.QADB) window.QADB.log('Activó alertas sísmicas en segundo plano (push)', { color: '#20c997' }); });
+  }
+  disablePush() { if (window.QAPush) window.QAPush.disable(); }
+  testPush() {
+    this._ensureAudio();
+    if (!window.QAPush) return;
+    window.QAPush.test(10000).then((ok) => { if (ok && window.QADB) window.QADB.log('Programó prueba de alerta con pantalla bloqueada', { color: '#22d3ee' }); });
+  }
+  // ---------- Android nativo (APK Capacitor): servicio vigilante + alarma por canal de sistema ----------
+  _nativePlugin() {
+    const C = window.Capacitor;
+    if (!C) return null;
+    const isNative = C.isNativePlatform ? C.isNativePlatform() : (C.getPlatform ? C.getPlatform() !== 'web' : false);
+    if (!isNative) return null;
+    if (C.Plugins && C.Plugins.QuakeAlarm) return C.Plugins.QuakeAlarm;
+    if (!C.nativePromise) return null;
+    const call = (m) => (o) => C.nativePromise('QuakeAlarm', m, o || {});
+    return { status: call('status'), start: call('start'), stop: call('stop'), configure: call('configure'), test: call('test'), silence: call('silence'), requestNotifications: call('requestNotifications'), openSettings: call('openSettings') };
+  }
+  _nativeInit() {
+    if (!window.Capacitor && /[?&]nativedemo=1/.test(location.search)) this._demoPlugin();
+    if (!this._nativePlugin()) return;
+    const mute = () => { if (window.QAPush) window.QAPush.guard = function () {}; }; // el servicio nativo es el guardián: la web no mantiene la pantalla encendida
+    if (window.QAPush) mute(); else window.addEventListener('qapush-ready', mute, { once: true });
+    this.setState({ nativeAvail: true });
+    this._nativeRefresh().then(() => { if (this.state.native && this.state.native.running) this._syncArmedFromNative(); });
+    this._nativeTick = setInterval(() => this._nativeRefresh(), 5000);
+    this._onVisNative = () => { if (document.visibilityState === 'visible') this._nativeRefresh(); }; // al volver de los ajustes del sistema
+    document.addEventListener('visibilitychange', this._onVisNative);
+  }
+  _nativeRefresh() {
+    const P = this._nativePlugin();
+    if (!P || this._dead) return Promise.resolve();
+    return Promise.resolve(P.status()).then((st) => { if (this._dead || !st) return; this._nativeOn = !!st.running; this.setState({ native: st }); }).catch(() => {});
+  }
+  // El vigilante sigue corriendo aunque se cierre la app: al reabrirla, la UI refleja "armada" y los ajustes guardados.
+  _syncArmedFromNative() {
+    const st = this.state.native || {};
+    if (st.radiusKm) this.setState({ radiusKm: st.radiusKm, minMag: Math.round((st.minMag || this.state.minMag) * 10) / 10 }, () => this._renderMarkers());
+    const go = (tries) => {
+      if (this._dead || this.state.armed) return;
+      if (!(this.state.raw || []).length && tries < 30) { setTimeout(() => go(tries + 1), 500); return; }
+      this.setState({ armed: true, autoArmed: false, seenIds: (this.state.raw || []).map((q) => q.id) });
+    };
+    go(0);
+  }
+  _nativeStart() {
+    const P = this._nativePlugin(); if (!P) return;
+    const s = this.state;
+    const args = { serverUrl: location.origin, radiusKm: s.radiusKm, minMag: s.minMag, lat: this.GUATE.lat, lng: this.GUATE.lng };
+    this.setState({ nativeError: '' });
+    Promise.resolve(P.requestNotifications()).catch(() => {})
+      .then(() => P.start(args))
+      .then((st) => { this._nativeOn = true; this.setState({ native: st }); })
+      .catch((e) => { this._nativeOn = false; this.setState({ nativeError: 'No se pudo iniciar el vigilante: ' + ((e && e.message) || e) }); });
+  }
+  _nativeStop() {
+    const P = this._nativePlugin(); if (!P) return;
+    Promise.resolve(P.stop()).then((st) => { this._nativeOn = false; this.setState({ native: st }); }).catch(() => {});
+  }
+  _nativeConfigure() {
+    const P = this._nativePlugin(); if (!P) return;
+    Promise.resolve(P.configure({ radiusKm: this.state.radiusKm, minMag: this.state.minMag })).catch(() => {});
+  }
+  _nativeFix(kind) {
+    const P = this._nativePlugin(); if (!P) return;
+    if (kind === 'notifications') {
+      Promise.resolve(P.requestNotifications()).then((st) => {
+        this.setState({ native: st });
+        if (!st || !st.notifications) P.openSettings({ kind: 'notifications' });
+      }).catch(() => P.openSettings({ kind: 'notifications' }));
+      return;
+    }
+    Promise.resolve(P.openSettings({ kind })).then(() => this._nativeRefresh()).catch(() => {});
+  }
+  _nativeTest() {
+    const P = this._nativePlugin(); if (!P) return;
+    this.setState({ nativeError: '' });
+    Promise.resolve(P.requestNotifications()).catch(() => {}).then(() => P.test({ delaySec: 10 }))
+      .then((st) => { this.setState({ native: st, nativeTestAt: Date.now() + 10000 }); })
+      .catch((e) => this.setState({ nativeError: 'No se pudo programar la prueba: ' + ((e && e.message) || e) }));
+  }
+  _nativeSilence() {
+    const P = this._nativePlugin(); if (!P) return;
+    Promise.resolve(P.silence()).then((st) => this.setState({ native: st })).catch(() => {});
+  }
+  // Solo para revisar este panel desde un navegador: abrir la página con ?nativedemo=1
+  _demoPlugin() {
+    let st = { running: false, connected: false, enabled: false, notifications: true, fullScreen: false, battery: false, dnd: false, dndActive: true, ringer: 'silent', alarmVolPct: 60, alarmActive: false, manufacturer: 'xiaomi', sdk: 34, radiusKm: 320, minMag: 4 };
+    const put = (o) => { st = Object.assign({}, st, o); return Promise.resolve(st); };
+    window.Capacitor = { isNativePlatform: () => true, Plugins: { QuakeAlarm: {
+      status: () => put({}), configure: () => put({}), test: () => put({}), silence: () => put({ alarmActive: false }), requestNotifications: () => put({ notifications: true }),
+      start: () => put({ running: true, connected: true, enabled: true }), stop: () => put({ running: false, connected: false, enabled: false }),
+      openSettings: (o) => put(o.kind === 'fullscreen' ? { fullScreen: true } : (o.kind === 'battery' ? { battery: true } : (o.kind === 'dnd' ? { dnd: true, dndActive: false } : {}))),
+    } } };
+  }
+  _nativeVals(s) {
+    const st = s.native || {}, avail = !!s.nativeAvail, loaded = !!s.native;
+    const OK = '#20c997', WARN = '#f5a623', BAD = '#fb5670', MUTE = '#7b8ca3';
+    const fix = (k) => () => this._nativeFix(k);
+    const essentials = !!(st.notifications && st.fullScreen && st.battery);
+    const ringerTxt = st.ringer === 'silent' ? 'El teléfono está en silencio' : (st.ringer === 'vibrate' ? 'El teléfono está en vibración' : 'El teléfono está en modo normal');
+    const dndBlock = !!(st.dndActive && !st.dnd);
+    const vol = (st.alarmVolPct != null) ? st.alarmVolPct + '%' : '—';
+    const rows = !(avail && loaded) ? [] : [
+      { label: 'Vigilante en segundo plano', detail: st.running ? (st.connected ? 'Activo: conexión en vivo con el servidor.' : 'Activo: reconectando con el servidor…') : 'Detenido. Armá la alarma para iniciarlo.', dot: st.running ? (st.connected ? OK : WARN) : MUTE, hasAction: false, actionLabel: '', onAction: () => {} },
+      { label: 'Notificaciones', detail: st.notifications ? 'Permitidas.' : 'Bloqueadas: sin ellas Android puede ocultar la alarma.', dot: st.notifications ? OK : BAD, hasAction: !st.notifications, actionLabel: 'Permitir', onAction: fix('notifications') },
+      { label: 'Encender la pantalla bloqueada', detail: st.fullScreen ? 'Permitido: la alarma enciende la pantalla y se muestra sobre el bloqueo.' : 'Falta el permiso de pantalla completa para encender el teléfono.', dot: st.fullScreen ? OK : BAD, hasAction: !st.fullScreen, actionLabel: 'Permitir', onAction: fix('fullscreen') },
+      { label: 'Sin ahorro de batería', detail: st.battery ? 'Sin restricción: Android no duerme el vigilante.' : 'Android puede dormir la app con la pantalla apagada. Quitá la restricción.', dot: st.battery ? OK : BAD, hasAction: !st.battery, actionLabel: 'Quitar', onAction: fix('battery') },
+      { label: 'Sonar en silencio', detail: ringerTxt + ': la alarma suena igual por el canal de alarma (volumen ' + vol + ').' + (dndBlock ? ' No molestar está activo: permití el acceso para atravesarlo.' : (st.dnd ? ' Atraviesa No molestar.' : ' Opcional: permití el acceso a No molestar para atravesar el modo "Silencio total".')), dot: dndBlock ? WARN : OK, hasAction: !st.dnd, actionLabel: 'Permitir', onAction: fix('dnd') },
+    ];
+    const running = !!st.running;
+    const testLeft = s.nativeTestAt ? Math.max(0, Math.ceil((s.nativeTestAt - Date.now()) / 1000)) : 0;
+    return {
+      nativeAvail: avail,
+      pushCardDisplay: avail ? 'none' : 'block',
+      nativeRows: rows,
+      nativeStateLabel: !loaded ? 'COMPROBANDO…' : (running && essentials ? 'ACTIVA' : (essentials ? 'LISTA' : 'REQUIERE AJUSTES')),
+      nativeStateColor: !loaded ? MUTE : (running && essentials ? OK : (essentials ? '#22d3ee' : WARN)),
+      nativeBorder: running && essentials ? 'rgba(32,201,151,0.35)' : 'rgba(120,160,200,0.14)',
+      nativeTest: () => this._nativeTest(),
+      nativeSilence: () => this._nativeSilence(),
+      nativeAlarmActive: !!st.alarmActive,
+      nativeTestPending: testLeft > 0, nativeTestLeft: testLeft,
+      hasNativeError: !!s.nativeError, nativeError: s.nativeError || '',
+      nativeOem: avail && /xiaomi|redmi|poco|huawei|honor|oppo|realme|vivo|oneplus|samsung/.test(st.manufacturer || ''),
+    };
+  }
+
+  _bgVals(s) {
+    const ps = s.push || {}, srv = ps.server || {};
+    const srvOk = ps.serverOk === true, pushOn = srv.pushEnabled !== false, subscribed = !!ps.subscribed, supported = ps.supported !== false, denied = ps.permission === 'denied';
+    const ios = !!ps.ios, standalone = !!ps.standalone, active = srvOk && subscribed;
+    const ago = srv.lastPollAt ? Math.max(0, Math.round((Date.now() - srv.lastPollAt) / 1000)) : null;
+    const testLeft = ps.testAt ? Math.max(0, Math.ceil((ps.testAt - Date.now()) / 1000)) : 0;
+    const n = srv.subscribers || 0;
+    return {
+      bgStateLabel: active ? 'ACTIVO' : (srvOk ? 'DISPONIBLE' : (ps.serverOk == null ? 'CONECTANDO…' : 'SIN SERVIDOR')),
+      bgStateColor: active ? '#20c997' : (srvOk ? '#22d3ee' : '#f5a623'),
+      bgCardBorder: active ? 'rgba(32,201,151,0.35)' : 'rgba(120,160,200,0.14)',
+      srvDot: srvOk ? '#20c997' : (ps.serverOk == null ? '#7b8ca3' : '#fb5670'),
+      srvText: srvOk
+        ? ((ps.live ? 'Conexión en vivo · ' : '') + 'revisa el USGS cada ' + Math.round((srv.pollMs || 30000) / 1000) + ' s · última revisión ' + (ago === null ? 'pendiente' : 'hace ' + ago + ' s') + ' · ' + n + (n === 1 ? ' dispositivo suscrito' : ' dispositivos suscritos') + (srv.alertsSent ? ' · ' + srv.alertsSent + ' alertas enviadas' : ''))
+        : (ps.serverOk == null ? 'Conectando con el servidor…' : 'No hay servidor en este origen. Abrí la versión publicada (Heroku): ahí corre el vigilante 24/7.'),
+      pushDot: subscribed ? '#20c997' : ((denied || !supported) ? '#fb5670' : '#7b8ca3'),
+      pushText: !supported ? (ios ? 'Este iPhone solo acepta push con la app instalada en la pantalla de inicio (iOS 16.4+). Instalala y abrila desde el ícono.' : 'Este navegador no soporta notificaciones push.')
+        : denied ? 'Permiso denegado. Habilitá las notificaciones de este sitio en los ajustes del navegador.'
+        : (srvOk && !pushOn) ? 'El servidor no tiene web-push instalado (npm install y redesplegar).'
+        : subscribed ? 'Activas: vibran y suenan con la pantalla bloqueada o la app cerrada.'
+        : 'Inactivas. Tocá "Activar" y aceptá el permiso de notificaciones.',
+      installDot: standalone ? '#20c997' : (ios ? '#f5a623' : '#7b8ca3'),
+      installText: standalone ? 'Sí: abierta como app.' : (ios ? 'Requerido en iPhone: Compartir ▸ "Agregar a inicio" y abrila desde el ícono.' : 'Opcional en Android (menú ▸ "Instalar app"): mejora la persistencia.'),
+      pushSubscribed: subscribed,
+      pushBtnLabel: ps.busy ? 'Activando…' : (subscribed ? 'Desactivar alertas en segundo plano' : 'Activar alertas en segundo plano'),
+      pushBtnBg: subscribed ? 'rgba(251,86,112,0.12)' : '#22d3ee',
+      pushBtnColor: subscribed ? '#fb5670' : '#06141a',
+      togglePush: () => (subscribed ? this.disablePush() : this.enablePush()),
+      testPush: () => this.testPush(),
+      testPending: testLeft > 0,
+      testCountdown: testLeft,
+      hasPushError: !!ps.error, pushError: ps.error || '',
+      guardText: (s.armed
+        ? ('Armada: ' + (ps.wakeLock ? 'la pantalla no se apaga sola ✓' : ('wakeLock' in navigator ? 'pantalla encendida pendiente' : 'este navegador no permite evitar el apagado de pantalla')) + ' · ' + (ps.keepAlive ? 'sonido anti-suspensión activo ✓ (la revisión sigue con la pantalla bloqueada)' : 'sonido anti-suspensión inactivo'))
+        : 'Al armar la alarma, la pantalla se mantiene encendida y un sonido inaudible evita que el teléfono suspenda la revisión al bloquearse.') + ' Al volver a la app se revisa el feed de inmediato.',
+      keepOpenNote: subscribed ? 'Con las alertas en segundo plano activas no hace falta tener la app abierta: el servidor avisa aunque el teléfono esté bloqueado.' : 'Sin alertas en segundo plano, mantené esta pestaña abierta (armada, con el modo guardián) para que la alarma funcione.',
+    };
+  }
+
+  _toRad(d) { return d * Math.PI / 180; }
+  _dist(lat, lng) {
+    const R = 6371, dLat = this._toRad(lat - this.GUATE.lat), dLng = this._toRad(lng - this.GUATE.lng);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(this._toRad(this.GUATE.lat)) * Math.cos(this._toRad(lat)) * Math.sin(dLng / 2) ** 2;
+    return Math.round(2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  }
+  _bearing(lat, lng) {
+    const y = Math.sin(this._toRad(lng - this.GUATE.lng)) * Math.cos(this._toRad(lat));
+    const x = Math.cos(this._toRad(this.GUATE.lat)) * Math.sin(this._toRad(lat)) - Math.sin(this._toRad(this.GUATE.lat)) * Math.cos(this._toRad(lat)) * Math.cos(this._toRad(lng - this.GUATE.lng));
+    const b = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+    const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+    return dirs[Math.round(b / 45) % 8];
+  }
+  _haversine(lat1, lng1, lat2, lng2) {
+    const R = 6371, dLat = this._toRad(lat2 - lat1), dLng = this._toRad(lng2 - lng1);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(this._toRad(lat1)) * Math.cos(this._toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    return Math.round(2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  }
+
+  _analyze(list) {
+    if (!list || !list.length) return 'Aún no hay suficientes datos del feed del USGS para un análisis.';
+    const n = list.length;
+    const avgMag = list.reduce((a, q) => a + q.magNum, 0) / n;
+    const main = list.reduce((a, q) => (q.magNum > a.magNum ? q : a), list[0]);
+    const nearby = list.filter((q) => q.id !== main.id && typeof q.lat === 'number' && this._haversine(q.lat, q.lng, main.lat, main.lng) <= 200).length;
+    let txt;
+    if (main.magNum >= 6 && nearby >= 3) {
+      txt = 'De los últimos ' + n + ' sismos regionales, el más fuerte fue M' + main.mag + ' cerca de ' + main.place + '. Otros ' + nearby + ' eventos ocurrieron a menos de 200 km de ese punto — el patrón es consistente con una secuencia de réplicas, no con sismos independientes entre sí. Por la Ley de Omori, la frecuencia de réplicas cae con el tiempo, pero pueden seguir sintiéndose por días o semanas, casi siempre de menor magnitud que el sismo principal.';
+    } else if (main.magNum >= 6) {
+      txt = 'El evento más fuerte reciente en la región fue M' + main.mag + ' cerca de ' + main.place + '. El catálogo aún no muestra un enjambre de réplicas cercano, pero tras un sismo M6+ es normal que sigan apareciendo réplicas menores en los próximos días.';
+    } else {
+      txt = 'La actividad regional de los últimos ' + n + ' eventos se mantiene en el rango de fondo habitual (magnitud promedio M' + avgMag.toFixed(1) + ', máxima M' + main.mag + '), sin un enjambre ni una secuencia de réplicas evidente en este momento.';
+    }
+    txt += ' La fuente principal de sismos grandes que afectan a Guatemala es la subducción de la placa de Cocos bajo el Caribe, frente al Pacífico; las fallas de Motagua y Chixoy-Polochic generan sismos más superficiales tierra adentro.';
+    return txt;
+  }
+
+  _ago(ts) {
+    const m = Math.max(0, Math.round((Date.now() - ts) / 60000));
+    if (m < 1) return 'ahora'; if (m < 60) return 'hace ' + m + ' min';
+    const h = Math.round(m / 60); return h < 24 ? 'hace ' + h + ' h' : 'hace ' + Math.round(h / 24) + ' d';
+  }
+
+  _fallback() {
+    const d = 86400000, now = Date.now();
+    return [
+      { id: 'mx1', mag: 7.4, place: '136 km SO de Cd. Hidalgo, Chiapas', time: now - 3 * 3600000, depth: 10, lat: 14.55, lng: -92.6 },
+      { id: 'vz2', mag: 7.5, place: '28 km SE de Yumare, Venezuela', time: now - 23 * d, depth: 10, lat: 10.62, lng: -68.52 },
+      { id: 'sv1', mag: 4.8, place: 'Frente a la costa de El Salvador', time: now - 14 * 3600000, depth: 42, lat: 13.0, lng: -89.2 },
+    ];
+  }
+
+  _enrich(list) {
+    return list.map((q) => {
+      const distance = this._dist(q.lat, q.lng);
+      const bearing = this._bearing(q.lat, q.lng);
+      const relevant = distance <= 2500;
+      const magColor = q.mag >= 6 ? '#fb5670' : q.mag >= 4.5 ? '#f5a623' : '#22d3ee';
+      return {
+        id: q.id, mag: q.mag.toFixed(1), magNum: q.mag, place: q.place, distanceNum: distance,
+        lat: q.lat, lng: q.lng, timeRaw: q.time,
+        distance: distance.toLocaleString('es-GT'), bearing, timeAgo: this._ago(q.time),
+        magColor, magBg: q.mag >= 6 ? 'rgba(251,86,112,0.16)' : q.mag >= 4.5 ? 'rgba(245,166,35,0.16)' : 'rgba(34,211,238,0.14)',
+        cardBg: relevant && q.mag >= 4.5 ? 'rgba(251,86,112,0.06)' : 'rgba(20,30,48,0.55)',
+        cardBorder: relevant && q.mag >= 4.5 ? 'rgba(251,86,112,0.25)' : 'rgba(120,160,200,0.12)',
+      };
+    });
+  }
+
+  // Preferir el servidor QUAKE ALERT: una sola consulta al USGS cada 30 s para todos los clientes (sin CORS, cacheada).
+  // Respaldo: el feed del USGS directo (funciona aun sin servidor, p. ej. abriendo el archivo local).
+  async _fetchFeed() {
+    const ps = (window.QAPush && window.QAPush.state) || {};
+    if (ps.serverOk) {
+      try {
+        const r = await fetch('./api/quakes', { cache: 'no-store' });
+        if (r.ok) { const d = await r.json(); if (d && Array.isArray(d.events) && d.events.length) return { feats: d.events.slice(), via: 'server' }; }
+      } catch (e) {}
+    }
+    const res = await fetch(this.FEED, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const feats = (data.features || []).map((f) => {
+      const c = f.geometry && f.geometry.coordinates || [0, 0, 0];
+      const p = f.properties || {};
+      return { id: f.id, mag: p.mag, place: p.place || 'Sismo', time: p.time, depth: c[2], lat: c[1], lng: c[0] };
+    }).filter((q) => typeof q.mag === 'number');
+    return { feats, via: 'usgs' };
+  }
+
+  async _load(isPoll) {
+    if (!isPoll) this.setState({ loading: true, error: null });
+    else this.setState({ checking: true });
+    try {
+      const { feats, via } = await this._fetchFeed();
+      feats.sort((a, b) => b.time - a.time);
+      const regional = feats.filter((f) => this._dist(f.lat, f.lng) <= this.REGION_KM);
+      const enriched = this._enrich(regional.slice(0, 20));
+      this.setState({ loading: false, checking: false, pollFailed: false, raw: feats, quakes: enriched, source: 'live', feedVia: via, lastCheck: new Date().toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' }) }, () => this._renderMarkers());
+      const bigOne = enriched.find((q) => q.magNum >= this.AUTO_ARM_MAG && q.distanceNum <= this.state.radiusKm);
+      if (bigOne && !this.state.armed) this._autoArm(bigOne);
+      else if (isPoll && this.state.armed) this._checkAlarm(enriched);
+    } catch (e) {
+      if (isPoll) { this.setState({ checking: false, pollFailed: true }); return; }
+      const fb = this._fallback().filter((f) => this._dist(f.lat, f.lng) <= this.REGION_KM);
+      this.setState({ loading: false, error: 'Sin conexión al feed del USGS ahora mismo. Mostrando eventos recientes en caché.', raw: fb, quakes: this._enrich(fb), source: 'cache', lastCheck: '—' });
+    }
+  }
+
+  // Un sismo M5+ dentro del radio arma la alarma solo, sin esperar el toque del usuario.
+  _autoArm(hit) {
+    this._ensureAudio();
+    if (window.QAPush) window.QAPush.guard(true);
+    const now = Date.now(), RECENT_MS = 15 * 60 * 1000;
+    const seeds = (this.state.raw || []).filter((q) => {
+      if (q.id === hit.id) return false;
+      const dist = (typeof q.lat === 'number') ? this._dist(q.lat, q.lng) : Infinity;
+      const qualifies = dist <= this.state.radiusKm && q.mag >= this.state.minMag;
+      return !(qualifies && (now - q.time) <= RECENT_MS);
+    }).map((q) => q.id).concat([hit.id]);
+    this.setState({ armed: true, autoArmed: true, seenIds: seeds });
+    this._nativeStart();
+    if (window.QADB) window.QADB.log('Alarma armada automáticamente · sismo M' + hit.mag + ' cerca de ' + hit.place, { color: '#fb5670' });
+    this._fire(hit.mag, hit.place, hit.distance, hit.bearing);
+  }
+
+  _checkAlarm(enriched) {
+    const seen = this.state.seenIds || [];
+    const hits = enriched.filter((q) => !seen.includes(q.id) && q.distanceNum <= this.state.radiusKm && q.magNum >= this.state.minMag);
+    if (hits.length) this._fire(hits[0].mag, hits[0].place, hits[0].distance, hits[0].bearing);
+    this.setState({ seenIds: enriched.map((q) => q.id) });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const relevant = (s.quakes || []).filter((q) => q.distanceNum <= s.radiusKm && q.magNum >= s.minMag);
+    const nearest = relevant[0] || null;
+    const countdown = this._nextAt ? Math.max(0, Math.ceil((this._nextAt - Date.now()) / 1000)) : s.pollSec;
+    return {
+      countdown,
+      checking: !!s.checking,
+      pollFailed: !!s.pollFailed,
+      tickDotColor: s.checking ? '#f5a623' : (s.pollFailed ? '#fb5670' : '#22d3ee'),
+      tickText: s.checking ? 'Revisando el feed ahora…' : (s.pollFailed ? 'Falló la última revisión · reintentando…' : ('Revisando cada ' + s.pollSec + 's' + (s.feedVia === 'server' ? ' vía servidor QUAKE ALERT' : ' · USGS directo') + ' · próxima en ' + countdown + 's')),
+      statusDot: s.armed ? '#20c997' : '#5f7187',
+      heroBg: s.alarmFlash ? 'rgba(251,86,112,0.14)' : (s.armed ? 'rgba(32,201,151,0.06)' : 'rgba(20,30,48,0.6)'),
+      heroBorder: s.alarmFlash ? 'rgba(251,86,112,0.5)' : (s.armed ? 'rgba(32,201,151,0.3)' : 'rgba(120,160,200,0.16)'),
+      isArmed: s.armed,
+      toggleArm: () => this.toggleArm(),
+      ringBg: s.armed ? 'rgba(32,201,151,0.14)' : 'rgba(255,255,255,0.04)',
+      ringBorder: s.armed ? 'rgba(32,201,151,0.5)' : 'rgba(120,160,200,0.25)',
+      ringIcon: s.armed ? '◉' : '○',
+      ringIconColor: s.armed ? '#20c997' : '#7b8ca3',
+      armLabel: s.armed ? (s.autoArmed ? '⚡ Armada automáticamente' : 'Alarma ARMADA') : 'Tocá para armar la alarma',
+      armSub: s.armed ? (s.autoArmed ? 'Se armó sola por un sismo M' + this.AUTO_ARM_MAG + '+ cerca de vos. Vibrará, sonará y hará flash ante nuevos sismos.' : 'Vibrará (Android), sonará y hará flash si detecta un sismo dentro de tu radio.') : ('Mientras esté apagada igual vigilamos: cualquier sismo M' + this.AUTO_ARM_MAG + '+ dentro de tu radio arma la alarma solo.'),
+      alarmFlash: s.alarmFlash,
+      strobeBg: s.strobeOn ? 'rgba(251,86,112,0.9)' : 'rgba(251,86,112,0.16)',
+      recentAnim: s.alarmFlash ? 'qaShake 0.5s ease-in-out' : 'none',
+      hasRecent: !!nearest,
+      recentMag: nearest ? nearest.mag : '',
+      recentPlace: nearest ? nearest.place : '',
+      recentMeta: nearest ? (nearest.timeAgo + ' · ' + nearest.distance + ' km · rumbo ' + nearest.bearing) : '',
+      totalCount: (s.quakes || []).length || '—',
+      relevantCount: relevant.length,
+      lastCheck: s.lastCheck || '—',
+      mapRef: (el) => { this._mapEl = el; },
+      radiusKm: s.radiusKm, minMag: s.minMag, pollSec: s.pollSec,
+      setRadius: (e) => this.setRadius(e), setMinMag: (e) => this.setMinMag(e), setPollSec: (e) => this.setPollSec(e),
+      vibrateSupported: (typeof navigator !== 'undefined' && navigator.vibrate) ? 'disponible en este navegador ✓' : 'no disponible en este navegador',
+      quakes: s.quakes || [],
+      hasError: !!s.error, errorMsg: s.error || '',
+      chartCount: (s.quakes || []).length,
+      chartBars: (s.quakes || []).slice(0, 20).slice().reverse().map((q) => ({
+        heightPct: Math.max(6, Math.min(100, (q.magNum / 8) * 100)),
+        color: q.magNum >= 6 ? '#fb5670' : q.magNum >= 4.5 ? '#f5a623' : '#22d3ee',
+        magLabel: q.mag,
+      })),
+      analysisText: this._analyze(s.quakes || []),
+      dimmed: !!s.dimmed, toggleDim: () => this.toggleDim(),
+      clockText: new Date().toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' }),
+      ...this._bgVals(s),
+      ...this._nativeVals(s),
+    };
+  }
+}
+</script>
+</body>
+</html>

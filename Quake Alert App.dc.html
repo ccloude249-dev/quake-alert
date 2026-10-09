@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUAKE ALERT">
+<link rel="manifest" href="manifest-app.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="./qa-db.js"></script>
+<script src="./qa-push.js"></script>
+<script src="./qa-native.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #0c1119; }
+  @keyframes qaRing { 0% { transform: scale(0.2); opacity: 0.9; } 100% { transform: scale(1.05); opacity: 0; } }
+  @keyframes qaPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  @keyframes qaShake { 0%,100% { transform: translate(0,0); } 20% { transform: translate(-2px,1px); } 40% { transform: translate(2px,-1px); } 60% { transform: translate(-1px,-1px); } 80% { transform: translate(1px,1px); } }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  /* Tema claro/oscuro de la app — los hijos usan var(); solo cambia data-theme */
+  .qa-app {
+    --outer-bg: #0c1119;
+    --app-bg: linear-gradient(180deg,#0c1320,#0a0f18);
+    --card: rgba(20,30,48,0.6);
+    --card2: rgba(20,30,48,0.8);
+    --border: rgba(120,160,200,0.16);
+    --text: #ffffff;
+    --text2: #cdd9e8;
+    --input-bg: #0b121c;
+    --hero: linear-gradient(180deg,rgba(20,32,42,0.9),rgba(12,20,28,0.9));
+    --nav-off: #5f7187;
+    --nav-lbl: #7b8ca3;
+  }
+  .qa-app[data-theme="light"] {
+    --outer-bg: #dbe3ec;
+    --app-bg: linear-gradient(180deg,#f2f6fb,#e6edf5);
+    --card: #ffffff;
+    --card2: #ffffff;
+    --border: rgba(20,45,80,0.12);
+    --text: #0c1320;
+    --text2: #33475f;
+    --input-bg: #eef3f9;
+    --hero: linear-gradient(180deg,#eafaf3,#d8f2e9);
+    --nav-off: #93a1b3;
+    --nav-lbl: #5f7187;
+  }
+  @media (max-width: 520px) {
+    .qa-mobile-page { padding: 0 !important; display: block !important; }
+    .qa-phone-wrap { transform: none !important; margin: 0 !important; width: 100% !important; }
+    .qa-phone-wrap > * { width: 100% !important; min-width: 0 !important; max-width: 100% !important; }
+  }
+</style>
+</helmet>
+<div class="qa-app qa-mobile-page" data-theme="{{ theme }}" style="min-height:100vh; width:100%; background:radial-gradient(90% 60% at 50% 0%, rgba(34,211,238,0.06), transparent 60%), var(--outer-bg); font-family:'IBM Plex Sans',sans-serif; display:flex; flex-direction:column; align-items:center; padding:48px 24px 64px;">
+
+  <div class="qa-phone-wrap" style="display:flex; justify-content:center; width:100%;">
+  <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ darkOn }}" hint-size="402px,874px">
+
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <div style="min-height:874px; background:var(--app-bg); display:flex; flex-direction:column; padding:64px 22px 28px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <p style="font-size:15px; color:var(--text2); margin:0;">Buenas tardes,</p>
+            <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:var(--text); margin:3px 0 0;">{{ firstName }}</h2>
+            <p style="font-size:13px; color:var(--nav-lbl); margin:4px 0 0;">Ciudad de Guatemala</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button onClick="{{ toggleTheme }}" title="{{ themeTitle }}" style="border:1px solid var(--border); cursor:pointer; width:36px; height:36px; border-radius:50%; background:var(--card); color:#22d3ee; font-size:16px; display:flex; align-items:center; justify-content:center; padding:0;">{{ themeIcon }}</button>
+            <div style="display:flex; align-items:center; gap:6px; padding:8px 12px; border-radius:999px; background:{{ onlineBg }}; border:1px solid {{ onlineBorder }};">
+              <span style="width:7px; height:7px; border-radius:50%; background:{{ onlineColor }};"></span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; color:{{ onlineColor }};">{{ onlineLabel }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:24px; position:relative; border-radius:24px; overflow:hidden; background:radial-gradient(120% 90% at 50% 0%, rgba(32,201,151,0.18), transparent 60%), var(--hero); border:1px solid rgba(32,201,151,0.28); padding:34px 26px 30px; text-align:center;">
+          <div style="position:relative; width:96px; height:96px; margin:0 auto 18px;">
+            <div style="position:absolute; inset:0; border:1.5px solid rgba(32,201,151,0.4); border-radius:50%; animation:qaRing 3.4s ease-out infinite;"></div>
+            <div style="position:absolute; inset:0; border:1.5px solid rgba(32,201,151,0.4); border-radius:50%; animation:qaRing 3.4s ease-out infinite 1.7s;"></div>
+            <div style="position:absolute; inset:18px; border-radius:50%; background:linear-gradient(135deg,#20c997,#0e7c5b); display:flex; align-items:center; justify-content:center; box-shadow:0 0 30px rgba(32,201,151,0.5);">
+              <span style="font-size:30px; color:#06140e;">{{ heroGlyph }}</span>
+            </div>
+          </div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:24px; color:var(--text);">{{ heroTitle }}</div>
+          <p style="font-size:14px; color:#9fb4ad; margin:8px 0 0; line-height:1.45;">{{ heroLine }}<br><span>{{ heroLive }}</span></p>
+        </div>
+
+        <sc-if value="{{ wdPending }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:14px; border-radius:16px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.35); padding:14px 16px; display:flex; align-items:center; gap:12px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; color:#22d3ee; min-width:46px; text-align:center;">{{ wdLeft }}</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:14px; color:var(--text); font-weight:500;">Simulacro de alarma en camino</div>
+              <div style="font-size:12px; color:#7b8ca3; margin-top:2px; line-height:1.4;">Deja esta pantalla encendida: suena y vibra al llegar a 0. En el APK Android también suena con el teléfono dormido.</div>
+            </div>
+            <button onClick="{{ wdCancel }}" style="flex-shrink:0; min-height:44px; padding:0 12px; border:1px solid var(--border); border-radius:10px; cursor:pointer; background:transparent; color:#7b8ca3; font-family:'IBM Plex Sans',sans-serif; font-size:12px;">Cancelar</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ nativeAvail }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:14px; background:var(--card); border:1px solid {{ natBorder }}; border-radius:16px; padding:16px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="width:8px; height:8px; border-radius:50%; background:{{ natChipColor }}; flex-shrink:0;"></span>
+              <div style="flex:1; min-width:0; font-size:14px; color:var(--text); font-weight:500;">Alarma sísmica</div>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; color:{{ natChipColor }}; border:1px solid {{ natChipColor }}; border-radius:999px; padding:3px 9px; white-space:nowrap;">{{ natChip }}</span>
+            </div>
+            <div style="font-size:12px; color:#7b8ca3; margin-top:8px; line-height:1.45;">{{ natText }}</div>
+            <sc-for list="{{ natRows }}" as="r" hint-placeholder-count="0">
+              <div style="display:flex; align-items:center; gap:10px; margin-top:12px;">
+                <span style="width:7px; height:7px; border-radius:50%; background:#f5a623; flex-shrink:0;"></span>
+                <div style="flex:1; min-width:0;"><div style="font-size:13px; color:var(--text);">{{ r.label }}</div><div style="font-size:11px; color:#7b8ca3; margin-top:1px; line-height:1.4;">{{ r.detail }}</div></div>
+                <button onClick="{{ r.onAction }}" style="flex-shrink:0; min-height:44px; padding:0 14px; border:1px solid rgba(34,211,238,0.4); border-radius:10px; cursor:pointer; background:rgba(34,211,238,0.08); color:#22d3ee; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">{{ r.actionLabel }}</button>
+              </div>
+            </sc-for>
+            <div style="display:flex; gap:9px; margin-top:14px;">
+              <button onClick="{{ natPrimary }}" style="flex:1; min-height:46px; border:1px solid {{ natPrimaryBorder }}; border-radius:12px; cursor:pointer; background:{{ natPrimaryBg }}; color:{{ natPrimaryColor }}; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;">{{ natPrimaryLabel }}</button>
+              <sc-if value="{{ natCanOff }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ natOff }}" style="min-height:46px; padding:0 14px; border:1px solid var(--border); border-radius:12px; cursor:pointer; background:transparent; color:#7b8ca3; font-family:'IBM Plex Sans',sans-serif; font-size:13px;">Desactivar</button>
+              </sc-if>
+            </div>
+            <sc-if value="{{ natTestPending }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:12px; border-radius:12px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.35); padding:12px 14px; display:flex; align-items:center; gap:12px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; color:#22d3ee; min-width:44px; text-align:center;">{{ natTestLeft }}</div>
+                <div style="flex:1; min-width:0; font-size:12px; color:var(--text2); line-height:1.45;">Simulacro en camino. Bloquea el teléfono o déjalo dormir: se enciende, suena y vibra.</div>
+                <button onClick="{{ natCancel }}" style="flex-shrink:0; min-height:44px; padding:0 12px; border:1px solid var(--border); border-radius:10px; cursor:pointer; background:transparent; color:#7b8ca3; font-family:'IBM Plex Sans',sans-serif; font-size:12px;">Cancelar</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ natHasError }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:8px; font-size:12px; color:#f5a623; line-height:1.4;">{{ natError }}</div>
+            </sc-if>
+            <sc-if value="{{ natOem }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:flex; align-items:center; gap:10px;">
+                <div style="flex:1; min-width:0; font-size:11px; color:#7b8ca3; line-height:1.45;">En tu marca de teléfono activá también "Inicio automático" o "Sin restricciones" para esta app: si no, el fabricante puede cerrar la alarma.</div>
+                <button onClick="{{ natOpenApp }}" style="flex-shrink:0; min-height:44px; padding:0 14px; border:1px solid var(--border); border-radius:10px; cursor:pointer; background:transparent; color:#22d3ee; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">Ajustes</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showSessionRow }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:6px; display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span style="font-size:11px; color:#5f7187;">{{ natUser }}</span>
+            <button onClick="{{ natLogout }}" style="min-height:44px; padding:0 12px; border:none; background:transparent; cursor:pointer; color:#22d3ee; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12px;">Cerrar sesión</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showPushCard }}" hint-placeholder-val="{{ true }}">
+        <div style="margin-top:14px; background:var(--card); border:1px solid {{ pushCardBorder }}; border-radius:16px; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="width:8px; height:8px; border-radius:50%; background:{{ pushDot }}; flex-shrink:0;"></span>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:14px; color:var(--text); font-weight:500;">Alertas con pantalla bloqueada</div>
+              <div style="font-size:12px; color:#7b8ca3; margin-top:2px; line-height:1.4;">{{ pushText }}</div>
+            </div>
+            <button onClick="{{ pushAction }}" style="border:none; cursor:pointer; min-height:38px; padding:0 14px; border-radius:10px; background:{{ pushBtnBg }}; color:{{ pushBtnColor }}; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; white-space:nowrap;">{{ pushBtnLabel }}</button>
+          </div>
+          <sc-if value="{{ pushTestPending }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:10px; font-size:12px; color:#22d3ee;">Bloqueá el teléfono ahora · la prueba llega en {{ pushTestCountdown }} s</div>
+          </sc-if>
+          <sc-if value="{{ pushHasError }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:8px; font-size:12px; color:#f5a623; line-height:1.4;">{{ pushError }}</div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;">
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#7b8ca3;">FAMILIA</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#20c997; margin-top:6px;">{{ famSafe }} / {{ famTotal }} <span style="font-size:14px; color:#9fb4ad; font-weight:400;">a salvo</span></div>
+          </div>
+          <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#7b8ca3;">PREPARACIÓN</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#22d3ee; margin-top:6px;">92 <span style="font-size:14px; color:#9fb4ad; font-weight:400;">/ 100</span></div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px 18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <span style="font-size:14px; color:var(--text); font-weight:500;">Tu red familiar</span>
+            <span onClick="{{ goFamily }}" style="font-size:12px; color:#22d3ee; cursor:pointer;">Ver todos</span>
+          </div>
+          <div style="display:flex; gap:18px; flex-wrap:wrap;">
+            <sc-for list="{{ famPreview }}" as="p" hint-placeholder-count="3">
+              <div style="text-align:center;"><div style="width:48px; height:48px; border-radius:50%; background:{{ p.avatar }}; margin:0 auto;"></div><div style="font-size:12px; color:#9fb4ad; margin-top:6px;">{{ p.short }}</div></div>
+            </sc-for>
+            <div onClick="{{ goFamily }}" style="text-align:center; cursor:pointer;"><div style="width:48px; height:48px; border-radius:50%; border:1.5px dashed rgba(120,160,200,0.4); display:flex; align-items:center; justify-content:center; color:#7b8ca3; font-size:22px; margin:0 auto;">+</div><div style="font-size:12px; color:#9fb4ad; margin-top:6px;">Añadir</div></div>
+          </div>
+        </div>
+
+        <button onClick="{{ startAlert }}" style="margin-top:20px; border:none; cursor:pointer; width:100%; padding:18px; border-radius:16px; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; box-shadow:0 8px 24px rgba(34,211,238,0.3); display:flex; align-items:center; justify-content:center; gap:10px;">
+          <span style="font-size:14px;">▶</span> Probar alerta sísmica
+        </button>
+
+        <div style="margin-top:auto; padding-top:22px; display:flex; justify-content:space-around; align-items:center;">
+          <div style="text-align:center;"><div style="font-size:20px; color:#22d3ee;">◆</div><div style="font-size:11px; color:#22d3ee; margin-top:4px;">Inicio</div></div>
+          <div onClick="{{ goFamily }}" style="text-align:center; cursor:pointer;"><div style="font-size:20px; color:#5f7187;">♥</div><div style="font-size:11px; color:#7b8ca3; margin-top:4px;">Familia</div></div>
+          <div onClick="{{ goAssistant }}" style="text-align:center; cursor:pointer;"><div style="font-size:20px; color:#5f7187;">✦</div><div style="font-size:11px; color:#7b8ca3; margin-top:4px;">Asistente</div></div>
+          <div onClick="{{ goMapa }}" style="text-align:center; cursor:pointer;"><div style="font-size:20px; color:#5f7187;">▣</div><div style="font-size:11px; color:#7b8ca3; margin-top:4px;">Mapa</div></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isAlert }}" hint-placeholder-val="{{ true }}">
+      <div style="min-height:874px; background:radial-gradient(90% 60% at 50% 30%, rgba(251,86,112,0.3), transparent 65%), linear-gradient(180deg,#23070f,#160409); display:flex; flex-direction:column; align-items:center; padding:72px 22px 34px; text-align:center;">
+        <div style="display:flex; align-items:center; gap:9px;">
+          <span style="width:11px; height:11px; border-radius:50%; background:#fb5670; animation:qaPulse 0.8s ease-in-out infinite;"></span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:14px; letter-spacing:0.22em; color:#fb5670;">{{ alertKicker }}</span>
+        </div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#fff; margin-top:26px;">{{ alertTitle }}</div>
+        <p style="font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.16em; color:#f4a9b3; margin:10px 0 0;">{{ alertBigLabel }}</p>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:168px; line-height:0.9; color:#fff; text-shadow:0 0 60px rgba(251,86,112,0.7); margin:4px 0;">{{ alertBig }}</div>
+        <p style="font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:20px; color:#fb5670; margin:0 0 4px;">{{ alertUnit }}</p>
+
+        <div style="display:flex; gap:10px; margin-top:22px; width:100%;">
+          <div style="flex:1; padding:12px 0; border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#f4a9b3;">MAGNITUD</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#fff;">{{ alertMag }}</div></div>
+          <div style="flex:1; padding:12px 0; border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#f4a9b3;">INTENSIDAD</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#f5a623;">{{ alertIntensity }}</div></div>
+          <div style="flex:1; padding:12px 0; border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#f4a9b3;">DISTANCIA</div><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:#fff;">{{ alertDist }}</div></div>
+        </div>
+        <sc-if value="{{ isRealAlert }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ endShaking }}" style="margin-top:18px; border:none; cursor:pointer; width:100%; padding:16px; border-radius:16px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px;">Ya pasó · ¿Estás bien?</button>
+        </sc-if>
+
+        <div style="margin-top:auto; width:100%; background:rgba(10,5,8,0.6); border:1px solid rgba(34,211,238,0.3); border-radius:18px; padding:20px; display:flex; align-items:center; gap:14px; text-align:left;">
+          <div style="width:46px; height:46px; flex-shrink:0; border-radius:12px; background:rgba(34,211,238,0.16); display:flex; align-items:center; justify-content:center; font-size:22px; color:#22d3ee;">✦</div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#22d3ee;">ASISTENTE IA</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px; color:#fff; margin-top:3px;">Agáchate, cúbrete y sujétate</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isShaking }}" hint-placeholder-val="{{ true }}">
+      <div style="min-height:874px; background:radial-gradient(90% 60% at 50% 25%, rgba(245,166,35,0.22), transparent 65%), linear-gradient(180deg,#22140a,#140b05); display:flex; flex-direction:column; padding:72px 22px 34px;">
+        <div style="text-align:center; animation:qaShake 0.4s linear infinite;">
+          <div style="display:inline-flex; align-items:center; gap:9px;">
+            <span style="width:11px; height:11px; border-radius:50%; background:#f5a623; animation:qaPulse 0.6s ease-in-out infinite;"></span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:14px; letter-spacing:0.22em; color:#f5a623;">SISMO EN CURSO</span>
+          </div>
+          <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:40px; color:#fff; margin:18px 0 0; line-height:1.05;">Mantén la calma<br>Protégete ahora</h2>
+        </div>
+
+        <div style="margin-top:34px; display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; align-items:center; gap:14px; padding:18px; border-radius:14px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);"><span style="width:30px; height:30px; border-radius:50%; background:#f5a623; color:#1a0e02; font-family:'Space Grotesk',sans-serif; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0;">1</span><span style="font-size:18px; color:#eaf1f8;">Aléjate de ventanas y vidrios</span></div>
+          <div style="display:flex; align-items:center; gap:14px; padding:18px; border-radius:14px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);"><span style="width:30px; height:30px; border-radius:50%; background:#f5a623; color:#1a0e02; font-family:'Space Grotesk',sans-serif; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0;">2</span><span style="font-size:18px; color:#eaf1f8;">Cúbrete bajo una mesa firme</span></div>
+          <div style="display:flex; align-items:center; gap:14px; padding:18px; border-radius:14px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);"><span style="width:30px; height:30px; border-radius:50%; background:#f5a623; color:#1a0e02; font-family:'Space Grotesk',sans-serif; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0;">3</span><span style="font-size:18px; color:#eaf1f8;">No uses elevadores ni corras</span></div>
+        </div>
+
+        <button onClick="{{ endShaking }}" style="margin-top:auto; border:none; cursor:pointer; width:100%; padding:18px; border-radius:16px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px;">El temblor terminó</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isAftermath }}" hint-placeholder-val="{{ true }}">
+      <div style="min-height:874px; background:var(--app-bg); display:flex; flex-direction:column; padding:72px 22px 34px;">
+        <div style="text-align:center;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:0.2em; color:#20c997;">EL SISMO TERMINÓ</div>
+          <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:38px; color:var(--text); margin:14px 0 6px;">¿Estás bien?</h2>
+          <p style="font-size:15px; color:#9fb4ad; margin:0;">Avisa a tu familia en un toque</p>
+        </div>
+
+        <sc-if value="{{ notChosen }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:38px; display:flex; flex-direction:column; gap:14px;">
+            <button onClick="{{ pickBien }}" style="border:none; cursor:pointer; width:100%; padding:24px; border-radius:18px; background:rgba(32,201,151,0.14); border:1.5px solid rgba(32,201,151,0.45); color:#fff; display:flex; align-items:center; gap:16px;">
+              <span style="width:16px; height:16px; border-radius:50%; background:#20c997; flex-shrink:0;"></span>
+              <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:23px;">Estoy bien</span>
+            </button>
+            <button onClick="{{ pickAyuda }}" style="border:none; cursor:pointer; width:100%; padding:24px; border-radius:18px; background:rgba(245,166,35,0.14); border:1.5px solid rgba(245,166,35,0.45); color:#fff; display:flex; align-items:center; gap:16px;">
+              <span style="width:16px; height:16px; border-radius:50%; background:#f5a623; flex-shrink:0;"></span>
+              <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:23px;">Necesito ayuda</span>
+            </button>
+            <button onClick="{{ pickMedica }}" style="border:none; cursor:pointer; width:100%; padding:24px; border-radius:18px; background:rgba(251,86,112,0.14); border:1.5px solid rgba(251,86,112,0.5); color:#fff; display:flex; align-items:center; gap:16px;">
+              <span style="width:16px; height:16px; border-radius:50%; background:#fb5670; flex-shrink:0;"></span>
+              <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:23px;">Emergencia médica</span>
+            </button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ chosen }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:38px; text-align:center; background:var(--card); border:1px solid var(--border); border-radius:20px; padding:34px 24px;">
+            <div style="width:70px; height:70px; border-radius:50%; background:rgba(32,201,151,0.16); display:flex; align-items:center; justify-content:center; margin:0 auto 18px; font-size:32px; color:{{ chosenColor }};">✓</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px; color:var(--text);">Tu familia ya lo sabe</div>
+            <p style="font-size:15px; color:#9fb4ad; margin:10px 0 0; line-height:1.45;">Estado enviado: <span style="color:{{ chosenColor }}; font-weight:500;">{{ chosenLabel }}</span><br>Notificamos a {{ famCount }} contactos al instante</p>
+          </div>
+        </sc-if>
+
+        <button onClick="{{ goFamily }}" style="margin-top:auto; border:none; cursor:pointer; width:100%; padding:18px; border-radius:16px; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px;">Ver el estado de mi familia</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isFamily }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:874px; background:var(--app-bg); display:flex; flex-direction:column; padding:64px 22px 28px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:var(--text); margin:0;">Tu familia</h2>
+          <span style="font-size:13px; color:#9fb4ad;">{{ famTotalPersons }}</span>
+        </div>
+
+        <div style="margin-top:18px; position:relative; height:180px; border-radius:20px; overflow:hidden; background:radial-gradient(circle at 55% 45%, rgba(34,211,238,0.1), rgba(8,13,24,0.95) 70%), #080d18; border:1px solid rgba(120,160,200,0.16);">
+          <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.07) 1px,transparent 1px); background-size:30px 30px;"></div>
+          <div style="position:absolute; left:30%; top:40%; width:12px; height:12px; margin:-6px; background:#20c997; border-radius:50%; box-shadow:0 0 14px 3px rgba(32,201,151,0.7);"></div>
+          <div style="position:absolute; left:58%; top:34%; width:12px; height:12px; margin:-6px; background:#20c997; border-radius:50%; box-shadow:0 0 14px 3px rgba(32,201,151,0.7);"></div>
+          <div style="position:absolute; left:46%; top:64%; width:12px; height:12px; margin:-6px; background:#22d3ee; border-radius:50%; box-shadow:0 0 14px 3px rgba(34,211,238,0.8);"></div>
+          <div style="position:absolute; left:74%; top:60%; width:12px; height:12px; margin:-6px; background:#f5a623; border-radius:50%; box-shadow:0 0 14px 3px rgba(245,166,35,0.7);"></div>
+          <div style="position:absolute; left:16px; bottom:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">UBICACIÓN EN VIVO · AUTORIZADA</div>
+        </div>
+
+        <div style="margin-top:16px; display:flex; flex-direction:column; gap:11px;">
+          <div style="display:flex; align-items:center; gap:13px; padding:15px 16px; border-radius:14px; background:rgba(34,211,238,0.07); border:1px solid rgba(34,211,238,0.25);"><span style="width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#9aa7b8,#5f7187); flex-shrink:0;"></span><div style="flex:1;"><div style="font-size:17px; color:var(--text);">{{ firstName }} <span style="font-size:13px; color:#7b8ca3;">(tú)</span></div><div style="font-size:13px; color:#7b8ca3;">Casa · ahora</div></div><span style="padding:5px 12px; border-radius:999px; font-size:12px; background:rgba(32,201,151,0.18); color:{{ anaColor }};">{{ anaLabel }}</span></div>
+          <sc-for list="{{ family }}" as="f" hint-placeholder-count="3">
+            <div style="display:flex; align-items:center; gap:13px; padding:15px 16px; border-radius:14px; background:{{ f.rowBg }}; border:1px solid {{ f.rowBorder }};"><span style="width:44px; height:44px; border-radius:50%; background:{{ f.avatar }}; flex-shrink:0;"></span><div style="flex:1;"><div style="font-size:17px; color:var(--text);">{{ f.name }}</div><div style="font-size:13px; color:#7b8ca3;">{{ f.relation }} · {{ f.phone }}</div></div><span style="padding:5px 12px; border-radius:999px; font-size:12px; background:{{ f.badgeBg }}; color:{{ f.statusColor }};">{{ f.status }}</span><span onClick="{{ f.onRemove }}" style="cursor:pointer; color:#5f7187; font-size:16px; padding:0 2px;">✕</span></div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ showAddForm }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:14px; background:var(--card2); border:1px solid rgba(34,211,238,0.3); border-radius:16px; padding:16px;">
+            <input value="{{ newName }}" onInput="{{ setNewName }}" placeholder="Nombre" style="width:100%; padding:12px 14px; border-radius:11px; border:1px solid rgba(120,160,200,0.2); background:var(--input-bg); color:var(--text); font-size:15px; margin-bottom:10px;" />
+            <input value="{{ newRel }}" onInput="{{ setNewRel }}" placeholder="Parentesco (ej. Hijo, Madre)" style="width:100%; padding:12px 14px; border-radius:11px; border:1px solid rgba(120,160,200,0.2); background:var(--input-bg); color:var(--text); font-size:15px; margin-bottom:10px;" />
+            <input value="{{ newPhone }}" onInput="{{ setNewPhone }}" placeholder="Teléfono" style="width:100%; padding:12px 14px; border-radius:11px; border:1px solid rgba(120,160,200,0.2); background:var(--input-bg); color:var(--text); font-size:15px; margin-bottom:12px;" />
+            <div style="display:flex; gap:10px;"><button onClick="{{ saveFamily }}" style="flex:1; border:none; cursor:pointer; padding:13px; border-radius:11px; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px;">Guardar</button><button onClick="{{ closeAddForm }}" style="border:1px solid rgba(120,160,200,0.25); cursor:pointer; padding:13px 18px; border-radius:11px; background:transparent; color:#cdd9e8; font-size:15px;">Cancelar</button></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hideAddForm }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ openAddForm }}" style="margin-top:14px; border:1px dashed rgba(34,211,238,0.4); cursor:pointer; width:100%; padding:14px; border-radius:14px; background:rgba(34,211,238,0.06); color:#22d3ee; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px;">+ Añadir familiar</button>
+        </sc-if>
+
+        <div style="margin-top:auto; padding-top:20px; display:flex; justify-content:space-around; align-items:center;">
+          <div onClick="{{ goHome }}" style="text-align:center; cursor:pointer;"><div style="font-size:20px; color:#5f7187;">◆</div><div style="font-size:11px; color:#7b8ca3; margin-top:4px;">Inicio</div></div>
+          <div style="text-align:center;"><div style="font-size:20px; color:#22d3ee;">♥</div><div style="font-size:11px; color:#22d3ee; margin-top:4px;">Familia</div></div>
+          <div onClick="{{ goAssistant }}" style="text-align:center; cursor:pointer;"><div style="font-size:20px; color:#5f7187;">✦</div><div style="font-size:11px; color:#7b8ca3; margin-top:4px;">Asistente</div></div>
+          <div onClick="{{ goMapa }}" style="text-align:center; cursor:pointer;"><div style="font-size:20px; color:#5f7187;">▣</div><div style="font-size:11px; color:#7b8ca3; margin-top:4px;">Mapa</div></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isAssistant }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:874px; background:var(--app-bg); display:flex; flex-direction:column; padding:64px 22px 28px;">
+        <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:var(--text); margin:0 0 4px;">Asistente</h2>
+        <p style="font-size:13px; color:#7b8ca3; margin:0 0 18px;">Inteligencia de emergencias</p>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; gap:11px;"><div style="width:34px; height:34px; border-radius:10px; background:rgba(34,211,238,0.16); display:flex; align-items:center; justify-content:center; font-size:16px; color:#22d3ee; flex-shrink:0;">✦</div><div style="background:var(--card2); border:1px solid var(--border); border-radius:14px; padding:13px 15px; font-size:14px; color:var(--text); line-height:1.5;">Hola {{ firstName }}. Estoy monitoreando tu zona. ¿En qué te ayudo?</div></div>
+          <div style="align-self:flex-end; max-width:78%; background:rgba(34,211,238,0.16); border:1px solid rgba(34,211,238,0.3); border-radius:14px; padding:13px 15px; font-size:14px; color:#eaf1f8;">¿Qué hago durante un sismo?</div>
+          <div style="display:flex; gap:11px;"><div style="width:34px; height:34px; border-radius:10px; background:rgba(34,211,238,0.16); display:flex; align-items:center; justify-content:center; font-size:16px; color:#22d3ee; flex-shrink:0;">✦</div><div style="background:var(--card2); border:1px solid var(--border); border-radius:14px; padding:13px 15px; font-size:14px; color:var(--text); line-height:1.5;">Agáchate, cúbrete bajo una mesa firme y sujétate. Aléjate de ventanas. No uses elevadores.</div></div>
+        </div>
+        <div style="margin-top:18px; display:flex; flex-wrap:wrap; gap:8px;">
+          <span style="padding:9px 13px; border-radius:999px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.3); color:#bfe9f4; font-size:12px;">¿Dónde está mi familia?</span>
+          <span style="padding:9px 13px; border-radius:999px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.3); color:#bfe9f4; font-size:12px;">Ruta de evacuación</span>
+          <span style="padding:9px 13px; border-radius:999px; background:rgba(34,211,238,0.08); border:1px solid rgba(34,211,238,0.3); color:#bfe9f4; font-size:12px;">Reportar daño</span>
+        </div>
+        <div style="margin-top:auto; padding-top:22px; display:flex; justify-content:space-around; align-items:center;">
+          <div onClick="{{ goHome }}" style="text-align:center; cursor:pointer;"><div style="font-size:20px; color:#5f7187;">◆</div><div style="font-size:11px; color:#7b8ca3; margin-top:4px;">Inicio</div></div>
+          <div onClick="{{ goFamily }}" style="text-align:center; cursor:pointer;"><div style="font-size:20px; color:#5f7187;">♥</div><div style="font-size:11px; color:#7b8ca3; margin-top:4px;">Familia</div></div>
+          <div style="text-align:center;"><div style="font-size:20px; color:#22d3ee;">✦</div><div style="font-size:11px; color:#22d3ee; margin-top:4px;">Asistente</div></div>
+          <div onClick="{{ goMapa }}" style="text-align:center; cursor:pointer;"><div style="font-size:20px; color:#5f7187;">▣</div><div style="font-size:11px; color:#7b8ca3; margin-top:4px;">Mapa</div></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isMapa }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height:874px; background:var(--app-bg); display:flex; flex-direction:column; padding:64px 22px 28px;">
+        <h2 style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:26px; color:var(--text); margin:0 0 4px;">Mapa</h2>
+        <p style="font-size:13px; color:#7b8ca3; margin:0 0 18px;">Sismos y refugios cerca de ti</p>
+        <div style="position:relative; flex:1; border-radius:18px; overflow:hidden; background:radial-gradient(circle at 55% 42%, rgba(251,86,112,0.16), rgba(8,13,24,0.95) 70%), #080d18; border:1px solid rgba(120,160,200,0.16);">
+          <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(120,160,200,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,200,0.08) 1px,transparent 1px); background-size:34px 34px;"></div>
+          <div style="position:absolute; left:55%; top:42%; width:140px; height:140px; margin:-70px;"><div style="position:absolute; inset:0; border:1.5px solid rgba(251,86,112,0.6); border-radius:50%; animation:qaRing 3s ease-out infinite;"></div><div style="position:absolute; inset:0; border:1.5px solid rgba(251,86,112,0.6); border-radius:50%; animation:qaRing 3s ease-out infinite 1.5s;"></div><div style="position:absolute; left:50%; top:50%; width:14px; height:14px; margin:-7px; background:#fb5670; border-radius:50%; box-shadow:0 0 20px 4px rgba(251,86,112,0.8);"></div></div>
+          <div style="position:absolute; left:30%; top:64%; width:12px; height:12px; margin:-6px; background:#22d3ee; border-radius:50%; box-shadow:0 0 14px 3px rgba(34,211,238,0.8);"></div>
+          <div style="position:absolute; left:30%; top:64%; transform:translate(14px,-22px); font-family:'IBM Plex Mono',monospace; font-size:12px; color:#22d3ee;">TÚ</div>
+          <div style="position:absolute; left:42%; top:30%; width:11px; height:11px; border-radius:3px; background:#20c997; box-shadow:0 0 12px 2px rgba(32,201,151,0.7);"></div>
+          <div style="position:absolute; left:42%; top:30%; transform:translate(15px,-4px); font-family:'IBM Plex Mono',monospace; font-size:11px; color:#20c997;">{{ nearestName }}</div>
+          <div style="position:absolute; left:16px; bottom:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;">{{ mapEpicenter }}</div>
+        </div>
+
+        <div style="margin-top:14px; background:var(--card2); border:1px solid rgba(32,201,151,0.3); border-radius:14px; padding:14px 16px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#20c997;">ZONA SEGURA MÁS CERCANA</div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:var(--text); margin-top:4px;">{{ nearestName }}</div>
+              <div style="font-size:13px; color:var(--text2); margin-top:2px;">{{ nearestAddr }}</div>
+              <div style="font-size:12px; color:#7b8ca3; margin-top:5px;">{{ nearestDist }} · espacio abierto, alejado de edificios</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:12px;">
+            <a href="{{ nearestMapsUrl }}" target="_blank" rel="noopener" style="flex:1; text-align:center; text-decoration:none; padding:10px 0; border-radius:9px; background:linear-gradient(135deg,#22d3ee,#0e7490); color:#06141a; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">Cómo llegar</a>
+            <a href="tel:119" style="flex:1; text-align:center; text-decoration:none; padding:10px 0; border-radius:9px; border:1px solid rgba(251,86,112,0.4); background:rgba(251,86,112,0.08); color:#fb5670; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">Llamar a CONRED · 119</a>
+          </div>
+        </div>
+        <div style="margin-top:10px; display:flex; flex-direction:column; gap:7px;">
+          <sc-for list="{{ altPoints }}" as="p" hint-placeholder-count="2">
+            <a href="{{ p.mapsUrl }}" target="_blank" rel="noopener" style="display:flex; justify-content:space-between; align-items:center; text-decoration:none; padding:10px 13px; border-radius:11px; background:var(--card); border:1px solid var(--border);">
+              <div><div style="font-size:13px; color:var(--text);">{{ p.name }}</div><div style="font-size:11px; color:#7b8ca3; margin-top:1px;">{{ p.zone }}</div></div>
+              <span style="font-size:12px; color:#22d3ee; font-family:'IBM Plex Mono',monospace;">{{ p.dist }}</span>
+            </a>
+          </sc-for>
+        </div>
+        <p style="font-size:11px; color:#5f7187; margin:10px 2px 0; line-height:1.5;">Referencia general de espacios abiertos. Si CONRED activa un albergue en tu zona durante una emergencia real, te lo mostraremos aquí; para traslado o reporte, marca 119.</p>
+        <div style="margin-top:14px; display:flex; gap:10px;">
+          <div style="flex:1; text-align:center; padding:14px 0; border-radius:12px; background:rgba(251,86,112,0.1); border:1px solid rgba(251,86,112,0.3);"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:20px; color:#fb5670;">{{ mapMag }}</div><div style="font-size:11px; color:#9fb4ad;">{{ mapMagLabel }}</div></div>
+          <div style="flex:1; text-align:center; padding:14px 0; border-radius:12px; background:rgba(32,201,151,0.1); border:1px solid rgba(32,201,151,0.3);"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:20px; color:#20c997;">3</div><div style="font-size:11px; color:#9fb4ad;">refugios</div></div>
+          <div style="flex:1; text-align:center; padding:14px 0; border-radius:12px; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3);"><div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:20px; color:#22d3ee;">{{ nearestDist }}</div><div style="font-size:11px; color:#9fb4ad;">más cercano</div></div>
+        </div>
+        <div style="margin-top:auto; padding-top:18px; display:flex; justify-content:space-around; align-items:center;">
+          <div onClick="{{ goHome }}" style="text-align:center; cursor:pointer;"><div style="font-size:20px; color:#5f7187;">◆</div><div style="font-size:11px; color:#7b8ca3; margin-top:4px;">Inicio</div></div>
+          <div onClick="{{ goFamily }}" style="text-align:center; cursor:pointer;"><div style="font-size:20px; color:#5f7187;">♥</div><div style="font-size:11px; color:#7b8ca3; margin-top:4px;">Familia</div></div>
+          <div onClick="{{ goAssistant }}" style="text-align:center; cursor:pointer;"><div style="font-size:20px; color:#5f7187;">✦</div><div style="font-size:11px; color:#7b8ca3; margin-top:4px;">Asistente</div></div>
+          <div style="text-align:center;"><div style="font-size:20px; color:#22d3ee;">▣</div><div style="font-size:11px; color:#22d3ee; margin-top:4px;">Mapa</div></div>
+        </div>
+      </div>
+    </sc-if>
+
+  </x-import>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { screen: 'home', countdown: 9, myStatus: null, showAdd: false, push: null, nat: null, wdAt: 0, realAlert: null, nf: { name: '', relation: '', phone: '' }, theme: (function () { try { return localStorage.getItem('qa_app_theme') || 'dark'; } catch (e) { return 'dark'; } })() };
+
+  AVATARS = ['linear-gradient(135deg,#22d3ee,#0e7490)', 'linear-gradient(135deg,#f5a623,#b46c00)', 'linear-gradient(135deg,#fb5670,#7a1726)', 'linear-gradient(135deg,#20c997,#0e7c5b)', 'linear-gradient(135deg,#9aa7b8,#5f7187)'];
+
+  componentDidMount() {
+    const boot = () => { this._off = window.QADB.on(() => this.forceUpdate()); this.forceUpdate(); };
+    if (window.QADB) boot(); else window.addEventListener('qadb-ready', boot, { once: true });
+    // Segundo plano (qa-push.js): push del servidor + sismos en tiempo real por SSE.
+    const bootPush = () => {
+      const P = window.QAPush; if (!P || this._dead) return;
+      this._offPush = P.on((ps) => { if (!this._dead) this.setState({ push: Object.assign({}, ps) }); });
+      this._offMsg = P.onPush((p) => { if (p && p.type === 'quake') this.realQuake(p); });
+      this._offQuake = P.onQuake((p) => { if (p && p.mag >= 4.5 && p.distanceKm <= 320) this.realQuake(p); });
+      P.init({ radiusKm: 320, minMag: 4.5 });
+    };
+    if (window.QAPush) bootPush(); else window.addEventListener('qapush-ready', bootPush, { once: true });
+    this._natBoot();
+  }
+  componentWillUnmount() { this._dead = true; clearInterval(this._t); clearInterval(this._wd); clearTimeout(this._wdT); if (this._off) this._off(); [this._offPush, this._offMsg, this._offQuake, this._offNat, this._offNatAlarm].forEach((f) => { if (f) f(); }); }
+
+  // Sismo real (USGS) recibido por push o por la conexión en vivo: pantalla de alerta con datos reales.
+  realQuake(p) {
+    this._seen = this._seen || new Set();
+    if (!p.id || this._seen.has(p.id)) return;
+    this._seen.add(p.id);
+    clearInterval(this._t);
+    this.setState({ screen: 'alert', realAlert: p, myStatus: null });
+    if (window.QAPush && !(this.state.nat && this.state.nat.running)) { window.QAPush.vibrate(); window.QAPush.playSiren(); } // con la alarma nativa activa ya suena/vibra el servicio del teléfono
+    const me = this.me();
+    if (window.QADB) window.QADB.log((p.sim ? 'Simulacro de alerta en la app · M' : 'Alerta real recibida en la app · M') + Number(p.mag).toFixed(1) + ' · ' + (p.place || '') + ' · ' + p.distanceKm + ' km', { user: me && me.name, color: '#fb5670' });
+  }
+  pushAction() {
+    const P = window.QAPush; if (!P) return;
+    if (P.state.subscribed) { P.test(10000); return; }
+    P.enable({ radiusKm: 320, minMag: 4.5 }).then((ok) => { if (ok && window.QADB) window.QADB.log('Activó alertas con pantalla bloqueada en la app', { color: '#20c997' }); });
+  }
+
+  me() {
+    const DB = window.QADB; if (!DB) return null;
+    const sess = DB.session.get();
+    return (sess && DB.find('users', sess.id)) || DB.find('users', 'u_ana');
+  }
+
+  // ---------- APK Android: alarma nativa (qa-native.js) ----------
+  logout() {
+    const N = window.QANative;
+    const go = () => { if (window.QADB) window.QADB.session.clear(); location.href = 'Quake%20Alert%20Auth%20Mobile.dc.html'; };
+    if (N) Promise.resolve(N.cancel()).then(go, go); else go(); // cancela el simulacro pendiente y vuelve al inicio de sesión
+  }
+  _natBoot() {
+    const boot = () => {
+      const N = window.QANative; if (!N || this._dead || this._natOn) return;
+      this._natOn = true;
+      const DB = window.QADB;
+      if (N.available() && DB && !DB.session.get()) { location.replace('Quake%20Alert%20Auth%20Mobile.dc.html'); return; } // APK: primero iniciar sesión
+      this._offNat = N.on((ns) => { if (!this._dead) this.setState({ nat: Object.assign({}, ns) }); });
+      // Alarma real que sonó con la app cerrada o el teléfono bloqueado: al abrir la app se muestra la alerta con sus datos y el check-in.
+      this._offNatAlarm = N.onAlarm((a) => this.realQuake({ id: a.id, mag: a.mag, place: a.place, distanceKm: a.km, bearing: a.bearing, time: a.time || a.at, sim: !!a.test }));
+      N.init({ radiusKm: 320, minMag: 4.5 });
+      // Demostración: al iniciar sesión con la cuenta de demo se activa la alarma y se programa un simulacro a los 30 s (suena aunque el teléfono duerma).
+      let arm = 0; try { arm = Number(localStorage.getItem('qa_demo_arm')) || 0; localStorage.removeItem('qa_demo_arm'); } catch (e) {}
+      if (arm && Date.now() - arm < 5 * 60 * 1000) this._armDemo();
+    };
+    if (window.QANative) boot(); else window.addEventListener('qanative-ready', boot, { once: true });
+  }
+  // Demo con la cuenta de operador: en el APK lo programa el sistema Android (suena con el teléfono dormido);
+  // un navegador no tiene esa capa, así que la cuenta regresiva corre en la página y suena/vibra con la pantalla encendida.
+  _armDemo() {
+    const N = window.QANative; if (!N) return;
+    let tries = 0;
+    const decide = () => {
+      if (this._dead) return;
+      if (N.available()) { N.demo(30); return; }
+      if (window.Capacitor && ++tries < 8) { setTimeout(decide, 400); return; } // APK: el puente nativo puede tardar unos ms
+      this._webDemoStart(30);
+    };
+    decide();
+  }
+  _webDemoStart(sec) {
+    clearInterval(this._wd);
+    const at = Date.now() + sec * 1000;
+    try { if (window.QAPush) window.QAPush.guard(true); } catch (e) {} // pantalla encendida durante la espera
+    this.setState({ wdAt: at });
+    this._wd = setInterval(() => {
+      if (this._dead) { clearInterval(this._wd); return; }
+      if (Date.now() < at) { this.forceUpdate(); return; }
+      clearInterval(this._wd);
+      this.setState({ wdAt: 0 });
+      this._webDemoFire(at);
+    }, 1000);
+  }
+  _webDemoCancel() {
+    clearInterval(this._wd); clearTimeout(this._wdT);
+    try { if (window.QAPush) window.QAPush.guard(false); } catch (e) {}
+    this.setState({ wdAt: 0 });
+  }
+  _webDemoFire(at) {
+    this.realQuake({ id: 'sim-' + at, mag: 6.2, place: 'Simulacro · Escuintla, Guatemala', distanceKm: 48, bearing: 'SO', time: Date.now(), sim: true });
+    let n = 0; // la sirena dura 3 s: se repite mientras siga la pantalla de alerta
+    const again = () => {
+      if (this._dead || ++n > 5 || this.state.screen !== 'alert') { try { if (window.QAPush) window.QAPush.guard(false); } catch (e) {} return; }
+      try { window.QAPush.playSiren(); window.QAPush.vibrate(); } catch (e) {}
+      this._wdT = setTimeout(again, 3400);
+    };
+    this._wdT = setTimeout(again, 3400);
+  }
+
+  _natVals(s) {
+    const N = window.QANative, n = s.nat || {};
+    const wdLeft = s.wdAt ? Math.max(0, Math.ceil((s.wdAt - Date.now()) / 1000)) : 0;
+    const sessEmail = ((window.QADB && window.QADB.session.get()) || {}).email || '';
+    const avail = !!(n.available || (N && N.available())), loaded = !!n.loaded, running = !!n.running, sounding = !!n.alarmActive;
+    const OK = '#20c997', WARN = '#f5a623', BAD = '#fb5670', MUTE = '#7b8ca3';
+    const call = (f) => () => { const X = window.QANative; if (X) f(X); };
+    const fix = (k) => call((X) => X.fix(k));
+    const rows = [];
+    if (avail && loaded && running) {
+      if (!n.notifications) rows.push({ label: 'Notificaciones', detail: 'Sin ellas Android puede ocultar la alarma.', actionLabel: 'Permitir', onAction: fix('notifications') });
+      if (!n.fullScreen) rows.push({ label: 'Encender la pantalla bloqueada', detail: 'Falta el permiso de pantalla completa.', actionLabel: 'Permitir', onAction: fix('fullscreen') });
+      if (!n.battery) rows.push({ label: 'Sin ahorro de batería', detail: 'Para que Android no duerma la alarma.', actionLabel: 'Quitar', onAction: fix('battery') });
+      if (n.dndActive && !n.dnd) rows.push({ label: 'No molestar está activo', detail: 'Permití el acceso para que la alarma lo atraviese.', actionLabel: 'Permitir', onAction: fix('dnd') });
+    }
+    const essentials = !!(n.notifications && n.fullScreen && n.battery);
+    const testLeft = n.testAt ? Math.max(0, Math.ceil((n.testAt - Date.now()) / 1000)) : 0;
+    const chip = !loaded ? ['COMPROBANDO…', MUTE] : sounding ? ['SONANDO', BAD] : !running ? ['DESACTIVADA', MUTE] : essentials ? ['ACTIVA', OK] : ['REQUIERE AJUSTES', WARN];
+    const silent = !!n.ringer && n.ringer !== 'normal';
+    const text = !loaded ? 'Comprobando el estado de la alarma…'
+      : !running ? 'Activala una vez: suena, vibra y enciende la pantalla aunque el teléfono esté en silencio o bloqueado.'
+      : (n.connected ? 'Vigilando en vivo' : 'Reconectando con el servidor…') + ' · ' + (silent ? 'el teléfono está en silencio y la alarma suena igual' : 'suena aunque lo pongas en silencio') + (rows.length ? '. Faltan ajustes:' : '.');
+    let label, bg, color, border, act;
+    if (sounding) { label = 'Silenciar alarma'; bg = 'rgba(251,86,112,0.14)'; color = BAD; border = 'rgba(251,86,112,0.45)'; act = call((X) => X.silence()); }
+    else if (!loaded) { label = 'Comprobando…'; bg = 'rgba(34,211,238,0.06)'; color = '#22d3ee'; border = 'rgba(34,211,238,0.25)'; act = () => {}; }
+    else if (!running) { label = n.busy ? 'Activando…' : 'Activar alarma'; bg = 'linear-gradient(135deg,#22d3ee,#0e7490)'; color = '#06141a'; border = 'transparent'; act = call((X) => { if (!X.state.busy) X.start(); }); }
+    else { label = testLeft > 0 ? 'Simulacro programado' : 'Probar alarma en 30 s'; bg = 'rgba(34,211,238,0.1)'; color = '#22d3ee'; border = 'rgba(34,211,238,0.4)'; act = call((X) => { if (!X.state.testAt) X.test(30); }); }
+    const off = avail && loaded && !running;
+    return {
+      nativeAvail: avail, showPushCard: !avail, wdPending: wdLeft > 0, wdLeft, wdCancel: () => this._webDemoCancel(), showSessionRow: avail || !!sessEmail,
+      heroGlyph: off ? '!' : '✓', heroTitle: off ? 'Alarma desactivada' : 'Estás protegido', heroLine: off ? 'Activala abajo para recibir alertas' : 'Red de alerta temprana activa',
+      natBorder: sounding ? 'rgba(251,86,112,0.5)' : (running ? (essentials ? 'rgba(32,201,151,0.35)' : 'rgba(245,166,35,0.4)') : 'var(--border)'),
+      natChip: chip[0], natChipColor: chip[1], natText: text, natRows: rows,
+      natPrimary: act, natPrimaryLabel: label, natPrimaryBg: bg, natPrimaryColor: color, natPrimaryBorder: border,
+      natCanOff: running && !sounding, natOff: call((X) => X.stop()),
+      natTestPending: testLeft > 0, natTestLeft: testLeft,
+      natCancel: call((X) => X.cancel()), natUser: ((window.QADB && window.QADB.session.get()) || {}).email || '', natLogout: () => this.logout(),
+      natHasError: !!n.error, natError: n.error || '',
+      natOem: running && /xiaomi|redmi|poco|huawei|honor|oppo|realme|vivo|oneplus|samsung/.test(n.manufacturer || ''), natOpenApp: fix('app'),
+    };
+  }
+
+  setNf(k, e) { const v = e && e.target ? e.target.value : ''; this.setState(st => ({ nf: { ...st.nf, [k]: v } })); }
+  saveFamily() {
+    const nf = this.state.nf, me = this.me();
+    if (!nf.name.trim() || !me) return;
+    window.QADB.insert('familia', { userId: me.id, name: nf.name.trim(), relation: nf.relation.trim() || 'Familiar', phone: nf.phone.trim() || '—', status: 'A salvo' });
+    window.QADB.log('Añadió a la red familiar · ' + nf.name.trim(), { user: me.name, color: '#20c997' });
+    this.setState({ showAdd: false, nf: { name: '', relation: '', phone: '' } });
+  }
+  removeFamily(id) { window.QADB.remove('familia', id); }
+
+  SAFE_POINTS = [
+    { name: 'Parque Central, Zona 1', zone: 'Zona 1 · Centro Histórico', addr: '6a Avenida y 8a Calle, Zona 1', dist: '~1.1 km', lat: 14.6431, lng: -90.5133 },
+    { name: 'Parque La Democracia', zone: 'Zona 13', addr: 'Zona 13, frente al Museo Popol Vuh', dist: '~2.4 km', lat: 14.5952, lng: -90.5219 },
+    { name: 'Campo de Marte', zone: 'Zona 5', addr: 'Avenida Siméon Cañas, Zona 5', dist: '~3.0 km', lat: 14.6086, lng: -90.4989 },
+  ];
+  mapsUrl(p) { return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.name + ', Ciudad de Guatemala') + '&query_place_id='; }
+
+  toggleTheme() {
+    const next = this.state.theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('qa_app_theme', next); } catch (e) {}
+    this.setState({ theme: next });
+  }
+
+  startAlert() {
+    clearInterval(this._t);
+    this.setState({ screen: 'alert', countdown: 9, myStatus: null, realAlert: null });
+    this._t = setInterval(() => {
+      this.setState(s => {
+        if (s.countdown <= 1) { clearInterval(this._t); return { countdown: 0, screen: 'shaking' }; }
+        return { countdown: s.countdown - 1 };
+      });
+    }, 900);
+  }
+
+  go(scr) { clearInterval(this._t); this.setState(scr === 'home' ? { screen: scr, realAlert: null } : { screen: scr }); }
+  pick(k) {
+    const me = this.me();
+    const labels = { bien: 'A salvo', ayuda: 'Necesito ayuda', medica: 'Emergencia médica' };
+    const colors = { bien: '#20c997', ayuda: '#f5a623', medica: '#fb5670' };
+    if (window.QADB && me) window.QADB.log('Check-in tras sismo: ' + labels[k], { user: me.name, color: colors[k] });
+    this.setState({ myStatus: k });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const DB = window.QADB;
+    const me = this.me();
+    const firstName = me ? (me.name || '').split(' ')[0] : 'Ana';
+    const famRaw = (DB && me) ? DB.familiaDe(me.id) : [];
+    const statusColor = (st) => st === 'A salvo' ? '#20c997' : st === 'Pendiente' ? '#f5a623' : '#fb5670';
+    const family = famRaw.map((f, i) => ({
+      id: f.id, name: f.name, relation: f.relation, phone: f.phone, status: f.status,
+      avatar: this.AVATARS[i % this.AVATARS.length],
+      statusColor: statusColor(f.status),
+      badgeBg: f.status === 'A salvo' ? 'rgba(32,201,151,0.18)' : f.status === 'Pendiente' ? 'rgba(245,166,35,0.18)' : 'rgba(251,86,112,0.18)',
+      rowBg: f.status === 'Pendiente' ? 'rgba(245,166,35,0.07)' : 'rgba(255,255,255,0.03)',
+      rowBorder: f.status === 'Pendiente' ? 'rgba(245,166,35,0.25)' : 'rgba(120,160,200,0.0)',
+      onRemove: () => this.removeFamily(f.id),
+    }));
+    const famPreview = family.slice(0, 3).map(f => ({ avatar: f.avatar, short: (f.relation || f.name || '').split(' ')[0] }));
+    const safeCount = famRaw.filter(f => f.status === 'A salvo').length + 1; // +1 = yo
+    const total = famRaw.length + 1;
+    const map = {
+      bien: ['A salvo', '#20c997'],
+      ayuda: ['Necesito ayuda', '#f5a623'],
+      medica: ['Emergencia médica', '#fb5670'],
+    };
+    const m = s.myStatus ? map[s.myStatus] : null;
+    const ps = s.push || {}, srv = ps.server || {}, ra = s.realAlert, le = srv.lastEvent;
+    const srvOk = ps.serverOk === true, pushSubscribed = !!ps.subscribed;
+    const agoMin = (t) => Math.max(0, Math.round((Date.now() - t) / 60000));
+    const mmi = (mag, d) => ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][Math.max(1, Math.min(10, Math.round(1.5 * mag - 3.3 * Math.log10(Math.max(d || 10, 10)) + 3.9))) - 1];
+    const testLeft = ps.testAt ? Math.max(0, Math.ceil((ps.testAt - Date.now()) / 1000)) : 0;
+    const fmtMag = (x) => Number(x).toFixed(1);
+    return {
+      ...this._natVals(s),
+      onlineLabel: srvOk ? (ps.live ? 'EN VIVO' : 'EN LÍNEA') : (ps.serverOk == null ? 'CONECTANDO' : 'SIN SERVIDOR'),
+      onlineColor: srvOk ? '#20c997' : (ps.serverOk == null ? '#7b8ca3' : '#f5a623'),
+      onlineBg: srvOk ? 'rgba(32,201,151,0.12)' : 'rgba(245,166,35,0.10)',
+      onlineBorder: srvOk ? 'rgba(32,201,151,0.3)' : 'rgba(245,166,35,0.3)',
+      heroLive: srvOk ? (le ? ('Último sismo regional: M' + fmtMag(le.mag) + ' hace ' + agoMin(le.time) + ' min') : 'Vigilante USGS en vivo · sin sismos regionales hoy') : '3 sensores QuakeBox cerca de ti',
+      pushCardBorder: pushSubscribed ? 'rgba(32,201,151,0.35)' : 'var(--border)',
+      pushDot: pushSubscribed ? '#20c997' : ((ps.permission === 'denied' || ps.supported === false) ? '#fb5670' : '#7b8ca3'),
+      pushText: ps.supported === false ? (ps.ios ? 'En iPhone: instalá la app (Compartir ▸ Agregar a inicio) y abrila desde el ícono.' : 'Este navegador no soporta push.')
+        : ps.permission === 'denied' ? 'Permiso denegado en los ajustes del navegador.'
+        : pushSubscribed ? 'Activas: vibran y suenan aunque la pantalla esté apagada.'
+        : (srvOk ? 'Recibí la alerta aunque el teléfono esté bloqueado.' : 'Requiere la versión publicada (servidor).'),
+      pushBtnLabel: ps.busy ? '…' : (pushSubscribed ? (testLeft > 0 ? testLeft + ' s' : 'Probar') : 'Activar'),
+      pushBtnBg: pushSubscribed ? 'rgba(34,211,238,0.12)' : 'linear-gradient(135deg,#22d3ee,#0e7490)',
+      pushBtnColor: pushSubscribed ? '#22d3ee' : '#06141a',
+      pushAction: () => this.pushAction(),
+      pushTestPending: testLeft > 0, pushTestCountdown: testLeft,
+      pushHasError: !!ps.error, pushError: ps.error || '',
+      isRealAlert: !!ra,
+      alertKicker: ra ? (ra.sim ? 'SIMULACRO · ALERTA SÍSMICA' : 'ALERTA SÍSMICA · USGS') : 'ALERTA SÍSMICA',
+      alertTitle: ra ? (ra.place || 'Sismo detectado') : 'Sismo fuerte detectado',
+      alertBigLabel: ra ? 'MAGNITUD DETECTADA' : 'IMPACTO ESTIMADO EN',
+      alertBig: ra ? fmtMag(ra.mag) : s.countdown,
+      alertUnit: ra ? ('hace ' + agoMin(ra.time) + ' min' + (ra.bearing ? ' · rumbo ' + ra.bearing : '')) : 'segundos',
+      alertMag: ra ? fmtMag(ra.mag) : '6.8',
+      alertIntensity: ra ? mmi(ra.mag, ra.distanceKm) : 'VII',
+      alertDist: ra ? (ra.distanceKm + ' km') : '82 km',
+      mapEpicenter: ra ? ('EN VIVO · EPICENTRO M' + fmtMag(ra.mag) + ' · ' + ra.distanceKm + ' KM') : (le ? ('ÚLTIMO SISMO · M' + fmtMag(le.mag) + ' · ' + le.distanceKm + ' KM · HACE ' + agoMin(le.time) + ' MIN') : (srvOk ? 'SIN SISMOS REGIONALES HOY' : 'MAPA · GUATEMALA')),
+      mapMag: ra ? ('M' + fmtMag(ra.mag)) : (le ? ('M' + fmtMag(le.mag)) : '—'),
+      mapMagLabel: ra ? 'epicentro' : (le ? 'último sismo' : 'sin sismos'),
+      darkOn: s.theme === 'dark',
+      theme: s.theme,
+      themeIcon: s.theme === 'dark' ? '☀' : '☾',
+      themeTitle: s.theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro',
+      toggleTheme: () => this.toggleTheme(),
+      nearestName: this.SAFE_POINTS[0].name, nearestAddr: this.SAFE_POINTS[0].addr, nearestDist: this.SAFE_POINTS[0].dist,
+      nearestMapsUrl: this.mapsUrl(this.SAFE_POINTS[0]),
+      altPoints: this.SAFE_POINTS.slice(1).map((p) => ({ name: p.name, zone: p.zone, dist: p.dist, mapsUrl: this.mapsUrl(p) })),
+      firstName,
+      family, famPreview,
+      famSafe: safeCount, famCount: famRaw.length, famTotal: total, famTotalPersons: total + ' personas',
+      showAddForm: s.showAdd, hideAddForm: !s.showAdd,
+      openAddForm: () => this.setState({ showAdd: true }),
+      closeAddForm: () => this.setState({ showAdd: false, nf: { name: '', relation: '', phone: '' } }),
+      newName: s.nf.name, newRel: s.nf.relation, newPhone: s.nf.phone,
+      setNewName: (e) => this.setNf('name', e), setNewRel: (e) => this.setNf('relation', e), setNewPhone: (e) => this.setNf('phone', e),
+      saveFamily: () => this.saveFamily(),
+      isHome: s.screen === 'home',
+      isAlert: s.screen === 'alert',
+      isShaking: s.screen === 'shaking',
+      isAftermath: s.screen === 'aftermath',
+      isFamily: s.screen === 'family',
+      isAssistant: s.screen === 'assistant',
+      isMapa: s.screen === 'mapa',
+      countdown: s.countdown,
+      notChosen: !s.myStatus,
+      chosen: !!s.myStatus,
+      chosenLabel: m ? m[0] : '',
+      chosenColor: m ? m[1] : '#20c997',
+      anaLabel: m ? m[0] : 'Pendiente',
+      anaColor: m ? m[1] : '#f5a623',
+      startAlert: () => this.startAlert(),
+      endShaking: () => this.go('aftermath'),
+      pickBien: () => this.pick('bien'),
+      pickAyuda: () => this.pick('ayuda'),
+      pickMedica: () => this.pick('medica'),
+      goHome: () => this.go('home'),
+      goFamily: () => this.go('family'),
+      goAssistant: () => this.go('assistant'),
+      goMapa: () => this.go('mapa'),
+    };
+  }
+}
+</script>
+</body>
+</html>

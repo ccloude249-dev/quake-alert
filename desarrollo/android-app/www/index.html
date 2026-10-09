@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="qa-start" content="https://TU-APP.herokuapp.com/app">
+<meta name="theme-color" content="#070c14">
+<title>QUAKE ALERT</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #070c14; color: #eaf1f8; font-family: system-ui, sans-serif; }
+  body { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 22px; }
+  .r { width: 72px; height: 72px; border-radius: 50%; border: 2px solid #22d3ee; animation: p 1.6s ease-out infinite; }
+  @keyframes p { 0% { transform: scale(.6); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+  small { font: 11px ui-monospace, monospace; letter-spacing: .25em; color: #7b8ca3; }
+</style>
+</head>
+<body>
+<div class="r"></div>
+<small>CONECTANDO…</small>
+<script>
+  var s = document.querySelector('meta[name="qa-start"]').content;
+  if (/^https?:\/\//.test(s) && s.indexOf('TU-APP') < 0) location.replace(s);
+</script>
+</body>
+</html>

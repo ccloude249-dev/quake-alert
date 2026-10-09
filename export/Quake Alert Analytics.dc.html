@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QUAKE ALERT">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="./qa-db.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #060a12; }
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,160,200,0.2); border-radius: 4px; }
+  @media (max-width: 1000px) {
+    .qa-an-charts { grid-template-columns: 1fr !important; grid-template-rows: none !important; }
+    .qa-an-charts > div { min-height: 300px !important; }
+  }
+  @media (max-width: 900px) {
+    .qa-an-header { flex-wrap: wrap !important; padding: 16px 20px !important; gap: 12px !important; }
+    .qa-an-kpis { flex-wrap: wrap !important; padding: 16px 20px 4px !important; }
+    .qa-an-kpis > div[style*="flex:1"] { flex: 1 1 42% !important; padding: 8px 0 !important; }
+    .qa-an-kpis > div[style*="width:1px"] { display: none !important; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+  var DATA={'7d':{bars:[40,55,48,70,62,80,58],labels:['L','M','M','J','V','S','D'],line:[62,58,60,52,55,48,50]},'30d':{bars:[50,62,58,71,65,80,74,68],labels:['S1','S2','S3','S4','S5','S6','S7','S8'],line:[66,60,58,54,50,52,46,44]},'12m':{bars:[30,38,42,55,48,60,72,68,80,76,88,94],labels:['E','F','M','A','M','J','J','A','S','O','N','D'],line:[78,74,70,66,62,60,56,54,50,48,46,44]}};
+  var charts={}, observed=false;
+  function resizeAll(){ ['qa-bars','qa-donut','qa-line'].forEach(function(id){ var c=document.getElementById(id); var ch=c&&window.Chart&&Chart.getChart(c); if(ch){ try{ch.resize();ch.update('none');ch.draw();}catch(e){} } }); }
+  function observe(){ if(observed) return; observed=true; ['qa-bars','qa-donut','qa-line'].forEach(function(id){ var c=document.getElementById(id); if(c&&c.parentElement&&window.ResizeObserver){ new ResizeObserver(function(){ var ch=Chart.getChart(c); if(ch){ ch.resize(); ch.update('none'); ch.draw(); } }).observe(c.parentElement); } }); }
+  function go(period){
+    period=period||'12m';
+    if(typeof Chart==='undefined'){return setTimeout(function(){go(period);},120);}
+    var bars=document.getElementById('qa-bars'),donut=document.getElementById('qa-donut'),line=document.getElementById('qa-line');
+    if(!bars||!donut||!line||!bars.parentElement.clientHeight||!donut.parentElement.clientHeight||!line.parentElement.clientHeight){return setTimeout(function(){go(period);},120);}
+    var d=DATA[period];
+    var gx={grid:{display:false},ticks:{color:'#7b8ca3'}};
+    var gy={grid:{color:'rgba(120,160,200,0.1)'},ticks:{color:'#7b8ca3'},beginAtZero:true};
+    if(charts.bars){charts.bars.data.labels=d.labels;charts.bars.data.datasets[0].data=d.bars;charts.bars.update();charts.line.data.labels=d.labels;charts.line.data.datasets[0].data=d.line;charts.line.update();return;}
+    Chart.defaults.color='#7b8ca3';
+    charts.bars=new Chart(bars,{type:'bar',data:{labels:d.labels,datasets:[{data:d.bars,backgroundColor:'#22d3ee',borderRadius:6,maxBarThickness:30}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},plugins:{legend:{display:false}},scales:{x:gx,y:gy}}});
+    charts.donut=new Chart(donut,{type:'doughnut',data:{labels:['Central','Costa Sur','Altiplano','Por desplegar'],datasets:[{data:[46,28,20,6],backgroundColor:['#22d3ee','#20c997','#f5a623','rgba(255,255,255,0.08)'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false}}}});
+    charts.line=new Chart(line,{type:'line',data:{labels:d.labels,datasets:[{data:d.line,borderColor:'#22d3ee',backgroundColor:'rgba(34,211,238,0.15)',fill:true,tension:0.4,pointRadius:0,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:gx,y:{grid:{color:'rgba(120,160,200,0.1)'},ticks:{color:'#7b8ca3'}}}}});
+    observe();
+    requestAnimationFrame(resizeAll);
+    setTimeout(resizeAll,200); setTimeout(resizeAll,600);
+  }
+  window.__qaCharts=go; go('12m');
+})();
+</script>
+</helmet>
+<div style="min-height:100vh; width:100%; background:#070c14; font-family:'IBM Plex Sans',sans-serif; color:#eaf1f8; display:flex; flex-direction:column;">
+
+  <div class="qa-an-header" style="background:#080d16; border-bottom:1px solid rgba(120,160,200,0.1); display:flex; align-items:center; justify-content:space-between; padding:18px 30px;">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="width:40px; height:40px; border-radius:11px; background:linear-gradient(135deg,#22d3ee,#0e7490); box-shadow:0 0 18px rgba(34,211,238,0.4); display:flex; align-items:center; justify-content:center; font-size:18px; color:#06141a;">▤</div>
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:18px; color:#fff;">Analytics &amp; Business Intelligence</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7b8ca3; margin-top:1px;">INTELIGENCIA OPERATIVA NACIONAL</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; padding:4px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(120,160,200,0.14);">
+      <sc-for list="{{ periods }}" as="p" hint-placeholder-count="3">
+        <button onClick="{{ p.onSelect }}" style="border:none; cursor:pointer; padding:8px 18px; border-radius:7px; background:{{ p.bg }}; color:{{ p.color }}; font-family:'IBM Plex Sans',sans-serif; font-weight:500; font-size:13px;">{{ p.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div class="qa-an-kpis" style="display:flex; padding:20px 30px 6px; gap:0;">
+    <div style="flex:1; padding-right:22px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">EVENTOS REGISTRADOS</div><div style="display:flex; align-items:baseline; gap:8px; margin-top:4px;"><span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:32px; color:#22d3ee;">{{ kEventos }}</span><span style="font-size:13px; color:#9fb4ad;">en la base</span></div></div>
+    <div style="width:1px; background:rgba(120,160,200,0.12);"></div>
+    <div style="flex:1; padding:0 22px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">SENSORES EN LÍNEA</div><div style="display:flex; align-items:baseline; gap:8px; margin-top:4px;"><span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:32px; color:#fff;">{{ kSensores }}</span><span style="font-size:13px; color:#20c997;">activos</span></div></div>
+    <div style="width:1px; background:rgba(120,160,200,0.12);"></div>
+    <div style="flex:1; padding:0 22px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">SIMULACROS · SCORE PROM.</div><div style="display:flex; align-items:baseline; gap:8px; margin-top:4px;"><span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:32px; color:#fff;">{{ kDrillScore }}</span><span style="font-size:13px; color:#9fb4ad;">/ 100</span></div></div>
+    <div style="width:1px; background:rgba(120,160,200,0.12);"></div>
+    <div style="flex:1; padding:0 22px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">USUARIOS PROTEGIDOS</div><div style="display:flex; align-items:baseline; gap:8px; margin-top:4px;"><span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:32px; color:#20c997;">{{ kUsers }}</span><span style="font-size:13px; color:#20c997;">{{ kUsersDelta }}</span></div></div>
+    <div style="width:1px; background:rgba(120,160,200,0.12);"></div>
+    <div style="flex:1; padding-left:22px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#7b8ca3;">TIEMPO DE REACCIÓN</div><div style="display:flex; align-items:baseline; gap:8px; margin-top:4px;"><span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:32px; color:#fff;">{{ kReact }}<span style="font-size:16px; color:#9fb4ad;">s</span></span><span style="font-size:13px; color:#20c997;">-0.6</span></div></div>
+  </div>
+
+  <div class="qa-an-charts" style="flex:1; padding:18px 30px 30px; display:grid; grid-template-columns:1.5fr 1fr; grid-template-rows:1fr 1fr; gap:18px;">
+
+    <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:18px; padding:22px 24px; display:flex; flex-direction:column;">
+      <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">Alertas emitidas</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#7b8ca3;">{{ periodLabel }}</span></div>
+      <div style="flex:1; position:relative; margin-top:16px; min-height:0;"><canvas id="qa-bars"></canvas></div>
+    </div>
+
+    <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:18px; padding:22px 24px; display:flex; flex-direction:column;">
+      <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">Cobertura por región</span>
+      <div style="flex:1; display:flex; align-items:center; gap:26px; margin-top:10px;">
+        <div style="position:relative; width:150px; height:150px; flex-shrink:0;"><canvas id="qa-donut"></canvas><div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none;"><span style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:28px; color:#fff;">{{ kCov }}%</span><span style="font-size:11px; color:#7b8ca3;">nacional</span></div></div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:13px;">
+          <div style="display:flex; align-items:center; gap:10px;"><span style="width:11px; height:11px; border-radius:3px; background:#22d3ee;"></span><span style="font-size:14px; color:#cdd9e8; flex:1;">Central</span><span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#fff;">99%</span></div>
+          <div style="display:flex; align-items:center; gap:10px;"><span style="width:11px; height:11px; border-radius:3px; background:#20c997;"></span><span style="font-size:14px; color:#cdd9e8; flex:1;">Costa Sur</span><span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#fff;">96%</span></div>
+          <div style="display:flex; align-items:center; gap:10px;"><span style="width:11px; height:11px; border-radius:3px; background:#f5a623;"></span><span style="font-size:14px; color:#cdd9e8; flex:1;">Altiplano</span><span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#fff;">91%</span></div>
+          <div style="display:flex; align-items:center; gap:10px;"><span style="width:11px; height:11px; border-radius:3px; background:rgba(255,255,255,0.15);"></span><span style="font-size:14px; color:#cdd9e8; flex:1;">Por desplegar</span><span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#9fb4ad;">6%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:18px; padding:22px 24px; display:flex; flex-direction:column;">
+      <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">Tiempo de alerta</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#20c997;">tendencia ↓ mejora</span></div>
+      <div style="flex:1; position:relative; margin-top:16px; min-height:0;">
+        <canvas id="qa-line"></canvas>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7b8ca3;"><span>{{ trendStart }}</span><span>{{ trendEnd }}</span></div>
+    </div>
+
+    <div style="background:rgba(20,30,48,0.5); border:1px solid rgba(120,160,200,0.14); border-radius:18px; padding:22px 24px; display:flex; flex-direction:column;">
+      <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px; color:#fff;">Top municipios por cobertura</span>
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px; margin-top:14px;">
+        <div><div style="display:flex; justify-content:space-between; font-size:13px; color:#cdd9e8; margin-bottom:6px;"><span>Guatemala</span><span style="color:#9fb4ad;">99%</span></div><div style="height:7px; border-radius:4px; background:rgba(0,0,0,0.3);"><div style="width:99%; height:100%; border-radius:4px; background:linear-gradient(90deg,#22d3ee,#20c997);"></div></div></div>
+        <div><div style="display:flex; justify-content:space-between; font-size:13px; color:#cdd9e8; margin-bottom:6px;"><span>Mixco</span><span style="color:#9fb4ad;">97%</span></div><div style="height:7px; border-radius:4px; background:rgba(0,0,0,0.3);"><div style="width:97%; height:100%; border-radius:4px; background:linear-gradient(90deg,#22d3ee,#20c997);"></div></div></div>
+        <div><div style="display:flex; justify-content:space-between; font-size:13px; color:#cdd9e8; margin-bottom:6px;"><span>Quetzaltenango</span><span style="color:#9fb4ad;">94%</span></div><div style="height:7px; border-radius:4px; background:rgba(0,0,0,0.3);"><div style="width:94%; height:100%; border-radius:4px; background:linear-gradient(90deg,#22d3ee,#20c997);"></div></div></div>
+        <div><div style="display:flex; justify-content:space-between; font-size:13px; color:#cdd9e8; margin-bottom:6px;"><span>Escuintla</span><span style="color:#9fb4ad;">92%</span></div><div style="height:7px; border-radius:4px; background:rgba(0,0,0,0.3);"><div style="width:92%; height:100%; border-radius:4px; background:linear-gradient(90deg,#22d3ee,#20c997);"></div></div></div>
+        <div><div style="display:flex; justify-content:space-between; font-size:13px; color:#cdd9e8; margin-bottom:6px;"><span>Cobán</span><span style="color:#9fb4ad;">88%</span></div><div style="height:7px; border-radius:4px; background:rgba(0,0,0,0.3);"><div style="width:88%; height:100%; border-radius:4px; background:linear-gradient(90deg,#22d3ee,#20c997);"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1512, &quot;height&quot;: 950}}">
+class Component extends DCLogic {
+  state = { period: '12m' };
+  KPI = {
+    '7d':  { kAlert: '7.4', kAlertDelta: '-0.2', kUsers: '1.24M', kUsersDelta: '+12K', kReact: '9.1', start: 'Lun', end: 'Dom' },
+    '30d': { kAlert: '7.3', kAlertDelta: '-0.4', kUsers: '1.22M', kUsersDelta: '+48K', kReact: '9.0', start: 'Sem 1', end: 'Sem 8' },
+    '12m': { kAlert: '7.2', kAlertDelta: '-1.1', kUsers: '1.24M', kUsersDelta: '+320K', kReact: '8.8', start: 'Ene', end: 'Dic' },
+  };
+  set(p) { this.setState({ period: p }); if (window.__qaCharts) window.__qaCharts(p); }
+  componentDidMount() {
+    if (window.__qaCharts) window.__qaCharts(this.state.period);
+    const boot = () => { this._off = window.QADB.on(() => this.forceUpdate()); this.forceUpdate(); };
+    if (window.QADB) boot(); else window.addEventListener('qadb-ready', boot, { once: true });
+  }
+  componentWillUnmount() { if (this._off) this._off(); }
+  componentDidUpdate() { if (window.__qaCharts) window.__qaCharts(this.state.period); }
+  renderVals() {
+    const period = this.state.period; const d = this.KPI[period];
+    const DB = window.QADB;
+    const kEventos = DB ? String(DB.count('eventos')) : '0';
+    const kSensores = DB ? String(DB.count('sensores', s => s.status === 'En línea')) : '0';
+    const sims = DB ? DB.get('simulacros') : [];
+    const kDrillScore = sims.length ? String(Math.round(sims.reduce((a, s) => a + (s.score || 0), 0) / sims.length)) : '0';
+    const periods = [ { key: '7d', label: '7 días' }, { key: '30d', label: '30 días' }, { key: '12m', label: '12 meses' } ].map(p => {
+      const active = p.key === period;
+      return { label: p.label, onSelect: () => this.set(p.key), bg: active ? 'rgba(34,211,238,0.18)' : 'transparent', color: active ? '#22d3ee' : '#9fb4ad' };
+    });
+    return {
+      periods,
+      periodLabel: period === '7d' ? 'últimos 7 días' : period === '30d' ? 'últimas 8 semanas' : 'últimos 12 meses',
+      kEventos, kSensores, kDrillScore,
+      kAlert: d.kAlert, kAlertDelta: d.kAlertDelta, kCov: '94', kPrec: '99.2',
+      kUsers: d.kUsers, kUsersDelta: d.kUsersDelta, kReact: d.kReact, trendStart: d.start, trendEnd: d.end,
+    };
+  }
+}
+</script>
+</body>
+</html>
