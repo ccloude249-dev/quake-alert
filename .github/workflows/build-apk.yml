@@ -1,0 +1,61 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: 'URL pública del servidor QUAKE ALERT (ej. https://mi-app.herokuapp.com)'
+        required: true
+        type: string
+      path:
+        description: 'Pantalla de inicio del APK (opcional, ej. alarma para empaquetar solo la alarma)'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validar URL del servidor
+        run: |
+          URL="${{ inputs.server_url }}"
+          if [[ ! "$URL" =~ ^https?:// ]] || [[ "$URL" == *TU-APP* ]]; then
+            echo "::error::server_url inválida: '$URL'. Debe ser la URL pública real del servidor ya desplegado (ej. https://mi-app.herokuapp.com)."
+            exit 1
+          fi
+
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar dependencias de la app Android
+        working-directory: desarrollo/android-app
+        run: npm install
+
+      - name: Compilar APK
+        working-directory: desarrollo/android-app
+        env:
+          QA_PATH_ARG: ${{ inputs.path != '' && format('--path={0}', inputs.path) || '' }}
+        run: npm run apk -- "${{ inputs.server_url }}" $QA_PATH_ARG
+
+      - name: Subir APK como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuakeAlert-debug-apk
+          path: desarrollo/android-app/dist/QuakeAlert-debug.apk
+          retention-days: 30
+          if-no-files-found: error
