@@ -23,8 +23,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * Servicio en primer plano ("el app no se duerme"): wake lock parcial + conexión en vivo con el servidor (SSE)
- * y sondeo de respaldo. Cuando llega un sismo que cumple radio/magnitud llama a AlarmController.trigger().
+ * Servicio en primer plano: conexión en vivo con el servidor (SSE, latido cada 25 s) y sondeo de respaldo.
+ * Solo retiene la CPU unos segundos al procesar; el resto del tiempo el teléfono duerme normal. Cuando llega un sismo que cumple radio/magnitud llama a AlarmController.trigger().
  */
 public class GuardService extends Service {
     static final String ACTION_FIRE = "gt.quakealert.alarma.FIRE_NOW";
@@ -91,7 +91,6 @@ public class GuardService extends Service {
                 cpuLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "QuakeAlert:guard");
                 cpuLock.setReferenceCounted(false);
             }
-            if (!cpuLock.isHeld()) cpuLock.acquire();
         } catch (Exception ignored) { }
         Thread sse = new Thread(new Runnable() { @Override public void run() { sseLoop(g); } }, "qa-sse");
         Thread poll = new Thread(new Runnable() { @Override public void run() { pollLoop(g); } }, "qa-poll");
@@ -110,6 +109,11 @@ public class GuardService extends Service {
 
     private void releaseLock() {
         try { if (cpuLock != null && cpuLock.isHeld()) cpuLock.release(); } catch (Exception ignored) { }
+    }
+
+    // Wake lock con tiempo límite solo mientras hay trabajo; entre latidos la CPU duerme y el paquete SSE la despierta.
+    private void awake(long ms) {
+        try { if (cpuLock != null) cpuLock.acquire(ms); } catch (Exception ignored) { }
     }
 
     private void closeSse() {
@@ -144,6 +148,7 @@ public class GuardService extends Service {
             try {
                 String base = Prefs.serverUrl(this);
                 if (base.isEmpty()) { Thread.sleep(5000); continue; }
+                awake(20000);
                 c = (HttpURLConnection) new URL(base + "/api/stream").openConnection();
                 sseConn = c;
                 c.setRequestProperty("Accept", "text/event-stream");
@@ -156,6 +161,7 @@ public class GuardService extends Service {
                 String line, event = "message";
                 StringBuilder data = new StringBuilder();
                 while (live(g) && (line = r.readLine()) != null) {
+                    if (line.startsWith("event:") || line.startsWith("data:")) awake(10000);
                     if (line.isEmpty()) {
                         if (data.length() > 0 && "quake".equals(event)) onQuakeJson(data.toString());
                         event = "message";
@@ -171,6 +177,8 @@ public class GuardService extends Service {
                 connected = false;
                 if (c != null) { try { c.disconnect(); } catch (Exception ignored) { } }
             }
+            // Reintentos rápidos (reinicio del servidor) se mantienen despiertos; si la red sigue caída no se retiene la CPU.
+            if (backoff <= 8000) awake(backoff + 20000);
             try { Thread.sleep(backoff); } catch (InterruptedException ie) { return; }
             backoff = Math.min(backoff * 2, 30000);
         }
@@ -187,6 +195,7 @@ public class GuardService extends Service {
     private void poll() throws Exception {
         String base = Prefs.serverUrl(this);
         if (base.isEmpty()) return;
+        awake(30000);
         HttpURLConnection c = (HttpURLConnection) new URL(base + "/api/quakes/recent?minutes=15&minMag=" + Prefs.minMag(this)).openConnection();
         try {
             c.setConnectTimeout(15000);

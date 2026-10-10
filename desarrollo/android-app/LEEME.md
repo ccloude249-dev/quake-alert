@@ -4,7 +4,8 @@ La **App ciudadana** (`/app`) como app Android real, con una capa nativa que hac
 
 | Requisito | Cómo se logra |
 |---|---|
-| **No se duerme** | Servicio en primer plano (`GuardService`) + wake lock parcial + conexión en vivo con el servidor (SSE) y sondeo de respaldo cada 20–45 s. Se reinicia solo tras reiniciar el teléfono. |
+| **No se duerme** | Servicio en primer plano (`GuardService`) + conexión en vivo con el servidor (SSE) y sondeo de respaldo cada 20–45 s. Se reinicia solo tras reiniciar el teléfono. |
+| **No gasta batería** | No retiene la CPU: el teléfono duerme normal y solo se despierta unos segundos cuando llega el latido del servidor (cada 25 s) o un sismo. Comprobarlo en *Ajustes ▸ Batería ▸ Uso por app* tras varias horas con la alarma activa. |
 | **Suena en silencio** | Audio con `USAGE_ALARM`: el modo silencio/vibración no silencia el canal de alarma. Sube el volumen de alarma al máximo mientras suena y lo restaura. Atraviesa "No molestar" si diste el acceso. |
 | **Vibra** | Vibración con atributos de alarma (vibra aunque el timbre esté en silencio). |
 | **Enciende el teléfono** | Wake lock de pantalla + notificación de pantalla completa → `AlarmActivity` sobre el bloqueo. Flash de la linterna intermitente. |
