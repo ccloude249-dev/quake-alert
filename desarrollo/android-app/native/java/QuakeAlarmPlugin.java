@@ -46,6 +46,7 @@ public class QuakeAlarmPlugin extends Plugin {
         applyPrefs(call);
         Context c = getContext();
         if (Prefs.serverUrl(c).isEmpty()) { call.reject("Falta serverUrl"); return; }
+        if (!Prefs.enabled(c)) Battery.resetBaseline(c); // activación nueva = medición de consumo nueva
         Prefs.setEnabled(c, true);
         try {
             ContextCompat.startForegroundService(c, new Intent(c, GuardService.class));
@@ -60,6 +61,7 @@ public class QuakeAlarmPlugin extends Plugin {
     public void stop(PluginCall call) {
         Context c = getContext();
         Prefs.setEnabled(c, false);
+        Battery.clearBaseline(c);
         c.stopService(new Intent(c, GuardService.class));
         AlarmController.silence(c);
         AlarmController.cancelScheduled(c);
@@ -99,7 +101,7 @@ public class QuakeAlarmPlugin extends Plugin {
     @PermissionCallback
     private void notificationsResult(PluginCall call) { call.resolve(buildStatus(null)); }
 
-    /** kind: battery | fullscreen | dnd | notifications | app */
+    /** kind: battery | batteryusage | fullscreen | dnd | notifications | app */
     @PluginMethod
     public void openSettings(PluginCall call) {
         String kind = call.getString("kind", "app");
@@ -115,6 +117,9 @@ public class QuakeAlarmPlugin extends Plugin {
                     i = Build.VERSION.SDK_INT >= 34
                             ? new Intent("android.settings.MANAGE_APP_USE_FULL_SCREEN_INTENT", Uri.parse("package:" + pkg))
                             : appDetails(pkg);
+                    break;
+                case "batteryusage":
+                    i = new Intent(Intent.ACTION_POWER_USAGE_SUMMARY);
                     break;
                 case "dnd":
                     i = new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
@@ -185,6 +190,13 @@ public class QuakeAlarmPlugin extends Plugin {
         o.put("alarmActive", AlarmController.isActive());
         o.put("sdk", Build.VERSION.SDK_INT);
         o.put("manufacturer", Build.MANUFACTURER == null ? "" : Build.MANUFACTURER.toLowerCase(Locale.ROOT));
+        o.put("model", Build.MODEL == null ? "" : Build.MODEL);
+        o.put("androidRelease", Build.VERSION.RELEASE == null ? "" : Build.VERSION.RELEASE);
+        o.put("batteryPct", Battery.pct(c));
+        o.put("charging", Battery.charging(c));
+        o.put("batSince", Battery.since(c));
+        o.put("batStart", Battery.startPct(c));
+        o.put("awakeMs", Battery.awakeMs(c));
         o.put("serverUrl", Prefs.serverUrl(c));
         o.put("radiusKm", Prefs.radiusKm(c));
         o.put("minMag", (double) Prefs.minMag(c));

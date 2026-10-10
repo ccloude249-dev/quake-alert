@@ -138,6 +138,19 @@
             <sc-if value="{{ natHasError }}" hint-placeholder-val="{{ false }}">
               <div style="margin-top:8px; font-size:12px; color:#f5a623; line-height:1.4;">{{ natError }}</div>
             </sc-if>
+            <sc-if value="{{ natBatt }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border);">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; color:#7b8ca3; text-transform:uppercase;">Consumo de batería</div>
+                  <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:{{ natBattColor }};">{{ natBattNow }}</div>
+                </div>
+                <div style="font-size:11px; color:#7b8ca3; margin-top:4px;">{{ natDevice }}</div>
+                <div style="font-size:12px; color:var(--text); margin-top:10px; line-height:1.5;">{{ natBattLine1 }}</div>
+                <div style="font-size:12px; color:var(--text); margin-top:6px; line-height:1.5;">{{ natBattLine2 }}</div>
+                <div style="font-size:11px; color:#7b8ca3; margin-top:8px; line-height:1.45;">Android no deja que una app mida su propio porcentaje de consumo. El dato exacto de esta app está en los ajustes de batería del teléfono.</div>
+                <button onClick="{{ natBattOpen }}" style="margin-top:10px; width:100%; min-height:44px; border:1px solid rgba(34,211,238,0.4); border-radius:10px; cursor:pointer; background:rgba(34,211,238,0.08); color:#22d3ee; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;">Ver el consumo de esta app en Android</button>
+              </div>
+            </sc-if>
             <sc-if value="{{ natOem }}" hint-placeholder-val="{{ false }}">
               <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:flex; align-items:center; gap:10px;">
                 <div style="flex:1; min-width:0; font-size:11px; color:#7b8ca3; line-height:1.45;">En tu marca de teléfono activá también "Inicio automático" o "Sin restricciones" para esta app: si no, el fabricante puede cerrar la alarma.</div>
@@ -529,6 +542,30 @@ class Component extends DCLogic {
     this._wdT = setTimeout(again, 3400);
   }
 
+  // Consumo medido por el vigilante: lo que baja la batería de TODO el teléfono desde que se activó la alarma y cuánto retuvo la CPU.
+  _battVals(n) {
+    const dur = (ms) => { const m = Math.round(ms / 60000); return m < 1 ? 'menos de 1 min' : m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60 ? (m % 60) + ' min' : ''); };
+    const cap = (t) => (t || '').replace(/\b\w/g, (c) => c.toUpperCase());
+    const model = n.model || '';
+    const brand = cap(n.manufacturer || '');
+    const device = (model.toLowerCase().indexOf((n.manufacturer || '#').toLowerCase()) === 0 ? cap(model) : (brand + ' ' + model).trim()) + (n.androidRelease ? ' · Android ' + n.androidRelease : '');
+    const pct = n.batteryPct, now = pct >= 0 ? pct + ' %' : '–';
+    const color = pct >= 0 && pct <= 15 && !n.charging ? '#fb5670' : '#20c997';
+    const el = n.batSince ? Date.now() - n.batSince : 0;
+    let l1, l2 = '';
+    if (n.charging) l1 = 'El teléfono está cargando. Desconecta el cargador y déjalo bloqueado: la medición empieza de nuevo al conectarlo.';
+    else if (!n.batSince || el < 10 * 60000) l1 = 'Midiendo… vuelve a mirar en unos minutos con el teléfono bloqueado.';
+    else {
+      const drop = (n.batStart >= 0 && pct >= 0) ? Math.max(0, n.batStart - pct) : null;
+      const perH = drop != null && el > 0 ? (drop / (el / 3600000)) : null;
+      l1 = drop == null ? 'En ' + dur(el) + ' de vigilancia.'
+        : 'En ' + dur(el) + ' la batería del teléfono bajó de ' + n.batStart + ' % a ' + pct + ' %' + (drop ? ' (' + drop + ' puntos, ≈ ' + perH.toFixed(1) + ' % por hora)' : ' (no bajó)') + '. Ese número es de todo el teléfono, no solo de esta app.';
+      const share = el > 0 ? (100 * (n.awakeMs || 0) / el) : 0;
+      l2 = 'La app mantuvo el procesador despierto ' + Math.max(1, Math.round((n.awakeMs || 0) / 1000)) + ' s de ' + dur(el) + ' (' + (share < 0.1 ? 'menos de 0.1' : share.toFixed(1)) + ' %). El resto del tiempo el teléfono duerme normal.';
+    }
+    return { now, color, device, l1, l2 };
+  }
+
   _natVals(s) {
     const N = window.QANative, n = s.nat || {};
     const wdLeft = s.wdAt ? Math.max(0, Math.ceil((s.wdAt - Date.now()) / 1000)) : 0;
@@ -557,6 +594,7 @@ class Component extends DCLogic {
     else if (!running) { label = n.busy ? 'Activando…' : 'Activar alarma'; bg = 'linear-gradient(135deg,#22d3ee,#0e7490)'; color = '#06141a'; border = 'transparent'; act = call((X) => { if (!X.state.busy) X.start(); }); }
     else { label = testLeft > 0 ? 'Simulacro programado' : 'Probar alarma en 30 s'; bg = 'rgba(34,211,238,0.1)'; color = '#22d3ee'; border = 'rgba(34,211,238,0.4)'; act = call((X) => { if (!X.state.testAt) X.test(30); }); }
     const off = avail && loaded && !running;
+    const bt = this._battVals(n);
     return {
       nativeAvail: avail, showPushCard: !avail, wdPending: wdLeft > 0, wdLeft, wdCancel: () => this._webDemoCancel(), showSessionRow: avail || !!sessEmail,
       heroGlyph: off ? '!' : '✓', heroTitle: off ? 'Alarma desactivada' : 'Estás protegido', heroLine: off ? 'Activala abajo para recibir alertas' : 'Red de alerta temprana activa',
@@ -567,6 +605,7 @@ class Component extends DCLogic {
       natTestPending: testLeft > 0, natTestLeft: testLeft,
       natCancel: call((X) => X.cancel()), natUser: ((window.QADB && window.QADB.session.get()) || {}).email || '', natLogout: () => this.logout(),
       natHasError: !!n.error, natError: n.error || '',
+      natBatt: running && loaded && typeof n.batteryPct === 'number' && n.batteryPct >= 0, natBattNow: bt.now, natBattColor: bt.color, natDevice: bt.device, natBattLine1: bt.l1, natBattLine2: bt.l2, natBattOpen: fix('batteryusage'),
       natOem: running && /xiaomi|redmi|poco|huawei|honor|oppo|realme|vivo|oneplus|samsung/.test(n.manufacturer || ''), natOpenApp: fix('app'),
     };
   }

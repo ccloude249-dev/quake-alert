@@ -3,8 +3,10 @@ package gt.quakealert.alarma;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -12,6 +14,7 @@ import android.os.Looper;
 import android.os.PowerManager;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -40,6 +43,10 @@ public class GuardService extends Service {
     private volatile boolean alive = false;
     private volatile int generation = 0;
     private volatile HttpURLConnection sseConn;
+    private boolean powerRxOn = false;
+    private final BroadcastReceiver powerRx = new BroadcastReceiver() {
+        @Override public void onReceive(Context c, Intent i) { Battery.resetBaseline(c); } // al cargar, la medición de consumo deja de valer
+    };
 
     @Override public IBinder onBind(Intent intent) { return null; }
 
@@ -92,6 +99,13 @@ public class GuardService extends Service {
                 cpuLock.setReferenceCounted(false);
             }
         } catch (Exception ignored) { }
+        if (Battery.since(this) == 0) Battery.resetBaseline(this);
+        try {
+            if (!powerRxOn) {
+                ContextCompat.registerReceiver(this, powerRx, new IntentFilter(Intent.ACTION_POWER_CONNECTED), ContextCompat.RECEIVER_NOT_EXPORTED);
+                powerRxOn = true;
+            }
+        } catch (Exception ignored) { }
         Thread sse = new Thread(new Runnable() { @Override public void run() { sseLoop(g); } }, "qa-sse");
         Thread poll = new Thread(new Runnable() { @Override public void run() { pollLoop(g); } }, "qa-poll");
         sse.setDaemon(true); poll.setDaemon(true);
@@ -109,11 +123,12 @@ public class GuardService extends Service {
 
     private void releaseLock() {
         try { if (cpuLock != null && cpuLock.isHeld()) cpuLock.release(); } catch (Exception ignored) { }
+        try { if (powerRxOn) { unregisterReceiver(powerRx); powerRxOn = false; } } catch (Exception ignored) { }
     }
 
     // Wake lock con tiempo límite solo mientras hay trabajo; entre latidos la CPU duerme y el paquete SSE la despierta.
     private void awake(long ms) {
-        try { if (cpuLock != null) cpuLock.acquire(ms); } catch (Exception ignored) { }
+        try { if (cpuLock != null && Battery.extend(this, ms)) cpuLock.acquire(ms); } catch (Exception ignored) { }
     }
 
     private void closeSse() {

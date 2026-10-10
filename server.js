@@ -70,7 +70,7 @@ function publicStatus() {
   return {
     enabled: true, pushEnabled: !!webpush, pollMs: POLL_MS, regionKm: REGION_KM, subscribers: subs.size, polls: status.polls,
     lastPollAt: status.lastPollAt, lastPollOk: status.lastPollOk, lastError: status.lastError, eventsInFeed: status.eventsInFeed, regionalInFeed: status.regionalInFeed,
-    alertsSent: status.alertsSent, lastAlert: status.lastAlert, lastEvent: status.lastEvent, uptimeSec: Math.round((Date.now() - status.startedAt) / 1000),
+    alertsSent: status.alertsSent, lastAlert: status.lastAlert, lastEvent: status.lastEvent, uptimeSec: Math.round((Date.now() - status.startedAt) / 1000), liveClients: sseClients.size,
   };
 }
 
@@ -160,14 +160,32 @@ setInterval(poll, POLL_MS);
 // ---------- API ----------
 const noStore = (res) => res.set('Cache-Control', 'no-store');
 app.get('/api/health', (_req, res) => { noStore(res); res.json({ ok: true, ...publicStatus() }); });
-app.get('/api/quakes', (_req, res) => { noStore(res); res.json({ fetchedAt: status.lastPollAt, pollMs: POLL_MS, regionKm: REGION_KM, origin: GUATE, events: lastEvents }); });
+// Alerta de prueba disparada a mano (demo): llega por SSE y, como respaldo, por el sondeo de /quakes/recent.
+const TEST_KEY = process.env.QA_DEMO_KEY || 'quake-demo-2026';
+let injected = [], lastTestAt = 0;
+const withInjected = () => { const cut = Date.now() - 15 * 60000; injected = injected.filter((e) => e.time >= cut); return injected.concat(lastEvents); };
+app.post('/api/test-quake', (req, res) => {
+  noStore(res);
+  const b = req.body || {};
+  if (String(b.key || '') !== TEST_KEY) return res.status(403).json({ ok: false, error: 'Clave incorrecta' });
+  if (Date.now() - lastTestAt < 8000) return res.status(429).json({ ok: false, error: 'Espera unos segundos antes de otra alerta' });
+  lastTestAt = Date.now();
+  const mag = Math.min(8, Math.max(4.6, Number(b.mag) || 6.4));
+  const ev = { id: 'demo-' + lastTestAt, mag, place: 'Simulacro · Escuintla, Guatemala', time: lastTestAt, depth: 24, lat: 14.30, lng: -90.78, url: '' };
+  ev.distanceKm = distKm(GUATE.lat, GUATE.lng, ev.lat, ev.lng); ev.bearing = bearing(GUATE.lat, GUATE.lng, ev.lat, ev.lng);
+  injected.push(ev);
+  broadcast('quake', ev);
+  console.log('[demo] alerta de prueba M' + mag + ' enviada a ' + sseClients.size + ' teléfono(s) conectado(s)');
+  res.json({ ok: true, id: ev.id, mag, liveClients: sseClients.size });
+});
+app.get('/api/quakes', (_req, res) => { noStore(res); res.json({ fetchedAt: status.lastPollAt, pollMs: POLL_MS, regionKm: REGION_KM, origin: GUATE, events: withInjected() }); });
 // APK Android (servicio vigilante): solo sismos recientes de la región, en pocos KB (no el catálogo de 2,5 días).
 app.get('/api/quakes/recent', (req, res) => {
   noStore(res);
   const minutes = Math.min(180, Math.max(1, Number(req.query.minutes) || 20));
   const minMag = Number(req.query.minMag) || 0;
   const since = Date.now() - minutes * 60000;
-  res.json({ fetchedAt: status.lastPollAt, pollMs: POLL_MS, events: lastEvents.filter((e) => e.time >= since && e.mag >= minMag && e.distanceKm <= REGION_KM) });
+  res.json({ fetchedAt: status.lastPollAt, pollMs: POLL_MS, events: withInjected().filter((e) => e.time >= since && e.mag >= minMag && e.distanceKm <= REGION_KM) });
 });
 app.get('/api/push/config', (_req, res) => { noStore(res); res.json({ publicKey: vapid ? vapid.publicKey : null, ...publicStatus() }); });
 app.get('/api/push/status', (req, res) => {

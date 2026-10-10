@@ -46,7 +46,7 @@
   };
   // Plugin simulado para revisar la interfaz desde un navegador (?nativedemo=1).
   function demoPlugin() {
-    let s = { running: false, connected: false, enabled: false, notifications: false, fullScreen: false, battery: false, dnd: false, dndActive: true, ringer: 'silent', alarmVolPct: 60, alarmActive: false, sdk: 34, manufacturer: 'xiaomi', lastAlarm: '', scheduledAt: 0 };
+    let s = { running: false, connected: false, enabled: false, notifications: false, fullScreen: false, battery: false, dnd: false, dndActive: true, ringer: 'silent', alarmVolPct: 60, alarmActive: false, sdk: 34, manufacturer: 'xiaomi', model: 'Redmi Note 12', androidRelease: '14', batteryPct: 84, charging: false, batSince: Date.now() - 130 * 60000, batStart: 87, awakeMs: 21000, lastAlarm: '', scheduledAt: 0 };
     let timer = null;
     const set = (o) => { s = Object.assign({}, s, o); return Promise.resolve(Object.assign({}, s)); };
     return {
