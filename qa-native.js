@@ -13,6 +13,8 @@
     dnd: false, dndActive: false, ringer: 'normal', alarmVolPct: 0, alarmActive: false, manufacturer: '', sdk: 0, lastAlarm: '', scheduledAt: 0,
   };
   const prefs = { radiusKm: 320, minMag: 4.5, lat: 14.6349, lng: -90.5069 };
+  // Carpeta de la página, no la raíz del dominio: así funciona servido en / o dentro de una subcarpeta (/demos/…).
+  const SERVER = location.origin + location.pathname.replace(/\/[^/]*$/, '');
   const L = { state: new Set(), alarm: new Set() };
   let P = null, inited = false, pollT = null, testT = null, handled = 0;
   try { handled = Number(localStorage.getItem(KEY)) || 0; } catch (e) {}
@@ -124,7 +126,7 @@
     st.error = ''; st.busy = true; emit();
     try {
       try { await pl.requestNotifications(); } catch (e) {}
-      merge(await pl.start({ serverUrl: location.origin, radiusKm: prefs.radiusKm, minMag: prefs.minMag, lat: prefs.lat, lng: prefs.lng }));
+      merge(await pl.start({ serverUrl: SERVER, radiusKm: prefs.radiusKm, minMag: prefs.minMag, lat: prefs.lat, lng: prefs.lng }));
       st.busy = false; emit(); return true;
     } catch (e) { st.busy = false; st.error = 'No se pudo activar la alarma: ' + msg(e); emit(); return false; }
   }
@@ -136,7 +138,7 @@
   async function configure(p) {
     if (p) Object.assign(prefs, p);
     const pl = detect(); if (!pl) return;
-    try { merge(await pl.configure({ serverUrl: location.origin, radiusKm: prefs.radiusKm, minMag: prefs.minMag, lat: prefs.lat, lng: prefs.lng })); emit(); } catch (e) {}
+    try { merge(await pl.configure({ serverUrl: SERVER, radiusKm: prefs.radiusKm, minMag: prefs.minMag, lat: prefs.lat, lng: prefs.lng })); emit(); } catch (e) {}
   }
   // Simulacro completo (mismo camino que una alarma real). Lo programa el sistema (AlarmManager): salta a la hora exacta
   // aunque la app esté en segundo plano, cerrada o el teléfono dormido. `sec` = segundos para bloquear el teléfono.

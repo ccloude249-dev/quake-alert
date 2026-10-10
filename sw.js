@@ -27,7 +27,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
-  if (url.pathname.startsWith('/api/') || url.hostname === 'earthquake.usgs.gov') return; // datos en vivo: nunca desde caché
+  if (url.pathname.includes('/api/') || url.hostname === 'earthquake.usgs.gov') return; // datos en vivo: nunca desde caché
   e.respondWith(
     fetch(e.request)
       .then((res) => {

@@ -509,7 +509,7 @@ class Component extends DCLogic {
   _nativeStart() {
     const P = this._nativePlugin(); if (!P) return;
     const s = this.state;
-    const args = { serverUrl: location.origin, radiusKm: s.radiusKm, minMag: s.minMag, lat: this.GUATE.lat, lng: this.GUATE.lng };
+    const args = { serverUrl: location.origin + location.pathname.replace(/\/[^/]*$/, ''), radiusKm: s.radiusKm, minMag: s.minMag, lat: this.GUATE.lat, lng: this.GUATE.lng };
     this.setState({ nativeError: '' });
     Promise.resolve(P.requestNotifications()).catch(() => {})
       .then(() => P.start(args))
